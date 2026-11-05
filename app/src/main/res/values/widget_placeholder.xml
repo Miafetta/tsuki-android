@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Translucent stand-ins for values while a card waits for data. They tint whatever is underneath, so one color reads on
+         both the card surface and the summary cells. -->
+    <color name="widget_placeholder_light">#14000000</color>
+    <color name="widget_placeholder_dark">#24FFFFFF</color>
+</resources>

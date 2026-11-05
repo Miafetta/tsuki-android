@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Keep the accepted geometry with LinearLayout for the tested HyperOS launcher. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" xmlns:tools="http://schemas.android.com/tools" android:id="@+id/status_native_content" android:visibility="invisible" android:padding="10.8dp" android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical" tools:ignore="NestedWeights">
+  <LinearLayout android:layout_width="match_parent" android:layout_height="19.44dp" android:gravity="center_vertical" android:id="@+id/status_header" android:baselineAligned="false">
+    <ImageView android:id="@+id/status_avatar" android:layout_width="19.44dp" android:layout_height="19.44dp" android:importantForAccessibility="no" android:scaleType="centerCrop" />
+    <TextView android:id="@+id/status_title" android:layout_width="0dp" android:layout_weight="1" android:layout_marginStart="4.32dp" android:layout_height="match_parent" android:gravity="center_vertical" android:ellipsize="end" style="@style/WidgetTitle" />
+    <TextView android:id="@+id/status_data_time" android:layout_width="wrap_content" android:minWidth="40dp" android:layout_marginStart="4.32dp" android:layout_height="match_parent" android:gravity="center_vertical" style="@style/WidgetRefreshTime" />
+    <LinearLayout android:id="@+id/status_refresh_hit" android:layout_width="wrap_content" android:layout_height="match_parent" android:layout_marginStart="6.84dp" android:gravity="center_vertical" android:paddingStart="3.6dp" android:paddingEnd="0dp" tools:ignore="UseCompoundDrawables" android:baselineAligned="false">
+      <TextView android:id="@+id/status_refresh" android:layout_width="wrap_content" android:gravity="center_vertical" android:text="@string/status_refresh" android:layout_height="match_parent" style="@style/WidgetRefresh" />
+      <ImageView android:id="@+id/status_refresh_arrow" android:layout_width="12dp" android:layout_height="12dp" android:layout_marginStart="2.88dp" android:layout_gravity="center_vertical" android:src="@drawable/widget_refresh" android:importantForAccessibility="no" />
+    </LinearLayout>
+  </LinearLayout>
+  <LinearLayout android:id="@+id/status_primary" android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1" android:layout_marginTop="5.76dp" android:layout_marginBottom="5.76dp" android:orientation="horizontal" android:baselineAligned="false">
+    <LinearLayout android:id="@+id/status_sanity_primary" android:layout_width="0dp" android:layout_height="match_parent" android:layout_marginEnd="10.8dp" android:gravity="center_vertical" android:layout_weight="1" android:baselineAligned="false">
+      <ImageView android:id="@+id/status_sanity_icon" android:layout_width="29.52dp" android:layout_height="34.2dp" android:layout_marginEnd="5.4dp" android:importantForAccessibility="no" android:scaleType="fitCenter" />
+      <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical">
+        <TextView android:id="@+id/status_sanity" android:layout_height="wrap_content" android:layout_width="match_parent" android:gravity="center_vertical" style="@style/WidgetAmount" />
+        <LinearLayout android:id="@+id/status_sanity_timer_row" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="3.24dp" android:orientation="horizontal" tools:ignore="UseCompoundDrawables" android:baselineAligned="false">
+          <ImageView android:id="@+id/status_sanity_clock" android:layout_width="7.2dp" android:layout_height="7.2dp" android:layout_marginEnd="2.88dp" android:importantForAccessibility="no" android:layout_gravity="center_vertical" />
+          <TextView android:id="@+id/status_sanity_time" android:layout_height="wrap_content" android:layout_width="0dp" android:layout_weight="1" android:layout_gravity="center_vertical" android:gravity="center_vertical" android:drawablePadding="2.88dp" style="@style/WidgetTimer" />
+        </LinearLayout>
+      </LinearLayout>
+    </LinearLayout>
+    <LinearLayout android:id="@+id/status_drone_primary" android:layout_width="0dp" android:layout_height="match_parent" android:layout_marginEnd="10.8dp" android:gravity="center_vertical" android:layout_weight="1" android:baselineAligned="false">
+      <ImageView android:id="@+id/status_drone_icon" android:layout_width="29.52dp" android:layout_height="34.2dp" android:layout_marginEnd="5.4dp" android:importantForAccessibility="no" android:scaleType="fitCenter" />
+      <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical">
+        <TextView android:id="@+id/status_drone" android:layout_height="wrap_content" android:layout_width="match_parent" android:gravity="center_vertical" style="@style/WidgetAmount" />
+        <LinearLayout android:id="@+id/status_drone_timer_row" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="3.24dp" android:orientation="horizontal" tools:ignore="UseCompoundDrawables" android:baselineAligned="false">
+          <ImageView android:id="@+id/status_drone_clock" android:layout_width="7.2dp" android:layout_height="7.2dp" android:layout_marginEnd="2.88dp" android:importantForAccessibility="no" android:layout_gravity="center_vertical" />
+          <TextView android:id="@+id/status_drone_time" android:layout_height="wrap_content" android:layout_width="0dp" android:layout_weight="1" android:layout_gravity="center_vertical" android:gravity="center_vertical" android:drawablePadding="2.88dp" style="@style/WidgetTimer" />
+        </LinearLayout>
+      </LinearLayout>
+    </LinearLayout>
+    <LinearLayout android:id="@+id/status_training_primary" android:layout_width="0dp" android:layout_height="match_parent" android:layout_marginEnd="0dp" android:gravity="center_vertical" android:layout_weight="1" android:baselineAligned="false">
+      <ImageView android:id="@+id/status_native_training_avatar" android:layout_width="34.2dp" android:layout_height="34.2dp" android:layout_marginEnd="5.4dp" android:importantForAccessibility="no" android:scaleType="centerCrop" />
+      <LinearLayout android:id="@+id/status_native_training_info" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical">
+        <TextView android:id="@+id/status_native_training_name" android:layout_height="wrap_content" android:layout_width="match_parent" android:gravity="center_vertical" style="@style/WidgetTraining" />
+        <LinearLayout android:id="@+id/status_training_timer_row" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="3.24dp" android:orientation="horizontal" tools:ignore="UseCompoundDrawables" android:baselineAligned="false">
+          <ImageView android:id="@+id/status_training_clock" android:layout_width="7.2dp" android:layout_height="7.2dp" android:layout_marginEnd="2.88dp" android:importantForAccessibility="no" android:layout_gravity="center_vertical" />
+          <TextView android:id="@+id/status_native_training_time" android:layout_height="wrap_content" android:layout_width="0dp" android:layout_weight="1" android:layout_gravity="center_vertical" android:gravity="center_vertical" android:drawablePadding="2.88dp" style="@style/WidgetTimer" />
+        </LinearLayout>
+      </LinearLayout>
+    </LinearLayout>
+  </LinearLayout>
+  <LinearLayout android:id="@+id/status_summary" android:layout_width="match_parent" android:layout_height="46.08dp" android:orientation="vertical">
+    <LinearLayout android:id="@+id/status_summary_row_first" android:layout_width="match_parent" android:layout_height="20.88dp" android:orientation="horizontal" android:baselineAligned="false">
+      <LinearLayout android:id="@+id/status_recruit_cell" android:layout_width="0dp" android:layout_height="20.88dp" android:layout_marginEnd="5.76dp" android:orientation="horizontal" android:gravity="center_vertical" android:paddingStart="3.6dp" android:paddingEnd="3.6dp" android:layout_weight="1" android:baselineAligned="false">
+        <TextView android:id="@+id/status_recruit_label" style="@style/WidgetLabel" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" />
+        <TextView android:id="@+id/status_recruit" style="@style/WidgetValue" android:layout_width="wrap_content" android:layout_marginStart="2.34dp" android:layout_height="match_parent" />
+      </LinearLayout>
+      <LinearLayout android:id="@+id/status_fatigue_cell" android:layout_width="0dp" android:layout_height="20.88dp" android:layout_marginEnd="5.76dp" android:orientation="horizontal" android:gravity="center_vertical" android:paddingStart="3.6dp" android:paddingEnd="3.6dp" android:layout_weight="1" android:baselineAligned="false">
+        <TextView android:id="@+id/status_fatigue_label" style="@style/WidgetLabel" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" />
+        <TextView android:id="@+id/status_fatigue" style="@style/WidgetValue" android:layout_width="wrap_content" android:layout_marginStart="2.34dp" android:layout_height="match_parent" />
+      </LinearLayout>
+      <LinearLayout android:id="@+id/status_orders_cell" android:layout_width="0dp" android:layout_height="20.88dp" android:layout_marginEnd="5.76dp" android:orientation="horizontal" android:gravity="center_vertical" android:paddingStart="3.6dp" android:paddingEnd="3.6dp" android:layout_weight="1" android:baselineAligned="false">
+        <TextView android:id="@+id/status_orders_label" style="@style/WidgetLabel" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" />
+        <TextView android:id="@+id/status_orders" style="@style/WidgetValue" android:layout_width="wrap_content" android:layout_marginStart="2.34dp" android:layout_height="match_parent" />
+      </LinearLayout>
+      <LinearLayout android:id="@+id/status_jade_cell" android:layout_width="0dp" android:layout_height="20.88dp" android:layout_marginEnd="0dp" android:orientation="vertical" android:layout_weight="1" android:baselineAligned="false">
+        <LinearLayout android:layout_width="match_parent" android:layout_height="17.28dp" android:gravity="center_vertical" android:paddingStart="0dp" android:paddingEnd="0dp" android:id="@+id/status_jade_info" android:baselineAligned="false">
+          <TextView android:id="@+id/status_jade_label" style="@style/WidgetLabel" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" />
+          <TextView android:id="@+id/status_jade" style="@style/WidgetValue" android:layout_width="wrap_content" android:layout_marginStart="2.34dp" android:layout_height="match_parent" />
+        </LinearLayout>
+        <LinearLayout android:id="@+id/status_jade_progress" android:layout_width="match_parent" android:layout_height="1.26dp" android:layout_marginTop="1.98dp"
+            android:orientation="horizontal" android:layoutDirection="ltr" android:gravity="start" android:baselineAligned="false" android:importantForAccessibility="no">
+          <LinearLayout android:id="@+id/status_jade_fill" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1"
+              android:orientation="vertical" android:visibility="gone" android:importantForAccessibility="no" />
+        </LinearLayout>
+      </LinearLayout>
+    </LinearLayout>
+    <LinearLayout android:id="@+id/status_summary_row_second" android:layout_width="match_parent" android:layout_height="20.88dp" android:orientation="horizontal" android:baselineAligned="false" android:layout_marginTop="4.32dp">
+      <LinearLayout android:id="@+id/status_daily_cell" android:layout_width="0dp" android:layout_height="20.88dp" android:layout_marginEnd="5.76dp" android:orientation="horizontal" android:gravity="center_vertical" android:paddingStart="3.6dp" android:paddingEnd="3.6dp" android:layout_weight="1" android:baselineAligned="false">
+        <TextView android:id="@+id/status_daily_label" style="@style/WidgetLabel" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" />
+        <TextView android:id="@+id/status_daily" style="@style/WidgetValue" android:layout_width="wrap_content" android:layout_marginStart="2.34dp" android:layout_height="match_parent" />
+      </LinearLayout>
+      <LinearLayout android:id="@+id/status_rest_cell" android:layout_width="0dp" android:layout_height="20.88dp" android:layout_marginEnd="5.76dp" android:orientation="horizontal" android:gravity="center_vertical" android:paddingStart="3.6dp" android:paddingEnd="3.6dp" android:layout_weight="1" android:baselineAligned="false">
+        <TextView android:id="@+id/status_rest_label" style="@style/WidgetLabel" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" />
+        <TextView android:id="@+id/status_rest" style="@style/WidgetValue" android:layout_width="wrap_content" android:layout_marginStart="2.34dp" android:layout_height="match_parent" />
+      </LinearLayout>
+      <LinearLayout android:id="@+id/status_manufacture_cell" android:layout_width="0dp" android:layout_height="20.88dp" android:layout_marginEnd="5.76dp" android:orientation="horizontal" android:gravity="center_vertical" android:paddingStart="3.6dp" android:paddingEnd="3.6dp" android:layout_weight="1" android:baselineAligned="false">
+        <TextView android:id="@+id/status_manufacture_label" style="@style/WidgetLabel" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" />
+        <TextView android:id="@+id/status_manufacture" style="@style/WidgetValue" android:layout_width="wrap_content" android:layout_marginStart="2.34dp" android:layout_height="match_parent" />
+      </LinearLayout>
+      <LinearLayout android:id="@+id/status_tower_cell" android:layout_width="0dp" android:layout_height="20.88dp" android:layout_marginEnd="0dp" android:orientation="vertical" android:layout_weight="1" android:baselineAligned="false">
+        <LinearLayout android:layout_width="match_parent" android:layout_height="17.28dp" android:gravity="center_vertical" android:paddingStart="0dp" android:paddingEnd="0dp" android:id="@+id/status_tower_info" android:baselineAligned="false">
+          <TextView android:id="@+id/status_tower_label" style="@style/WidgetLabel" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" />
+          <TextView android:id="@+id/status_tower" style="@style/WidgetValue" android:layout_width="wrap_content" android:layout_marginStart="2.34dp" android:layout_height="match_parent" />
+        </LinearLayout>
+        <LinearLayout android:id="@+id/status_tower_progress" android:layout_width="match_parent" android:layout_height="1.26dp" android:layout_marginTop="1.98dp"
+            android:orientation="horizontal" android:layoutDirection="ltr" android:gravity="start" android:baselineAligned="false" android:importantForAccessibility="no">
+          <LinearLayout android:id="@+id/status_tower_fill" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1"
+              android:orientation="vertical" android:visibility="gone" android:importantForAccessibility="no" />
+        </LinearLayout>
+      </LinearLayout>
+    </LinearLayout>
+  </LinearLayout>
+</LinearLayout>

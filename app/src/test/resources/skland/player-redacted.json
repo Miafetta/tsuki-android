@@ -1,0 +1,25 @@
+{
+  "currentTs": 1700000000,
+  "status": {
+    "uid": "000000001",
+    "name": "测试博士",
+    "ap": { "current": 80, "max": 135, "lastApAddTime": 1699999640, "completeRecoveryTime": 1700019440 }
+  },
+  "building": {
+    "labor": { "value": 100, "maxValue": 200, "lastUpdateTime": 1699999700, "remainSecs": 3600 },
+    "tradings": [ { "stock": [{}, {}], "stockLimit": 12, "completeWorkTime": 1700000600 }, { "stock": [{}], "stockLimit": 12, "completeWorkTime": -1 } ],
+    "manufactures": [
+      { "formulaId": "3", "capacity": 60, "weight": 25, "remain": 99, "complete": 5, "lastUpdateTime": 1700000000, "speed": 9, "completeWorkTime": 1700008400 },
+      { "formulaId": "4", "capacity": 36, "weight": 24, "remain": 99, "complete": 12, "lastUpdateTime": 1700000000, "speed": 4.8, "completeWorkTime": 1700005400 }
+    ],
+    "tiredChars": [ {}, {} ],
+    "training": { "trainee": null },
+    "dormitories": []
+  },
+  "routine": { "daily": { "current": 7, "total": 10 } },
+  "campaign": { "reward": { "current": 1800, "total": 1800 } },
+  "tower": { "reward": { "higherItem": { "current": 4, "total": 24 }, "lowerItem": { "current": 8, "total": 60 } } },
+  "manufactureFormulaInfoMap": { "3": { "weight": 5, "costPoint": 10800 }, "4": { "weight": 2, "costPoint": 4320 } },
+  "recruit": [ { "state": 2, "finishTs": 1700000300 }, { "state": 3, "finishTs": 1699999900 },
+    { "state": 1, "finishTs": -1 }, { "state": 1, "finishTs": -1 } ]
+}

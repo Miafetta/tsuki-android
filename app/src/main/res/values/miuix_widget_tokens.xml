@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Independent header size; the other text levels retain their 60% Miuix projection. -->
+    <dimen name="widget_header_text">12dp</dimen>
+    <dimen name="miuix_widget_title2">14.4dp</dimen>
+    <dimen name="miuix_widget_title3">12dp</dimen>
+    <dimen name="miuix_widget_body1">9.6dp</dimen>
+    <dimen name="miuix_widget_body2">8.4dp</dimen>
+    <dimen name="miuix_widget_footnote1">7.8dp</dimen>
+    <!-- Published Miuix 0.9.4 semantic colors, without Compose in the widget process. -->
+    <color name="miuix_widget_on_surface_light">#FF000000</color>
+    <color name="miuix_widget_summary_light">#99000000</color>
+    <color name="miuix_widget_surface_light">#FFF7F7F7</color>
+    <color name="miuix_widget_container_light">#FFFFFFFF</color>
+    <color name="miuix_widget_primary_light">#FF3482FF</color>
+    <!-- No longer referenced: widget_accent_dark now uses the official widget's refresh blue. Kept rather than
+         removed because widget resource names stay stable for cached launcher hosts, and MiuixContractTest still
+         checks this projection against the installed Miuix dark primary. -->
+    <color name="miuix_widget_primary_dark" tools:ignore="UnusedResources">#FF277AF7</color>
+</resources>

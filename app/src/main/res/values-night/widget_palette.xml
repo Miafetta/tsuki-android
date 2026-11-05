@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="widget_background_light">@color/widget_background_dark</color>
+    <color name="widget_text_light">@color/widget_text_dark</color>
+    <color name="widget_secondary_light">@color/widget_secondary_dark</color>
+    <color name="widget_label_light">@color/widget_label_dark</color>
+    <color name="widget_accent_light">@color/widget_accent_dark</color>
+    <color name="widget_cell_light">@color/widget_cell_dark</color>
+    <color name="widget_extra_light">@color/widget_extra_dark</color>
+    <color name="widget_track_light">@color/widget_track_dark</color>
+    <color name="widget_progress_light">@color/widget_progress_dark</color>
+    <color name="widget_time_light">@color/widget_secondary_dark</color>
+    <item type="drawable" name="widget_sanity_light">@drawable/widget_sanity_dark</item>
+    <item type="drawable" name="widget_drone_light">@drawable/widget_drone_dark</item>
+    <item type="drawable" name="avatar_placeholder_light">@drawable/avatar_placeholder_dark</item>
+</resources>

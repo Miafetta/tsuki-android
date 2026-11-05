@@ -1,0 +1,236 @@
+{
+  "currentTs": 1700000000,
+  "status": {
+    "uid": "000000001",
+    "name": "回归测试博士",
+    "ap": {
+      "current": 1,
+      "max": 210,
+      "completeRecoveryTime": 1700012603
+    }
+  },
+  "building": {
+    "labor": {
+      "value": 3,
+      "maxValue": 235,
+      "lastUpdateTime": 1699989876,
+      "remainSecs": 47698
+    },
+    "tradings": [
+      {
+        "stock": [],
+        "stockLimit": 10,
+        "completeWorkTime": 1699992434
+      },
+      {
+        "stock": [],
+        "stockLimit": 10,
+        "completeWorkTime": 1699994049
+      }
+    ],
+    "manufactures": [
+      {
+        "formulaId": "3",
+        "capacity": 60,
+        "weight": 0,
+        "remain": 99,
+        "complete": 0,
+        "lastUpdateTime": 1699989876,
+        "speed": 1.83,
+        "completeWorkTime": 1700058024
+      },
+      {
+        "formulaId": "4",
+        "capacity": 54,
+        "weight": 0,
+        "remain": 99,
+        "complete": 0,
+        "lastUpdateTime": 1699989876,
+        "speed": 1.87,
+        "completeWorkTime": 1700050248
+      },
+      {
+        "formulaId": "4",
+        "capacity": 30,
+        "weight": 0,
+        "remain": 99,
+        "complete": 0,
+        "lastUpdateTime": 1699989876,
+        "speed": 1.82,
+        "completeWorkTime": 1700025433
+      },
+      {
+        "formulaId": "3",
+        "capacity": 54,
+        "weight": 0,
+        "remain": 99,
+        "complete": 0,
+        "lastUpdateTime": 1699989876,
+        "speed": 1.78,
+        "completeWorkTime": 1700050035
+      }
+    ],
+    "tiredChars": [],
+    "training": {
+      "trainee": null
+    },
+    "dormitories": [
+      {
+        "level": 5,
+        "comfort": 5000,
+        "chars": [
+          {
+            "ap": 33630,
+            "lastApAddTime": 1699988550
+          },
+          {
+            "ap": 3630880,
+            "lastApAddTime": 1699988550
+          },
+          {
+            "ap": 8640000,
+            "lastApAddTime": 1699988550
+          },
+          {
+            "ap": 8640000,
+            "lastApAddTime": 1699988550
+          },
+          {
+            "ap": 8640000,
+            "lastApAddTime": 1699988550
+          }
+        ]
+      },
+      {
+        "level": 5,
+        "comfort": 5000,
+        "chars": [
+          {
+            "ap": 8640000,
+            "lastApAddTime": 1699988550
+          },
+          {
+            "ap": 8640000,
+            "lastApAddTime": 1699988550
+          },
+          {
+            "ap": 8640000,
+            "lastApAddTime": 1699988550
+          },
+          {
+            "ap": 8640000,
+            "lastApAddTime": 1699988550
+          },
+          {
+            "ap": 8640000,
+            "lastApAddTime": 1699988550
+          }
+        ]
+      },
+      {
+        "level": 5,
+        "comfort": 5000,
+        "chars": [
+          {
+            "ap": 8640000,
+            "lastApAddTime": 1699988550
+          },
+          {
+            "ap": 8640000,
+            "lastApAddTime": 1699988550
+          },
+          {
+            "ap": 8640000,
+            "lastApAddTime": 1699988550
+          },
+          {
+            "ap": 8640000,
+            "lastApAddTime": 1699988550
+          },
+          {
+            "ap": 8640000,
+            "lastApAddTime": 1699988550
+          }
+        ]
+      },
+      {
+        "level": 5,
+        "comfort": 5000,
+        "chars": [
+          {
+            "ap": 8640000,
+            "lastApAddTime": 1699988550
+          },
+          {
+            "ap": 8640000,
+            "lastApAddTime": 1699988550
+          },
+          {
+            "ap": 8640000,
+            "lastApAddTime": 1699988550
+          },
+          {
+            "ap": 8640000,
+            "lastApAddTime": 1699988550
+          },
+          {
+            "ap": 8640000,
+            "lastApAddTime": 1699988550
+          }
+        ]
+      }
+    ]
+  },
+  "recruit": [
+    {
+      "state": 2,
+      "finishTs": 1700021697
+    },
+    {
+      "state": 2,
+      "finishTs": 1700021709
+    },
+    {
+      "state": 2,
+      "finishTs": 1700021712
+    },
+    {
+      "state": 2,
+      "finishTs": 1700021715
+    }
+  ],
+  "manufactureFormulaInfoMap": {
+    "3": {
+      "weight": 5,
+      "costPoint": 10800
+    },
+    "4": {
+      "weight": 2,
+      "costPoint": 4320
+    }
+  },
+  "routine": {
+    "daily": {
+      "current": 7,
+      "total": 10
+    }
+  },
+  "campaign": {
+    "reward": {
+      "current": 1800,
+      "total": 1800
+    }
+  },
+  "tower": {
+    "reward": {
+      "higherItem": {
+        "current": 0,
+        "total": 24
+      },
+      "lowerItem": {
+        "current": 0,
+        "total": 60
+      }
+    }
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "list": [
+    { "appCode": "endfield", "bindingList": [{ "uid": "000000003", "nickName": "其他游戏" }] },
+    { "appCode": "arknights", "bindingList": [
+      { "uid": "000000001", "nickName": "测试博士", "channelName": "官服" },
+      { "uid": "000000002", "nickName": "测试博士二", "channelName": "B服" }
+    ] }
+  ]
+}

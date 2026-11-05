@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Retained for RemoteViews cached by the launcher before an app upgrade. -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android" xmlns:tools="http://schemas.android.com/tools"
+ tools:ignore="UnusedResources" android:id="@android:id/background"
+ android:layout_width="match_parent" android:layout_height="match_parent"
+ android:paddingStart="10.8dp" android:paddingEnd="10.8dp" android:paddingTop="10.8dp" android:paddingBottom="10.8dp"
+ android:background="@drawable/widget_background">
+ <include layout="@layout/status_widget_content" />
+</FrameLayout>

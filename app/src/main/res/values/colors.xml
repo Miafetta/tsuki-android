@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="widget_text_dark">#FFFFFFFF</color>
+    <color name="widget_text_light">@color/miuix_widget_on_surface_light</color>
+    <color name="widget_background_dark">#FF353535</color>
+    <color name="widget_background_light">@color/miuix_widget_surface_light</color>
+    <color name="widget_secondary_dark">#FFC2C2C2</color>
+    <color name="widget_secondary_light">@color/miuix_widget_summary_light</color>
+    <color name="widget_label_dark">#FFD6D6D6</color>
+    <color name="widget_label_light">@color/miuix_widget_summary_light</color>
+    <!-- Refresh text and arrow on dark widgets, and on light widgets at night via values-night/widget_palette.xml:
+         the official Skland widget's check-in blue, estimated from a device screenshot after correcting the capture
+         shift measured on Tsuki's known #277AF7 refresh in the same image. -->
+    <color name="widget_accent_dark">#FF3BB8FF</color>
+    <!-- Day light widgets keep the Miuix primary for refresh. -->
+    <color name="widget_accent_light">@color/miuix_widget_primary_light</color>
+    <!-- Summary cells are translucent so the light widget's host blur shows through. Dark (also light widgets at
+         night): 19% black, which over the opaque #353535 dark surface composites to the former solid #2B2B2B. -->
+    <color name="widget_cell_dark">#30000000</color>
+    <!-- Light: 60% white over the host blur material. -->
+    <color name="widget_cell_light">#99FFFFFF</color>
+    <!-- Extra cells (daily tasks, rest progress) share the summary cell surfaces above. -->
+    <color name="widget_extra_dark">#30000000</color>
+    <color name="widget_extra_light">#99FFFFFF</color>
+    <color name="widget_track_dark">#FF878787</color>
+    <color name="widget_track_light">@color/miuix_widget_container_light</color>
+    <color name="widget_progress_dark">#FFD9D9D9</color>
+    <color name="widget_progress_light">@color/miuix_widget_primary_light</color>
+    <color name="widget_time_light">@color/miuix_widget_summary_light</color>
+</resources>

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android" android:id="@android:id/background"
+    android:layout_width="match_parent" android:layout_height="match_parent" android:background="@drawable/widget_host_dark">
+    <ImageView android:id="@+id/status_card_image" android:layout_width="match_parent" android:layout_height="match_parent"
+        android:adjustViewBounds="true" android:scaleType="fitCenter" android:importantForAccessibility="no" />
+    <TextView android:id="@+id/status_refresh_hit" android:layout_width="72dp" android:layout_height="30dp"
+        android:layout_gravity="top|end" android:layout_marginTop="3dp" android:layout_marginEnd="3dp" />
+</FrameLayout>

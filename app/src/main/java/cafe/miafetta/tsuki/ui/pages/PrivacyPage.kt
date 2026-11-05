@@ -1,0 +1,49 @@
+package cafe.miafetta.tsuki.ui.pages
+
+import cafe.miafetta.tsuki.ui.theme.Branding
+
+import androidx.compose.runtime.Composable
+import cafe.miafetta.tsuki.BuildConfig
+
+// Update the date whenever the content below changes; every statement is checked against the code.
+private const val PrivacyUpdated = "2026 年 11 月 3 日"
+
+private val privacySections = listOf(
+    InfoSection("我们保存的信息", listOf(
+        "${Branding.PLATFORM}凭据" to "你填写的账号名称与 Cred。Cred 加密后保存，不会写入日志或崩溃信息。",
+        "角色信息" to "通过${Branding.PLATFORM}获取的角色名称、服务器与 UID。",
+        "游戏数据" to "最近一次同步的理智、任务、基建等数据以及角色头像，用于离线查看和显示小部件。",
+        "小部件配置" to "每个小部件绑定的角色与配色。",
+        "偏好设置" to "深色模式、界面模糊效果与上次查看的角色。")),
+    InfoSection("信息的使用", listOf(
+        "用途" to "上述信息仅用于在应用内和桌面小部件中展示你的游戏数据。",
+        "不进行的处理" to "Tsuki 不包含广告、统计分析或任何第三方 SDK，不收集设备标识符，" +
+            "除下文所列的网络请求外，不会向任何第三方提供你的信息。")),
+    InfoSection("网络通信", listOf(
+        "${Branding.PLATFORM}（zonai.skland.com）" to "使用 Cred 验证账号并获取角色数据。Cred 只会发送到该地址。",
+        "鹰角网络素材服务器（web.hycdn.cn）" to "下载公开的游戏头像，请求中不包含任何账号信息。",
+        "联网时机" to "仅在你手动刷新、保存小部件，或桌面显示、刷新小部件时联网；打开概览时，" +
+            "数据超过 5 分钟也会更新。同一角色 20 秒内不重复请求，不会定时轮询或自动签到。",
+        "网络异常" to "断网、授权失效或服务器异常时，继续显示上次同步的数据。")),
+    InfoSection("存储与安全", listOf(
+        "存储位置" to "所有数据保存在应用的私有目录中，其他应用无法读取。",
+        "加密" to "Cred 使用 AES-256-GCM 加密，密钥由 Android Keystore 保管，无法从设备中导出。",
+        "备份" to "数据不参与系统云备份，也不会随换机迁移。")),
+    InfoSection("权限说明", listOf(
+        "网络访问" to "连接上述两个地址，并在后台刷新前确认设备已联网。",
+        "桌面快捷方式" to "在应用内将小部件添加到小米桌面时需要。未授予时，仍可从桌面的小部件列表添加。")),
+    InfoSection("数据的保留与删除", listOf(
+        "保留期限" to "数据保存在本机，直到你删除账号或卸载应用。",
+        "删除账号" to "删除该账号的 Cred 与角色缓存，并解除相关小部件的绑定，其他账号不受影响。",
+        "卸载应用" to "所有本地数据随应用一并删除。")),
+    InfoSection("说明的更新", listOf(
+        "变更方式" to "本说明随应用版本更新，内容变化时会修改上方的更新日期。",
+        "联系我们" to "如有疑问，可在 Tsuki 的开源仓库提交 Issue；安全问题请通过仓库的私密漏洞报告提交。")))
+
+@Composable
+internal fun PrivacyPage(blurEnabled: Boolean, onBack: () -> Unit) = InfoPage("数据与隐私", onBack, blurEnabled,
+    heading = "Tsuki 隐私说明",
+    meta = "适用版本 ${BuildConfig.VERSION_NAME}，更新于 $PrivacyUpdated",
+    intro = "Tsuki 是非官方的开源第三方应用，没有自己的服务器。本说明介绍 Tsuki 保存哪些信息、如何使用，以及你如何删除这些信息。",
+    sections = privacySections,
+    notes = listOf("应用内显示的剩余时间根据同步时的数据在本机推算，可能与游戏内略有差异。"))

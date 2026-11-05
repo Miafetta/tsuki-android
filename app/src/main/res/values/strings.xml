@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Tsuki</string>
+    <string name="probe_xiaomi">小米测试</string>
+    <string name="probe_title">Tsuki %1$s #%2$d</string>
+    <string name="probe_placeholder">Tsuki 4×2 测试小部件</string>
+    <string name="probe_description">原生堆叠对照实验，显示实例编号和刷新事件</string>
+    <string name="probe_waiting">等待系统首次刷新</string>
+    <string name="probe_status">刷新 %1$s\n来源：%2$s</string>
+    <string name="event_update">系统更新</string>
+    <string name="event_exposure">小米曝光广播</string>
+    <string name="event_manual">手动刷新</string>
+    <string name="event_options">尺寸或选项变化</string>
+    <string name="refresh">点此刷新</string>
+    <string name="status_widget_name">明日方舟 浅色</string>
+    <string name="status_description">查看明日方舟的理智、任务与基建进度</string>
+    <string name="status_unconfigured">点击配置明日方舟</string>
+    <string name="status_storage_error">无法读取小部件设置，请重试</string>
+    <string name="status_refresh">刷新</string>
+    <string name="error_auth">授权失效</string>
+    <string name="error_rate"></string>
+    <string name="error_clock">请校准系统时间后重试</string>
+    <string name="error_data">数据不完整</string>
+    <string name="error_network">网络连接失败</string>
+    <string name="error_server">服务器异常</string>
+    <string name="status_widget_dark_name">明日方舟 深色</string>
+    <string name="status_loading">正在加载明日方舟数据</string>
+    <!-- Summary cell labels, shared by the renderer and the picker preview. -->
+    <string name="status_label_recruit">公开招募</string>
+    <string name="status_label_fatigue">干员疲劳</string>
+    <string name="status_label_orders">订单进度</string>
+    <string name="status_label_jade">合成玉</string>
+    <string name="status_label_daily">每日任务</string>
+    <string name="status_label_rest">休息进度</string>
+    <string name="status_label_manufacture">制造进度</string>
+    <string name="status_label_tower">保全酬劳</string>
+    <!-- Neutral sample card for the widget picker preview: never a real nickname or UID. -->
+    <string name="status_preview_title">Dr 博士</string>
+    <string name="status_preview_training">训练中</string>
+    <string name="status_preview_time" translatable="false">08:30</string>
+    <!-- font size is in dp: 12 against the 14.4dp amount text matches the renderer's title3/title2 span on the maximum. -->
+    <string name="status_preview_sanity" translatable="false">84<font size="12">/135</font></string>
+    <string name="status_preview_sanity_time" translatable="false">6h12m</string>
+    <string name="status_preview_drone" translatable="false">120<font size="12">/200</font></string>
+    <string name="status_preview_drone_time" translatable="false">3h20m</string>
+    <string name="status_preview_training_time" translatable="false">2h30m</string>
+    <string name="status_preview_recruit" translatable="false">2/4</string>
+    <string name="status_preview_fatigue" translatable="false">0</string>
+    <string name="status_preview_orders" translatable="false">8/20</string>
+    <string name="status_preview_jade" translatable="false">1200/1800</string>
+    <string name="status_preview_daily" translatable="false">7/10</string>
+    <string name="status_preview_rest" translatable="false">18/20</string>
+    <string name="status_preview_manufacture" translatable="false">15/64</string>
+    <string name="status_preview_tower" translatable="false">36/84</string>
+</resources>

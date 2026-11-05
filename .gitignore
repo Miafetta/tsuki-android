@@ -1,0 +1,28 @@
+.gradle/
+.kotlin/
+**/build/
+local.properties
+.idea/
+*.iml
+
+# Signing material lives outside the repository
+*.jks
+*.keystore
+*.p12
+*.pfx
+*.pem
+*.lineage
+*.idsig
+password.dpapi
+
+# Build outputs
+*.apk
+*.aab
+
+# Maintainer-local records, captures and assistant context
+captures/
+docs/internal/
+CLAUDE.md
+.claude/
+.codex-remote-attachments/
+.codex-attachments/

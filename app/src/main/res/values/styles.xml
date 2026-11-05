@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.Tsuki" parent="android:style/Theme.Material.Light.NoActionBar">
+        <item name="android:fontFamily">sans</item>
+        <item name="android:colorAccent">#3482FF</item>
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:windowBackground">#F5F5F5</item>
+    </style>
+    <style name="WidgetSummary">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">match_parent</item>
+        <item name="android:textSize">@dimen/miuix_widget_body2</item>
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="android:textStyle">normal</item>
+        <item name="android:textFontWeight">400</item>
+        <item name="android:letterSpacing">0</item>
+        <item name="android:textColor">@color/widget_text_dark</item>
+        <item name="android:includeFontPadding">false</item>
+        <item name="android:gravity">center_vertical</item>
+        <item name="android:maxLines">1</item>
+    </style>
+    <style name="WidgetLabel" parent="WidgetSummary">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:textSize">@dimen/miuix_widget_footnote1</item>
+    </style>
+    <style name="WidgetTitle" parent="WidgetSummary">
+        <item name="android:textSize">@dimen/miuix_widget_title2</item>
+        <item name="android:ellipsize">end</item>
+    </style>
+    <style name="WidgetAmount" parent="WidgetSummary">
+        <item name="android:textSize">@dimen/miuix_widget_title2</item>
+    </style>
+    <style name="WidgetTraining" parent="WidgetAmount">
+        <item name="android:ellipsize">end</item>
+        <item name="android:textSize">@dimen/miuix_widget_title3</item>
+    </style>
+    <style name="WidgetTimer" parent="WidgetSummary">
+        <item name="android:textSize">@dimen/miuix_widget_body1</item>
+        <item name="android:drawablePadding">2.88dp</item>
+    </style>
+    <style name="WidgetRefresh" parent="WidgetSummary">
+        <item name="android:textSize">@dimen/widget_header_text</item>
+    </style>
+    <style name="WidgetRefreshTime" parent="WidgetRefresh" />
+    <style name="WidgetValue" parent="WidgetSummary" />
+</resources>

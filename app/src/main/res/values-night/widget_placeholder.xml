@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Light cards take the whole dark palette at night (values-night/widget_palette.xml); placeholders follow it. -->
+    <color name="widget_placeholder_light">@color/widget_placeholder_dark</color>
+</resources>

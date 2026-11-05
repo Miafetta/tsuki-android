@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Widget picker preview: the native v30 card at its 360dp reference geometry with neutral sample data, all visible.
+     Light resources switch to the dark palette at night like a placed light card. The training slot uses the avatar
+     placeholder because widget_training_light has no night variant. Keep in step with status_widget_preview_dark. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" xmlns:tools="http://schemas.android.com/tools"
+    android:id="@android:id/background" android:forceDarkAllowed="false"
+    android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical"
+    android:padding="10.8dp" android:background="@drawable/widget_host_light" tools:ignore="NestedWeights">
+    <LinearLayout android:layout_width="match_parent" android:layout_height="19.44dp" android:orientation="horizontal"
+        android:gravity="center_vertical" android:baselineAligned="false">
+        <ImageView android:layout_width="19.44dp" android:layout_height="19.44dp" android:scaleType="centerCrop"
+            android:src="@drawable/avatar_placeholder_light" android:importantForAccessibility="no" />
+        <TextView style="@style/WidgetTitle" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1"
+            android:layout_marginStart="4.32dp" android:gravity="center_vertical"
+            android:text="@string/status_preview_title" android:textColor="@color/widget_text_light" />
+        <TextView style="@style/WidgetRefreshTime" android:layout_width="wrap_content" android:layout_height="match_parent"
+            android:minWidth="40dp" android:layout_marginStart="4.32dp" android:gravity="center_vertical"
+            android:text="@string/status_preview_time" android:textColor="@color/widget_time_light" />
+        <LinearLayout android:layout_width="wrap_content" android:layout_height="match_parent" android:layout_marginStart="6.84dp"
+            android:paddingStart="3.6dp" android:paddingEnd="0dp" android:orientation="horizontal" android:gravity="center_vertical"
+            android:baselineAligned="false" tools:ignore="UseCompoundDrawables">
+            <TextView style="@style/WidgetRefresh" android:layout_width="wrap_content" android:layout_height="match_parent"
+                android:gravity="center_vertical" android:text="@string/status_refresh" android:textColor="@color/widget_accent_light" />
+            <ImageView android:layout_width="12dp" android:layout_height="12dp" android:layout_marginStart="2.88dp"
+                android:layout_gravity="center_vertical" android:src="@drawable/widget_refresh" android:tint="@color/widget_accent_light"
+                android:importantForAccessibility="no" />
+        </LinearLayout>
+    </LinearLayout>
+    <LinearLayout android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1"
+        android:layout_marginTop="5.76dp" android:layout_marginBottom="5.76dp" android:orientation="horizontal"
+        android:baselineAligned="false">
+        <LinearLayout android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1"
+            android:layout_marginEnd="10.8dp" android:orientation="horizontal" android:gravity="center_vertical"
+            android:baselineAligned="false">
+            <ImageView android:layout_width="29.52dp" android:layout_height="34.2dp" android:layout_marginEnd="5.4dp"
+                android:scaleType="fitCenter" android:src="@drawable/widget_sanity_light" android:importantForAccessibility="no" />
+            <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1"
+                android:orientation="vertical">
+                <TextView style="@style/WidgetAmount" android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:gravity="center_vertical" android:text="@string/status_preview_sanity"
+                    android:textColor="@color/widget_text_light" />
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="3.24dp"
+                    android:orientation="horizontal" android:baselineAligned="false" tools:ignore="UseCompoundDrawables">
+                    <ImageView android:layout_width="7.2dp" android:layout_height="7.2dp" android:layout_marginEnd="2.88dp"
+                        android:layout_gravity="center_vertical" android:src="@drawable/widget_clock_light"
+                        android:importantForAccessibility="no" />
+                    <TextView style="@style/WidgetTimer" android:layout_width="0dp" android:layout_height="wrap_content"
+                        android:layout_weight="1" android:layout_gravity="center_vertical" android:gravity="center_vertical"
+                        android:text="@string/status_preview_sanity_time" android:textColor="@color/widget_secondary_light" />
+                </LinearLayout>
+            </LinearLayout>
+        </LinearLayout>
+        <LinearLayout android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1"
+            android:layout_marginEnd="10.8dp" android:orientation="horizontal" android:gravity="center_vertical"
+            android:baselineAligned="false">
+            <ImageView android:layout_width="29.52dp" android:layout_height="34.2dp" android:layout_marginEnd="5.4dp"
+                android:scaleType="fitCenter" android:src="@drawable/widget_drone_light" android:importantForAccessibility="no" />
+            <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1"
+                android:orientation="vertical">
+                <TextView style="@style/WidgetAmount" android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:gravity="center_vertical" android:text="@string/status_preview_drone"
+                    android:textColor="@color/widget_text_light" />
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="3.24dp"
+                    android:orientation="horizontal" android:baselineAligned="false" tools:ignore="UseCompoundDrawables">
+                    <ImageView android:layout_width="7.2dp" android:layout_height="7.2dp" android:layout_marginEnd="2.88dp"
+                        android:layout_gravity="center_vertical" android:src="@drawable/widget_clock_light"
+                        android:importantForAccessibility="no" />
+                    <TextView style="@style/WidgetTimer" android:layout_width="0dp" android:layout_height="wrap_content"
+                        android:layout_weight="1" android:layout_gravity="center_vertical" android:gravity="center_vertical"
+                        android:text="@string/status_preview_drone_time" android:textColor="@color/widget_secondary_light" />
+                </LinearLayout>
+            </LinearLayout>
+        </LinearLayout>
+        <LinearLayout android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1"
+            android:orientation="horizontal" android:gravity="center_vertical" android:baselineAligned="false">
+            <ImageView android:layout_width="34.2dp" android:layout_height="34.2dp" android:layout_marginEnd="5.4dp"
+                android:scaleType="centerCrop" android:src="@drawable/avatar_placeholder_light" android:importantForAccessibility="no" />
+            <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1"
+                android:orientation="vertical">
+                <TextView style="@style/WidgetTraining" android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:gravity="center_vertical" android:text="@string/status_preview_training"
+                    android:textColor="@color/widget_text_light" />
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="3.24dp"
+                    android:orientation="horizontal" android:baselineAligned="false" tools:ignore="UseCompoundDrawables">
+                    <ImageView android:layout_width="7.2dp" android:layout_height="7.2dp" android:layout_marginEnd="2.88dp"
+                        android:layout_gravity="center_vertical" android:src="@drawable/widget_clock_light"
+                        android:importantForAccessibility="no" />
+                    <TextView style="@style/WidgetTimer" android:layout_width="0dp" android:layout_height="wrap_content"
+                        android:layout_weight="1" android:layout_gravity="center_vertical" android:gravity="center_vertical"
+                        android:text="@string/status_preview_training_time" android:textColor="@color/widget_secondary_light" />
+                </LinearLayout>
+            </LinearLayout>
+        </LinearLayout>
+    </LinearLayout>
+    <LinearLayout android:layout_width="match_parent" android:layout_height="46.08dp" android:orientation="vertical">
+        <LinearLayout android:layout_width="match_parent" android:layout_height="20.88dp" android:orientation="horizontal"
+            android:baselineAligned="false">
+            <LinearLayout android:layout_width="0dp" android:layout_height="20.88dp" android:layout_weight="1"
+                android:layout_marginEnd="5.76dp" android:paddingStart="3.6dp" android:paddingEnd="3.6dp"
+                android:orientation="horizontal" android:gravity="center_vertical" android:baselineAligned="false"
+                android:background="@drawable/widget_cell_light">
+                <TextView style="@style/WidgetLabel" android:layout_width="0dp" android:layout_height="match_parent"
+                    android:layout_weight="1" android:text="@string/status_label_recruit" android:textColor="@color/widget_label_light" />
+                <TextView style="@style/WidgetValue" android:layout_width="wrap_content" android:layout_height="match_parent"
+                    android:layout_marginStart="2.34dp" android:text="@string/status_preview_recruit"
+                    android:textColor="@color/widget_text_light" />
+            </LinearLayout>
+            <LinearLayout android:layout_width="0dp" android:layout_height="20.88dp" android:layout_weight="1"
+                android:layout_marginEnd="5.76dp" android:paddingStart="3.6dp" android:paddingEnd="3.6dp"
+                android:orientation="horizontal" android:gravity="center_vertical" android:baselineAligned="false"
+                android:background="@drawable/widget_cell_light">
+                <TextView style="@style/WidgetLabel" android:layout_width="0dp" android:layout_height="match_parent"
+                    android:layout_weight="1" android:text="@string/status_label_fatigue" android:textColor="@color/widget_label_light" />
+                <TextView style="@style/WidgetValue" android:layout_width="wrap_content" android:layout_height="match_parent"
+                    android:layout_marginStart="2.34dp" android:text="@string/status_preview_fatigue"
+                    android:textColor="@color/widget_text_light" />
+            </LinearLayout>
+            <LinearLayout android:layout_width="0dp" android:layout_height="20.88dp" android:layout_weight="1"
+                android:layout_marginEnd="5.76dp" android:paddingStart="3.6dp" android:paddingEnd="3.6dp"
+                android:orientation="horizontal" android:gravity="center_vertical" android:baselineAligned="false"
+                android:background="@drawable/widget_cell_light">
+                <TextView style="@style/WidgetLabel" android:layout_width="0dp" android:layout_height="match_parent"
+                    android:layout_weight="1" android:text="@string/status_label_orders" android:textColor="@color/widget_label_light" />
+                <TextView style="@style/WidgetValue" android:layout_width="wrap_content" android:layout_height="match_parent"
+                    android:layout_marginStart="2.34dp" android:text="@string/status_preview_orders"
+                    android:textColor="@color/widget_text_light" />
+            </LinearLayout>
+            <LinearLayout android:layout_width="0dp" android:layout_height="20.88dp" android:layout_weight="1"
+                android:orientation="vertical">
+                <LinearLayout android:layout_width="match_parent" android:layout_height="17.28dp" android:orientation="horizontal"
+                    android:gravity="center_vertical" android:baselineAligned="false">
+                    <TextView style="@style/WidgetLabel" android:layout_width="0dp" android:layout_height="match_parent"
+                        android:layout_weight="1" android:text="@string/status_label_jade" android:textColor="@color/widget_label_light" />
+                    <TextView style="@style/WidgetValue" android:layout_width="wrap_content" android:layout_height="match_parent"
+                        android:layout_marginStart="2.34dp" android:text="@string/status_preview_jade"
+                        android:textColor="@color/widget_text_light" />
+                </LinearLayout>
+                <!-- 1200/1800 of the sample: two of three weight units filled. -->
+                <LinearLayout android:layout_width="match_parent" android:layout_height="1.26dp" android:layout_marginTop="1.98dp"
+                    android:orientation="horizontal" android:layoutDirection="ltr" android:weightSum="3"
+                    android:baselineAligned="false" android:background="@color/widget_track_light" android:importantForAccessibility="no">
+                    <LinearLayout android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="2"
+                        android:orientation="vertical" android:background="@color/widget_progress_light"
+                        android:importantForAccessibility="no" />
+                </LinearLayout>
+            </LinearLayout>
+        </LinearLayout>
+        <LinearLayout android:layout_width="match_parent" android:layout_height="20.88dp" android:layout_marginTop="4.32dp"
+            android:orientation="horizontal" android:baselineAligned="false">
+            <LinearLayout android:layout_width="0dp" android:layout_height="20.88dp" android:layout_weight="1"
+                android:layout_marginEnd="5.76dp" android:paddingStart="3.6dp" android:paddingEnd="3.6dp"
+                android:orientation="horizontal" android:gravity="center_vertical" android:baselineAligned="false"
+                android:background="@drawable/widget_extra_light">
+                <TextView style="@style/WidgetLabel" android:layout_width="0dp" android:layout_height="match_parent"
+                    android:layout_weight="1" android:text="@string/status_label_daily" android:textColor="@color/widget_label_light" />
+                <TextView style="@style/WidgetValue" android:layout_width="wrap_content" android:layout_height="match_parent"
+                    android:layout_marginStart="2.34dp" android:text="@string/status_preview_daily"
+                    android:textColor="@color/widget_text_light" />
+            </LinearLayout>
+            <LinearLayout android:layout_width="0dp" android:layout_height="20.88dp" android:layout_weight="1"
+                android:layout_marginEnd="5.76dp" android:paddingStart="3.6dp" android:paddingEnd="3.6dp"
+                android:orientation="horizontal" android:gravity="center_vertical" android:baselineAligned="false"
+                android:background="@drawable/widget_extra_light">
+                <TextView style="@style/WidgetLabel" android:layout_width="0dp" android:layout_height="match_parent"
+                    android:layout_weight="1" android:text="@string/status_label_rest" android:textColor="@color/widget_label_light" />
+                <TextView style="@style/WidgetValue" android:layout_width="wrap_content" android:layout_height="match_parent"
+                    android:layout_marginStart="2.34dp" android:text="@string/status_preview_rest"
+                    android:textColor="@color/widget_text_light" />
+            </LinearLayout>
+            <LinearLayout android:layout_width="0dp" android:layout_height="20.88dp" android:layout_weight="1"
+                android:layout_marginEnd="5.76dp" android:paddingStart="3.6dp" android:paddingEnd="3.6dp"
+                android:orientation="horizontal" android:gravity="center_vertical" android:baselineAligned="false"
+                android:background="@drawable/widget_cell_light">
+                <TextView style="@style/WidgetLabel" android:layout_width="0dp" android:layout_height="match_parent"
+                    android:layout_weight="1" android:text="@string/status_label_manufacture"
+                    android:textColor="@color/widget_label_light" />
+                <TextView style="@style/WidgetValue" android:layout_width="wrap_content" android:layout_height="match_parent"
+                    android:layout_marginStart="2.34dp" android:text="@string/status_preview_manufacture"
+                    android:textColor="@color/widget_text_light" />
+            </LinearLayout>
+            <LinearLayout android:layout_width="0dp" android:layout_height="20.88dp" android:layout_weight="1"
+                android:orientation="vertical">
+                <LinearLayout android:layout_width="match_parent" android:layout_height="17.28dp" android:orientation="horizontal"
+                    android:gravity="center_vertical" android:baselineAligned="false">
+                    <TextView style="@style/WidgetLabel" android:layout_width="0dp" android:layout_height="match_parent"
+                        android:layout_weight="1" android:text="@string/status_label_tower" android:textColor="@color/widget_label_light" />
+                    <TextView style="@style/WidgetValue" android:layout_width="wrap_content" android:layout_height="match_parent"
+                        android:layout_marginStart="2.34dp" android:text="@string/status_preview_tower"
+                        android:textColor="@color/widget_text_light" />
+                </LinearLayout>
+                <!-- 36/84 of the sample: three of seven weight units filled. -->
+                <LinearLayout android:layout_width="match_parent" android:layout_height="1.26dp" android:layout_marginTop="1.98dp"
+                    android:orientation="horizontal" android:layoutDirection="ltr" android:weightSum="7"
+                    android:baselineAligned="false" android:background="@color/widget_track_light" android:importantForAccessibility="no">
+                    <LinearLayout android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="3"
+                        android:orientation="vertical" android:background="@color/widget_progress_light"
+                        android:importantForAccessibility="no" />
+                </LinearLayout>
+            </LinearLayout>
+        </LinearLayout>
+    </LinearLayout>
+</LinearLayout>
