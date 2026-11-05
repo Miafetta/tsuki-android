@@ -10,4 +10,5 @@ internal sealed interface AppRoute : NavKey {
     @Serializable data object Licenses : AppRoute
     @Serializable data object AddAccount : AppRoute
     @Serializable data object SelectPlatform : AppRoute
+    @Serializable data object WebLogin : AppRoute
 }

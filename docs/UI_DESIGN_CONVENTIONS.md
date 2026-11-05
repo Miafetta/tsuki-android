@@ -9,12 +9,13 @@
 - 单一 app 模块，固定 Miuix 0.9.4。颜色取自 `MiuixTheme.colorScheme`，字号取自 `textStyles`；应用主题通过 `TsukiTextStyles` 统一缩小，仅改字号，保留默认字重和行高。桌面字号投影仍使用 Miuix 默认值。基础行、卡片、标题和弹层使用库 Defaults。明确规格中的胶囊、指标大数字等尺寸在对应小组件实现，不复制或修改库组件。
 - 三标签为概览、部件、我的，图标为 Home / All / ContactsCircle。页面可通过底栏或横向滑动切换，以 Pager 最终停留的页同步底栏与当前页；每页独立保存列表位置并在重建后恢复；`initialPage` 0/1/2 对应三个标签，旧 3 进入我的并定位外观。
 - 页面居中且不超过 600dp，消费真实 systemBars（状态栏与标题栏、导航栏）、横向安全区和 IME Insets；顶部 Inset 与 Miuix TopAppBar 一致，统一由 `topBarInset()`／`bottomBarInset()` 取得。添加入口在顶栏；无 FAB。列表底部为底部 Inset + 100dp；底栏距底部安全区 2dp。
-- 二级页面（数据与隐私、开源许可、添加账号、选择平台）统一使用 `SecondaryScaffold`：与三标签相同的“内容 → 顶部玻璃 → 透明 TopAppBar”叠放、同一玻璃后端顺序与渐隐参数；标题同时作为无障碍窗格标题。二级页面在同一窗口内滑入，转场效果统一取自 `tsukiNavEffects()`：进入页的前缘两角按屏幕圆角（`rememberNavSystemCornerRadius()`）裁切，与 HyperOS 的 Activity 窗口转场一致，由 `nav-corner` 设备场景按截图测量；转场中屏蔽输入。数据与隐私、开源许可使用 `InfoPage` 的文档式版式：顶部文档卡片（title4 粗体标题、footnote1 的适用版本与更新日期、body2 引言），随后是编号的 TsukiSmallTitle 分节与卡片行，末尾为 footnote1 说明。其他页面不使用整段说明文字。
-- 分组标题使用 TsukiSmallTitle（SmallTitle 的水平 16dp、垂直 8dp 内边距，与列表 12dp 合计 28dp），与卡片连续排布；列表行之间不加分隔线。仅菜单分组之间使用 dividerLine。不添加设置项摘要或非必要说明；保留同步时间、失败原因、倒计时、必要的权限与错误文案和一行 Cred 安全提示。
+- 二级页面（数据与隐私、开源许可、添加账号、选择平台、网页登录）统一使用 `SecondaryScaffold`：与三标签相同的“内容 → 顶部玻璃 → 透明 TopAppBar”叠放、同一玻璃后端顺序与渐隐参数；标题同时作为无障碍窗格标题。网页登录使用紧凑变体（C13）。二级页面在同一窗口内滑入，转场效果统一取自 `tsukiNavEffects()`：进入页的前缘两角按屏幕圆角（`rememberNavSystemCornerRadius()`）裁切，与 HyperOS 的 Activity 窗口转场一致，由 `nav-corner` 设备场景按截图测量；转场中屏蔽输入。不使用预测性返回：清单中 `android:enableOnBackInvokedCallback="false"`，返回手势只在松手时执行，页面按普通转场退出，不跟手预览，根页面返回桌面也没有系统预览动画。支持 HyperOS 4 的“点击状态栏回到顶部”：三个主页面和可滚动的二级页面会把列表滚回第一项并展开大标题（`ScrollToTopEffect`）；网页登录页交给系统直接滚动 WebView。转场期间按钮、输入框和返回键保持正常外观，只在真正忙碌时显示为禁用；点击要等页面可交互才生效（`SecondaryScaffold` 的返回键按 `active` 拦截，各页面的操作按自己的 ready 判断）。数据与隐私、开源许可使用 `InfoPage` 的文档式版式：顶部文档卡片（title4 粗体标题、footnote1 的适用版本与更新日期、body2 引言），随后是编号的 TsukiSmallTitle 分节与卡片行，末尾为 footnote1 说明。其他页面不使用整段说明文字。
+- 分组标题使用 TsukiSmallTitle（SmallTitle 的水平 16dp、垂直 8dp 内边距，与列表 12dp 合计 28dp），与卡片连续排布；列表行之间不加分隔线。仅菜单分组之间使用 dividerLine。不添加设置项摘要或非必要说明；保留同步时间、失败原因、倒计时、必要的权限与错误文案，以及 Cred 输入框下方那段获取方法与安全提示。
 - 概览按 realtimeLabels / buildingLabels 的顺序显示全部指标。缺失数据为“未知”；倒计时使用 Dashboard 中的函数，绝对恢复时间和同步年龄使用可测纯函数。训练头像使用 roundedAvatar(1 / 9.5) + trainingPortrait 的正方形裁切。官方玩家头像自带的暗色相框在圆角裁切前按像素检测去除（`bakedFrameInset`，每边最多 10%，透明边缘与普通图片不裁）。
 - 小部件预览统一使用 `WidgetPreviewStage`（概览空状态、部件页、配置面板）：舞台展示真实位图，不放图标占位，上下内边距 14dp；预览周围是与 HyperOS 系统小部件预览一致的柔和投影（`dropShadow`，黑色，半径 20dp、下移 6dp，浅色 10%／深色 30%），不使用随光源位置变化的高程阴影。部件页条目标题与桌面小部件列表同名（“明日方舟 浅色”“明日方舟 深色”），只在刷新失败时显示原因。新建配置且角色匹配时先使用概览已加载快照，随后沿用配置面板刷新。配置面板顶部 Close / Ok，无底部按钮；角色与配色使用文字下拉菜单，保留 hostProvider 材质提示、Debug 模拟失败、内联错误及忙碌保护。
-- 我的集中账号、外观、关于；更多菜单提供更新 Cred / 删除账号，更新沿用添加流程并预填名称。已有 AUTH_EXPIRED 缓存可显示“需重新授权”，不为状态标记发送请求。开发诊断必须同时满足 Debug 与 diagnostics=true。
-- Cred 只保留在内存，AccountDraft Saver 只保存名称。顶栏 Ok 与“验证并添加”共用 save / ready，保留 IME 返回、转场门控、删除与重置确认、桌面快捷方式权限和两个 Activity 入口返回协议。
+- 我的集中账号、外观、关于；更多菜单提供更新 Cred / 删除账号，更新沿用添加流程，预填名称；Cred 输入框为空，占位文字为“留空则不修改当前 Cred”，留空提交时用已保存的 Cred 重新验证。已有 AUTH_EXPIRED 缓存可显示“需重新授权”，不为状态标记发送请求。开发诊断必须同时满足 Debug 与 diagnostics=true。
+- 添加账号的“授权信息”分组先是“在森空岛网页登录”行，再是 Cred 输入框；账号名称标为可选，输入限制在 40 个字符以内。网页登录取得 Cred 后返回添加页，把 Cred 回填到输入框并用 Toast 提示，由用户确认后点击提交，不自动提交。本地校验（例如 Cred 无效、剪贴板为空）用系统 Toast 提示；平台验证失败的原因显示在表单下方。验证失败时保留已填写的 Cred，添加成功后清空。网页登录页打开的是电脑版页面，先缩小到适合屏幕的比例，可以双指缩放；系统返回先在网页内后退，顶栏返回直接离开；加载失败时显示一行错误和“重试”。
+- Cred 只保留在内存，AccountDraft Saver 只保存名称和正在更新的账号 ID。顶栏 Ok 与“验证并添加”共用 save / ready，保留 IME 返回、转场门控、删除与重置确认、桌面快捷方式权限和两个 Activity 入口返回协议。
 
 ### 自定义清单
 
@@ -28,10 +29,12 @@
 | C6 | TsukiMenuHost：Compose focusable Popup + ListPopupColumn + DropdownImpl，独立窗口显示于配置面板上方。按 WindowInsets.safeDrawing 限制四边，底部不足向上覆盖触发点下沿；定位扣除 24dp 阴影留白。32dp 阴影半径、向下 8dp、黑色浅色 12% / 深色 50%，不压暗背景。展开从触发角按系统应用拟合的关键帧缩放（打开 330ms、关闭 170ms，圆角由 24dp 过渡到 20dp），内容在打开延迟 40ms 后 110ms 内显现、关闭时 65ms 内隐去，并带短暂前景模糊（见下方"菜单转场例外"）；以代码常量为准。保留库默认 200–288dp 宽度、条目和选中语义，不使用 BasicComponent / IntrinsicSize 测量弹出内容。返回键、外部点击关闭；角色触发文字在打开时隐藏，避免圆角露出笔画；下拉偏好展开时将 LocalIndication 换为透明 MiuixIndication，立即清除触发行按下态，保留点击、Role.DropdownList 与选中项语义。 |
 | C7 | TabRowWithContour：surfaceContainer 背景、secondaryContainer 选中背景、17.5dp 圆角。 |
 | C8 | OverlayBottomSheet 的 backgroundColor 为 surface，其余弹层使用默认不透明样式。 |
-| C9 | TextField 使用 textFieldColors(backgroundColor = surfaceContainer)。 |
+| C9 | TextField 使用 textFieldColors(backgroundColor = surfaceContainer)。Cred 输入框用 `trailingIcon` 放两个 Miuix IconButton：粘贴（`MiuixIcons.Paste`）和显示／隐藏（`Show` / `Hide`），默认隐藏内容。 |
 | C10 | 删除按钮使用 buttonColors(contentColor = error)，保留默认确认弹窗文案。 |
 | C11 | PullToRefresh 的四段文案为“下拉刷新 / 松开刷新 / 正在刷新 / 刷新成功”，刷新失败保留缓存并使用系统 Toast 提示，不提供重试按钮；通过下拉刷新或顶栏刷新重试；顶栏按钮先回到列表顶部并展开标题，再触发原有下拉刷新状态，不使用错误 Card。 |
 | C12 | ProgressRing、SyncTag、WidgetStage 为小组件，所有可见颜色由 colorScheme 派生。环为 24dp / 3dp；无上限的疲劳项保留空位；舞台渐变为 primary 28% → 7% 混入 surface。 |
+| C13 | `SecondaryScaffold(scrollable = false)`：给自带滚动的内容（网页登录的 WebView）使用。surface 底色的 SmallTopAppBar 在上，内容区固定填满顶栏与导航栏之间，不滚动，不叠在顶栏下方；不使用顶部玻璃，不录制 backdrop，按钮玻璃进度固定为 0；页面加载进度用库默认的 LinearProgressIndicator 叠在内容顶端。 |
+| C14 | 部件页切换“已添加／全部小部件”时，标签下方的卡片用 `animateItem` 交叉淡入淡出（180ms，不做位置动画）。部件页是当前标签时，另一个标签的预览由 `WarmWidgetPreviews` 提前渲染进共享缓存，数据或版本变化时重新渲染（启动时停在概览不预渲染，以免和首次读取争用组件进程）；预览位图晚于舞台出现时，在 180ms 内淡入，不在空舞台上突然出现。 |
 
 ### 玻璃范围与回退
 

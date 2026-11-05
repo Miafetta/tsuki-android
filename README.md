@@ -36,7 +36,7 @@ Tsuki 是一款面向小米 HyperOS 的 Android 桌面小部件应用，在桌�
 
 ## 使用
 
-1. 打开 Tsuki，在“我的”页点击右上角的添加按钮，填写账号名称和森空岛 Cred。验证通过后会自动导入账号下的角色。
+1. 打开 Tsuki，在“我的”页点击右上角的添加按钮，选择“在森空岛网页登录”并在官方页面完成登录，Cred 会自动填入输入框，确认后点击“验证并添加”；也可以按页面上的说明手动获取并粘贴森空岛 Cred。账号名称是可选的备注，留空时显示为“森空岛账号”。验证通过后会自动导入账号下的角色。
 2. 在“概览”页查看角色数据，下拉或点击右上角按钮刷新。
 3. 在“部件”页打开“全部小部件”，选择角色和配色后添加到桌面；也可以从桌面的小部件列表直接添加。
 4. 点击桌面小部件进入它所绑定角色的概览，尚未配置的小部件点击后直接进入配置；长按小部件并选择编辑，可以更换绑定的角色或配色。
@@ -70,7 +70,7 @@ Set-Content -LiteralPath local.properties -Value "sdk.dir=$sdkPath" -Encoding as
 .\tools\Run-DeviceTests.ps1 -Serial <设备> -SkipInstall   # 使用已安装的测试包
 ```
 
-脚本默认使用维护者的签名链（`tools/Sign-Debug.ps1`）；其他开发者请自行安装 Debug 与测试包后使用 `-SkipInstall`。脚本不会卸载应用、清除数据或修改系统设置。
+脚本默认使用维护者的签名链（`tools/Sign-Debug.ps1`）；其他开发者请自行安装 Debug 与测试包后使用 `-SkipInstall`。脚本不会卸载应用、清除数据或修改系统设置。网页登录相关的场景（`web-login` 等）不在默认列表中，需要单独指定：它们会联网打开森空岛官方首页（不登录），并清除 Tsuki 自己的网页数据。
 
 ## 项目结构
 
@@ -94,7 +94,7 @@ Set-Content -LiteralPath local.properties -Value "sdk.dir=$sdkPath" -Encoding as
 
 ## 隐私
 
-Tsuki 没有自己的服务器，只连接森空岛接口 `zonai.skland.com` 与鹰角网络素材服务器 `web.hycdn.cn`，账号与数据只保存在本机。完整的隐私说明见应用内“我的 → 数据与隐私”，内容以 `app/src/main/java/cafe/miafetta/tsuki/ui/pages/PrivacyPage.kt` 为准。
+Tsuki 没有自己的服务器，只连接森空岛接口 `zonai.skland.com` 与鹰角网络素材服务器 `web.hycdn.cn`；选择网页登录时，会在应用内网页中打开森空岛官方登录页，登录完成后只读取 Cred 并清除网页数据。账号与数据只保存在本机。完整的隐私说明见应用内“我的 → 数据与隐私”，内容以 `app/src/main/java/cafe/miafetta/tsuki/ui/pages/PrivacyPage.kt` 为准。
 
 ## 参与贡献
 

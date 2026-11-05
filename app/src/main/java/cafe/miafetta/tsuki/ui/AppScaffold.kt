@@ -4,6 +4,8 @@ import cafe.miafetta.tsuki.ui.state.AppPage
 import cafe.miafetta.tsuki.ui.theme.Branding
 
 import cafe.miafetta.tsuki.ui.components.GameTabs
+import cafe.miafetta.tsuki.ui.components.ScrollToTopEffect
+import cafe.miafetta.tsuki.ui.components.expandTopBar
 import cafe.miafetta.tsuki.ui.components.TsukiNavDock
 import cafe.miafetta.tsuki.ui.components.bottomBarInset
 import cafe.miafetta.tsuki.ui.components.topBarInset
@@ -20,9 +22,10 @@ import cafe.miafetta.tsuki.ui.glass.glassScrollProgress
 import cafe.miafetta.tsuki.ui.glass.glassVisible
 import cafe.miafetta.tsuki.ui.glass.tsukiBackdrop
 
-import androidx.compose.animation.core.animate
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.*
@@ -55,9 +58,8 @@ internal fun AppScaffold(page: Int, modifier: Modifier = Modifier, canRefresh: B
     games: List<Pair<String, String>> = listOf(Branding.GAME_ID to Branding.GAME), selectedGameId: String = Branding.GAME_ID,
     onGameSelect: (String) -> Unit = {}, overlays: @Composable () -> Unit = {}, content: LazyListScope.(Int) -> Unit) {
     val currentPage by rememberUpdatedState(page)
-    var destination by rememberSaveable { mutableIntStateOf(page.coerceIn(AppPage.OVERVIEW, AppPage.ME)) }
-    val navigate by rememberUpdatedState(onNavigate)
     val pager = rememberPagerState(initialPage = page.coerceIn(AppPage.OVERVIEW, AppPage.ME)) { 3 }
+    val (destination, selectDestination) = rememberDockDestination(pager, page, onNavigate)
     val lists = List(3) { key(it) { rememberLazyListState() } }
     val behaviors = List(3) { key(it) { MiuixScrollBehavior() } }
     val scope = rememberCoroutineScope()
@@ -70,16 +72,21 @@ internal fun AppScaffold(page: Int, modifier: Modifier = Modifier, canRefresh: B
             scope.launch {
                 try {
                     lists[AppPage.OVERVIEW].animateScrollToItem(0)
-                    val header = behaviors[AppPage.OVERVIEW].state
-                    animate(header.heightOffset, 0f,
-                        animationSpec = behaviors[AppPage.OVERVIEW].snapAnimationSpec ?: spring()) { value, _ ->
-                        header.heightOffset = value
-                    }
-                    header.contentOffset = 0f
+                    expandTopBar(behaviors[AppPage.OVERVIEW])
                     if (refreshAllowed && pager.currentPage == AppPage.OVERVIEW) refresh()
                 } finally { returningToTop = false }
             }
         }
+    }
+    // HyperOS 4 status bar tap: the shown tab's list back to its first item and its large title expanded.
+    ScrollToTopEffect(glassActive, canScrollUp = {
+        val shown = pager.currentPage
+        lists[shown].firstVisibleItemIndex > 0 || lists[shown].firstVisibleItemScrollOffset > 0 ||
+            behaviors[shown].state.heightOffset < 0f
+    }) {
+        val shown = pager.currentPage
+        lists[shown].animateScrollToItem(0)
+        expandTopBar(behaviors[shown])
     }
     var appearanceHandled by rememberSaveable { mutableStateOf(false) }
     LaunchedEffect(scrollToAppearance, appearanceIndex) {
@@ -88,26 +95,53 @@ internal fun AppScaffold(page: Int, modifier: Modifier = Modifier, canRefresh: B
             appearanceHandled = true
         }
     }
-    LaunchedEffect(page) { destination = page.coerceIn(AppPage.OVERVIEW, AppPage.ME) }
-    // A horizontal swipe, or a touch that interrupts the dock's page animation, settles the pager without the dock.
-    // Adopt the settled page so the dock, the app page and the top action (which requires both to agree) stay in sync.
+    TsukiGlassHost(blurEnabled, glassActive) {
+        AppScaffoldLayout(pager, lists, behaviors, destination, selectDestination, currentPage,
+            modifier, canRefresh && !returningToTop, showRefresh, onRefresh, refreshFromTop, onAdd, addButtonVisible, refreshing,
+            games, selectedGameId, onGameSelect, overlays, content)
+    }
+}
+
+// The dock's page. A horizontal swipe, or a drag that interrupts the dock's animation, settles the pager without the
+// dock; that settled page is adopted so the dock, the app page and the top action stay in sync. While a dock target is
+// still on its way, other settles are ignored: a cancelled animation leaves the pager idle for a frame before the next
+// one starts, and adopting that intermediate page used to swallow a quick second tap. Every tap restarts the
+// animation, also when the destination itself did not change.
+@Composable
+private fun rememberDockDestination(pager: PagerState, page: Int, onNavigate: (Int) -> Unit): Pair<Int, (Int) -> Unit> {
+    val currentPage by rememberUpdatedState(page)
+    val navigate by rememberUpdatedState(onNavigate)
+    var destination by rememberSaveable { mutableIntStateOf(page.coerceIn(AppPage.OVERVIEW, AppPage.ME)) }
+    var pending by remember { mutableStateOf<Int?>(null) }
+    var request by remember { mutableIntStateOf(0) }
+    val select: (Int) -> Unit = remember {
+        { target ->
+            pending = target
+            destination = target
+            request++
+        }
+    }
+    LaunchedEffect(page) { page.coerceIn(AppPage.OVERVIEW, AppPage.ME).let { if (it != destination) select(it) } }
     LaunchedEffect(pager) {
         snapshotFlow { pager.settledPage }.collect { settled ->
+            if (pending.let { it != null && it != settled }) return@collect
             destination = settled
             if (currentPage != settled) navigate(settled)
         }
     }
-    LaunchedEffect(destination) {
-        // A new destination cancels the previous scroll before continuing from its current offset.
-        if (pager.currentPage != destination || pager.currentPageOffsetFraction != 0f)
-            pager.springAnimateToPage(destination)
-        if (currentPage != destination) navigate(destination)
+    LaunchedEffect(destination, request) {
+        val target = destination
+        try {
+            if (pager.currentPage != target || pager.currentPageOffsetFraction != 0f) pager.springAnimateToPage(target)
+        } catch (stopped: CancellationException) {
+            // A newer tap cancels this job; a drag that takes the pager over leaves it active and decides the page.
+            if (currentCoroutineContext().isActive && pending == target) pending = null
+            throw stopped
+        }
+        if (pending == target) pending = null
+        if (currentPage != target) navigate(target)
     }
-    TsukiGlassHost(blurEnabled, glassActive) {
-        AppScaffoldLayout(pager, lists, behaviors, destination, { destination = it }, currentPage,
-            modifier, canRefresh && !returningToTop, showRefresh, onRefresh, refreshFromTop, onAdd, addButtonVisible, refreshing,
-            games, selectedGameId, onGameSelect, overlays, content)
-    }
+    return destination to select
 }
 
 @Composable

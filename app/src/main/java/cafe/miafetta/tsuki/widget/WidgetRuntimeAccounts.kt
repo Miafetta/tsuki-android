@@ -9,7 +9,7 @@ import java.util.UUID
 // Account changes and their effect on bound widgets. Every change bumps accountGeneration under the runtime lock.
 
 internal fun WidgetRuntime.login(name: String, cred: String) {
-    require(name.isNotBlank() && name.length <= 40)
+    require(name.length <= 40)
     SklandClient.validateCred(cred)
     val generation = synchronized(this) { accountGeneration }
     val roles = client.roles(cred)
@@ -17,7 +17,8 @@ internal fun WidgetRuntime.login(name: String, cred: String) {
     synchronized(this) {
         require(generation == accountGeneration) { "Account operation was cancelled" }
         val existing = matchingAccountForLogin(accounts.list(), cred, roles)
-        accounts.save(SklandAccount(existing?.id ?: UUID.randomUUID().toString(), name, cred, roles))
+        // The name is an optional alias: blank stays blank (updates prefill it, so blank means it was cleared).
+        accounts.save(SklandAccount(existing?.id ?: UUID.randomUUID().toString(), name.trim(), cred, roles))
         accountGeneration++
         if (existing != null && (existing.cred != cred || existing.roles != roles)) {
             previousCred = existing.cred.takeIf { it != cred }
@@ -38,6 +39,13 @@ internal fun WidgetRuntime.login(name: String, cred: String) {
         }
     }
     previousCred?.let(client::forget)
+}
+
+// "更新 Cred" with the Cred left blank: verify again with the stored Cred, e.g. to change only the name. The Cred stays
+// in this process; an account removed in the meantime is reported as an invalid request.
+internal fun WidgetRuntime.reverify(accountId: String, name: String) {
+    val cred = synchronized(this) { accounts.list().singleOrNull { it.id == accountId }?.cred }
+    login(name, requireNotNull(cred) { "Account no longer exists" })
 }
 
 internal fun WidgetRuntime.logout(accountId: String) {

@@ -14,7 +14,8 @@ import org.json.JSONObject
 internal class SklandAccount(val id: String, val name: String, val cred: String, val roles: List<SklandRole>,
     val retryAt: Long = 0) {
     init {
-        require(id.matches(Regex("[a-zA-Z0-9-]{1,80}")) && name.isNotBlank() && name.length <= 80)
+        // name is the user's optional alias; the UI shows the platform name when it is blank.
+        require(id.matches(Regex("[a-zA-Z0-9-]{1,80}")) && name.length <= 80)
         SklandClient.validateCred(cred)
         require(roles.isNotEmpty() && roles.size <= 20 && roles.distinctBy { it.uid }.size == roles.size && retryAt >= 0)
     }

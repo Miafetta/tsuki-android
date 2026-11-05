@@ -1,0 +1,7 @@
+# App and Miuix rules merged by AGP into assets/dexopt/baseline.prof (androidx.profileinstaller is already bundled
+# through Compose). Library profiles cover Compose itself; these cover Tsuki's own code, including the widget process,
+# and the Miuix components it composes, so the first idle dexopt after the first launch compiles them ahead of use.
+HSPLcafe/miafetta/tsuki/**->**(**)**
+Lcafe/miafetta/tsuki/**;
+HSPLtop/yukonga/miuix/kmp/**->**(**)**
+Ltop/yukonga/miuix/kmp/**;

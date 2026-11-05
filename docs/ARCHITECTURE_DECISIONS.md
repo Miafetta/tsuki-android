@@ -18,6 +18,7 @@ Tsuki 只有一个 Gradle 模块 `app`。应用界面使用 Jetpack Compose 与 
 | `WidgetConfigActivity` | 系统 `APPWIDGET_CONFIGURE`、桌面长按编辑与点击未配置小部件（`tsuki://configure/<id>`）；校验实例归属后直接显示配置面板 |
 | `SklandAccountActivity` | 系统添加流程中没有可用角色时进入，添加账号后返回继续配置 |
 | `AccountEditor`／`PlatformSelector` | 添加账号、更新 Cred；平台行进入平台选择 |
+| `WebLoginPage` | 在应用内网页中打开森空岛官方登录页，取得 Cred 后交回 `AccountEditor` 提交；网页数据由 `WebLoginData` 清除，边界见[开发约束 §3](DEVELOPMENT_CONSTRAINTS.md#3-凭据与账号数据) |
 | `PrivacyPage`／`LicensesPage` | 我的 → 关于；许可证全文读取 `assets/third_party/*.txt` |
 | `ConfigEditor` | 选择角色和配色，添加或编辑小部件 |
 | 开发诊断 | 仅 Debug 构建且以 `--ez diagnostics true` 启动时显示 |
@@ -34,7 +35,10 @@ Tsuki 只有一个 Gradle 模块 `app`。应用界面使用 Jetpack Compose 与 
 
 主进程负责界面和用户操作。桌面 Provider、私有 `WidgetStorageProvider` 与 `WidgetRefreshJob` 运行在 `:widgetProvider` 进程。`PinWidgetReceiver` 在主进程接收桌面回调，再通过 IPC 保存配置。
 
-- `AppState` 在 IO 线程调用私有 Provider。Provider 核对调用方 UID，写入配置时另外校验实例归属。
+- `AppState` 在 IO 线程调用私有 Provider，返回的 JSON 和快照在 Default 线程解析，主线程只负责赋值。Provider 核对调用方 UID，写入配置时另外校验实例归属。
+- 启动时，屏幕一拿到 `AppState` 就开始第一次概览读取（`startInitialLoad`），让 IPC 和 `:widgetProvider` 的冷启动与首次组合同时进行；之后第一次 `load()` 直接等待这次读取，不重复调用，`finishedLoads` 仍然是每完成一次读取加 1。第一次读取完成并画上屏幕后，调用一次 `reportFullyDrawn()`。
+- 三个 Activity 都用 `setTsukiContent` 设置内容：`ComposeView` 仍是内容区的第一个子 View（和 `setContent` 一致，状态恢复与 `setContent` 复用都依赖这一点），其上并列一个空的 `ScrollToTopHost`。HyperOS 4 点击状态栏时，会在当前窗口里找一个在屏幕上、`canScrollVertically(-1)` 为真且 `computeVerticalScrollOffset() > 0` 的 ViewGroup，再用反射调用它的 `smoothScrollToPosition(int)`（滚动距离很长时调用 `scrollToPosition(int)`）。Compose 列表不是 View，系统找不到，所以由这个容器报告当前页面能否往上滚，并把调用转给页面（`ScrollToTopEffect`）。容器不能套在内容外面：作为父级并报告可滚动时，会干扰界面本身的触摸和无障碍查找，设备测试已经证实了这一点。它没有子 View、不绘制、不处理触摸、对无障碍隐藏。这两个方法加了 `@Keep`，名字不能改。
+- 品牌图标（`BrandLogos`）每个进程只解码一次，按显示所需的尺寸解码，并在 `TsukiApp` 开头于后台线程预加载；页面组合时不在主线程解码位图。`app/src/main/baseline-prof.txt` 为 Tsuki 与 Miuix 的代码提供 Baseline Profile（profileinstaller 已随 Compose 打包）。
 - `StorageContract` 集中定义操作名与传输键，`SnapshotJson` 定义快照格式。
 - 概览刷新和账号验证在 Binder 工作线程同步执行，读取角色缓存与实例快照。
 - 桌面更新由 `WidgetRuntime` 渲染缓存，并通过 JobScheduler 调度 `WidgetRefreshJob` 获取数据与头像。广播和主线程不发网络请求。

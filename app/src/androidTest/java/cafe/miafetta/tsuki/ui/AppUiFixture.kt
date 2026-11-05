@@ -48,7 +48,7 @@ internal fun AppUiVerification.FixtureApp(host: MainActivity, redesignV4: String
             val roles = if (emptyState.value) emptyList() else listOf(displayRole, second)
             val homeSnapshot = trainingCase.value?.let { snapshot.copy(training = it) } ?: snapshot
             AccountNavigationFixture(host, dialog.value == "account",
-                onDismiss = { dialog.value = "" }) { accountPageActive ->
+                onDismiss = { dialog.value = "" }, onMessage = { editorMessages.add(it) }) { accountPageActive ->
                 AppScaffold(page.intValue, blurEnabled = blur.value, canRefresh = canRefresh.value, showRefresh = true,
                     refreshing = refreshing.value, onRefresh = { fixtureRefresh(host, redesignV4) },
                     onNavigate = {
@@ -64,7 +64,7 @@ internal fun AppUiVerification.FixtureApp(host: MainActivity, redesignV4: String
                             portraits = TrainingPortraitSource(host)::load)
                         1 -> widgetPage(host, if (emptyState.value) emptyList()
                             else listOf(UiWidget(1, role.accountId, role.id, role.provider, "LIGHT", snapshot, "", false)),
-                            snapshot, catalog.intValue, previews(), role.key,
+                            snapshot, catalog.intValue, previews(), role.key, page.intValue == 1,
                             { catalog.intValue = it }) { widget, chosenTheme ->
                                 configTheme.value = chosenTheme
                                 dialog.value = if (widget == null) "widget-new" else "widget"

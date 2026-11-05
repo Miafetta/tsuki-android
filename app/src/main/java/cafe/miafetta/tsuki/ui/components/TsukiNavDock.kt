@@ -68,8 +68,11 @@ internal fun TsukiNavDock(selected: Int, onSelect: (Int) -> Unit, modifier: Modi
                 try {
                     while (true) {
                         val change = awaitPointerEvent(PointerEventPass.Initial).changes.firstOrNull { it.id == down.id } ?: break
-                        val outside = change.position.x !in 0f..size.width.toFloat() ||
-                            change.position.y !in 0f..size.height.toFloat()
+                        // A tap near the 52dp dock's edge often drifts a little past it before lifting; only leaving
+                        // by more than the touch slop cancels the tap.
+                        val slop = viewConfiguration.touchSlop
+                        val outside = change.position.x !in -slop..size.width + slop ||
+                            change.position.y !in -slop..size.height + slop
                         // Once horizontal dragging starts, retain control outside until release or system cancellation.
                         if (change.isConsumed || (outside && !dragging)) cancelled = true
                         if (!change.pressed) {

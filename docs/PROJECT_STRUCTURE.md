@@ -22,11 +22,11 @@
 | `tsuki.ui.theme` | `TsukiAppTheme`、`TsukiTextStyles`、`Branding`（游戏／平台／配色名）与品牌图像 | Miuix |
 | `tsuki.ui.glass` | 玻璃宿主、后端（MiGlass / miuix-blur / 不透明）、表面参数 | Miuix、`ui.theme` |
 | `tsuki.ui.components` | 无状态、可预览的小组件；只接收数据与回调 | `ui.theme`、`ui.glass`、`core` 的模型、`state` 的数据类型 |
-| `tsuki.ui.pages` | 三个标签页与二级页面（隐私、许可、添加账号、平台选择） | `components`、`state` 的数据类型 |
+| `tsuki.ui.pages` | 三个标签页与二级页面（隐私、许可、添加账号、平台选择、网页登录） | `components`、`state` 的数据类型 |
 | `tsuki.ui.sheets` | 配置面板、确认 / 权限弹窗等浮层 | 同上 |
 
 - 依赖只能沿表格向上或同层，`components` 不得引用 `pages`、`sheets`、`state.AppState`。
-- 主进程中的 `ui.*` 引用 `widget`／`providers` 只限：数据源与功能标识常量（适配器的 `ID`、`WidgetRuntime.FEATURE`）、Provider 类（`StatusWidgetProvider`、`OpaqueWidgetProvider`、`XiaomiProbeProvider`）、添加流程入口（`PinWidgetReceiver.request`、`DesktopShortcutPermission`、`WidgetStorageProvider.URI`），以及与桌面共用的无状态头像函数（`OfficialAvatars`、`WidgetBitmaps.kt`，只在 `ui.state` 中调用）。`WidgetRuntime` 实例、仓库与网络客户端属于 `:widgetProvider` 进程，只经由 `StorageContract` 调用。
+- 主进程中的 `ui.*` 引用 `widget`／`providers` 只限：数据源与功能标识常量（适配器的 `ID`、`WidgetRuntime.FEATURE`）、Provider 类（`StatusWidgetProvider`、`OpaqueWidgetProvider`、`XiaomiProbeProvider`）、添加流程入口（`PinWidgetReceiver.request`、`DesktopShortcutPermission`、`WidgetStorageProvider.URI`），以及与桌面共用的无状态头像函数（`OfficialAvatars`、`WidgetBitmaps.kt`，只在 `ui.state` 中调用），和网页登录的常量与纯函数（`SklandWebLogin`，只在 `WebLoginPage` 中调用，不含网络客户端）。`WidgetRuntime` 实例、仓库与网络客户端属于 `:widgetProvider` 进程，只经由 `StorageContract` 调用。
 - Debug 专用代码（预览、诊断开关、测试夹具）放 `src/debug` 或 `src/androidTest`，不得进入 `src/main` 的 Release 路径；确需在 main 中判断时只用 `BuildConfig.DEBUG`。
 
 ## 3. 文件与函数
@@ -45,7 +45,7 @@
 
 - 屏幕状态集中在 `ui.state`；Composable 不直接调用 `storageCall`、`SharedPreferences` 或 `ContentResolver`，经由 `AppState` / `AppController`。
 - 一次性事件（提示、导航结果）用 `UiMessages` 等事件通道，不用"显示后再清空"的普通状态。
-- 跨重建要保留的状态用 `rememberSaveable` 或 ViewModel；凭据永不进入 saved state、日志或 IPC 读返回。
+- 跨重建要保留的状态用 `rememberSaveable` 或 ViewModel；凭据永不进入 saved state 或日志，任何 IPC 读操作都不返回凭据，见[开发约束 §3](DEVELOPMENT_CONSTRAINTS.md#3-凭据与账号数据)。
 
 ## 5. 仓库目录
 

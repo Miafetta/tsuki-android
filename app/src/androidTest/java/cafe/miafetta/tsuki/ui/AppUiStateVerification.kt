@@ -7,6 +7,8 @@ import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.lifecycle.viewmodel.initializer
 import cafe.miafetta.tsuki.MainActivity
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeoutOrNull
@@ -14,6 +16,7 @@ import java.io.File
 import java.util.concurrent.CopyOnWriteArrayList
 
 internal fun AppUiVerification.verifyReadAndLifecycle(host: MainActivity) {
+    verifyInitialLoadJoin(host)
     val storage = cafe.miafetta.tsuki.StorageContract
     var response = "error"
     val notifications = CopyOnWriteArrayList<String>()
@@ -45,6 +48,37 @@ internal fun AppUiVerification.verifyReadAndLifecycle(host: MainActivity) {
     frames(host)
     for (scenario in listOf("immediate", "showing", "stopped")) backgroundMessage(host, fixture, notifications, scenario)
     recreationMessages(host, fixture, notifications)
+}
+
+// The early read started with the screen's state is joined by the first load instead of being repeated, and it counts
+// as one finished load; a later load reads again.
+private fun verifyInitialLoadJoin(host: MainActivity) {
+    val storage = cafe.miafetta.tsuki.StorageContract
+    val reads = java.util.concurrent.atomic.AtomicInteger()
+    val release = java.util.concurrent.CountDownLatch(1)
+    val fixture = AppState(host.applicationContext, UiNotifier {}) { method, _ ->
+        Bundle().apply {
+            if (method == storage.OVERVIEW) {
+                reads.incrementAndGet()
+                // Hold the first read so the following load() certainly finds it still running.
+                release.await(5, java.util.concurrent.TimeUnit.SECONDS)
+                putString(storage.JSON, """{"accounts":[],"widgets":[]}""")
+            }
+        }
+    }
+    fixture.startInitialLoad()
+    fixture.startInitialLoad()
+    runBlocking {
+        val joined = async(Dispatchers.Default) { fixture.load() }
+        Thread.sleep(200)
+        release.countDown()
+        joined.await()
+        check(reads.get() == 1 && fixture.finishedLoads == 1) {
+            "Initial load repeated: reads=${reads.get()} finished=${fixture.finishedLoads}"
+        }
+        fixture.load()
+        check(reads.get() == 2 && fixture.finishedLoads == 2) { "Later load did not read: reads=${reads.get()}" }
+    }
 }
 
 // Replaces the activity's AppState with the fixture and shows the production app on it.

@@ -24,6 +24,15 @@ class AccountSecurityTest {
         assertEquals("new-credential", reopened.cred)
     }
 
+    @Test fun accountNameIsAnOptionalAliasStoredAsGiven() {
+        val unnamed = SklandAccount("account-a", "", cred, listOf(SklandRole("000000001", "测试博士")))
+        repository().save(unnamed)
+        assertEquals("", repository().list().single().name)
+        repository().save(SklandAccount("account-a", "别名", cred, unnamed.roles))
+        assertEquals("别名", repository().list().single().name)
+        assertThrows(IllegalArgumentException::class.java) { SklandAccount("account-b", "长".repeat(81), cred, unnamed.roles) }
+    }
+
     @Test fun loginRejectsMixedOwnershipAndChangedIdentityWithoutChangingStoredAccounts() {
         val first = SklandAccount("account-a", "test", "first-credential", listOf(SklandRole("1", "test")))
         val second = SklandAccount("account-b", "test", "second-credential", listOf(SklandRole("2", "test")))

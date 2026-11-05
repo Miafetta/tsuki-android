@@ -37,6 +37,9 @@ class WidgetStorageProvider : ContentProvider() {
                 Storage.LOGIN -> Bundle().also {
                     runtime.login(requireNotNull(extras?.getString(Storage.NAME)), requireNotNull(extras.getString(Storage.CRED)))
                 }
+                Storage.REVERIFY -> Bundle().also {
+                    runtime.reverify(requireNotNull(extras?.getString(Storage.ACCOUNT_ID)), requireNotNull(extras.getString(Storage.NAME)))
+                }
                 Storage.LOGOUT -> Bundle().also { runtime.logout(requireNotNull(extras?.getString(Storage.ACCOUNT_ID))) }
                 Storage.RESET_ACCOUNTS -> Bundle().also { runtime.resetAccounts() }
                 Storage.PREPARE_PIN -> Bundle().also {

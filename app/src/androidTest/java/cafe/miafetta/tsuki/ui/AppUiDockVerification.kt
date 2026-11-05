@@ -19,7 +19,7 @@ import cafe.miafetta.tsuki.MainActivity
 import java.io.File
 
 // Real touch input on the dock tabs; every injected event is appended to the trace.
-private class DockTouch(private val ui: AppUiVerification, private val host: MainActivity) {
+internal class DockTouch(private val ui: AppUiVerification, private val host: MainActivity) {
     val trace = StringBuilder()
     private var downTime = 0L
 
@@ -50,6 +50,21 @@ private class DockTouch(private val ui: AppUiVerification, private val host: Mai
         if (android.provider.Settings.Global.getFloat(ui.targetContext.contentResolver, "animator_duration_scale", 1f) == 0f) {
             ui.frames(host, 3)
             check(ui.page.intValue == index) { "Disabled animations still delayed page selection" }
+        }
+    }
+
+    // DOWN at the tab centre, then the finger drifts dy pixels above the dock before lifting. Upwards on purpose: the
+    // dock sits just above the gesture bar, where the system may take a downward drift over as its own gesture.
+    fun tapDrifting(index: Int, dy: Float) {
+        val b = tab(index)
+        val down = android.os.SystemClock.uptimeMillis()
+        for ((action, y) in listOf(MotionEvent.ACTION_DOWN to b.center.y, MotionEvent.ACTION_MOVE to b.top - dy,
+            MotionEvent.ACTION_UP to b.top - dy)) {
+            val event = MotionEvent.obtain(down, android.os.SystemClock.uptimeMillis(), action, b.center.x, y, 0)
+                .apply { source = android.view.InputDevice.SOURCE_TOUCHSCREEN }
+            try { check(ui.uiAutomation.injectInputEvent(event, true)) } finally { event.recycle() }
+            trace.appendLine("drift action=$action tab=$index dy=$dy")
+            ui.frames(host, 2)
         }
     }
 
@@ -100,12 +115,14 @@ internal fun AppUiVerification.verifyDockMotion(host: MainActivity) {
         dockCombination(dock, host, folder, mode, enabled, scale)
     }
     dockScrollRetention(dock, host)
+    dockQuickTaps(dock, host)
     // Match the unobstructed system Contacts backdrop; keep source pixels out of production.
     for (mode in listOf("LIGHT", "DARK")) flatDockCapture(dock, host, folder, mode)
     File(folder, "events.txt").writeText(dock.trace.toString())
     File(folder, "result.txt").writeText("PASS: 8 theme/blur/font combinations; real DOWN/UP/MOVE/CANCEL; " +
         "continuous fractional drag, outside drag retention/clamping/release commit/system cancel/return, reverse drag, " +
-        "drag release/cancel; adjacent/cross/reverse/repeat; fixed >=48dp hit area; one selected Tab; per-page scroll retained.")
+        "drag release/cancel; adjacent/cross/reverse/repeat; quick second tap at 0-5 frame gaps; edge drift within slop; " +
+        "fixed >=48dp hit area; one selected Tab; per-page scroll retained.")
 }
 
 private fun AppUiVerification.dockCombination(dock: DockTouch, host: MainActivity, folder: File, mode: String,
@@ -221,28 +238,6 @@ private fun AppUiVerification.dockDrags(dock: DockTouch, host: MainActivity, fol
     dock.touch(MotionEvent.ACTION_MOVE, 2)
     dock.touch(MotionEvent.ACTION_UP, 2)
     dock.assertSelected(2)
-}
-
-private fun AppUiVerification.dockScrollRetention(dock: DockTouch, host: MainActivity) {
-    runOnMainSync {
-        fontScale.value = 1f
-        page.intValue = 0
-    }
-    dock.assertSelected(0)
-    fun overviewScroll() = composeNodes(host).single { it.config.getOrNull(SemanticsProperties.TestTag) == "page-list:0" }
-        .config[SemanticsProperties.VerticalScrollAxisRange].value()
-    var scroll = 0f
-    runOnMainSync {
-        val list = composeNodes(host).single { it.config.getOrNull(SemanticsProperties.TestTag) == "page-list:0" }
-        checkNotNull(list.config.getOrNull(SemanticsActions.ScrollToIndex)?.action).invoke(3)
-    }
-    frames(host)
-    runOnMainSync { scroll = overviewScroll() }
-    dock.tap(2)
-    dock.assertSelected(2)
-    dock.tap(0)
-    dock.assertSelected(0)
-    runOnMainSync { check(scroll == overviewScroll()) { "Navigation lost scroll position" } }
 }
 
 private fun AppUiVerification.flatDockCapture(dock: DockTouch, host: MainActivity, folder: File, mode: String) {

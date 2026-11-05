@@ -70,14 +70,23 @@ class MiuixContractTest {
 
     @Test fun navigationRestoresAllRoutesAndDraftNeverSavesCredentials() {
         val routes: List<AppRoute> = listOf(AppRoute.Root, AppRoute.Privacy, AppRoute.Licenses, AppRoute.AddAccount,
-            AppRoute.SelectPlatform)
+            AppRoute.SelectPlatform, AppRoute.WebLogin)
         assertEquals(routes, Json.decodeFromString<List<AppRoute>>(Json.encodeToString(routes)))
-        val draft = AccountDraft("Test account").apply { cred = "synthetic-secret" }
+        // rememberNavController picks its saved-state serializer from the type argument; inferred from AppRoute.Root it
+        // restores every entry as Root and NavDisplay crashes on the duplicate key after a recreation.
+        val sources = File(checkNotNull(System.getProperty("tsuki.projectDir")), "src/main/java").walk()
+            .filter { it.extension == "kt" }.map { it.readText() }.toList()
+        assertTrue(sources.any { "rememberNavController<AppRoute>(" in it })
+        assertFalse(sources.any { Regex("""rememberNavController\(""").containsMatchIn(it) })
         val scope = object : SaverScope { override fun canBeSaved(value: Any) = true }
-        val saved = with(AccountDraft.Saver) { scope.save(draft) }
-        assertEquals("Test account", saved)
-        val restored = AccountDraft.Saver.restore(checkNotNull(saved))!!
-        assertEquals(draft.name, restored.name)
-        assertEquals("", restored.cred)
+        for (accountId in listOf(null, "account-1")) {
+            val draft = AccountDraft("Test account", accountId).apply { cred = "synthetic-secret" }
+            val saved = with(AccountDraft.Saver) { scope.save(draft) }
+            assertEquals(listOf("Test account", accountId.orEmpty()), saved)
+            val restored = AccountDraft.Saver.restore(checkNotNull(saved))!!
+            assertEquals(draft.name, restored.name)
+            assertEquals(accountId, restored.accountId)
+            assertEquals("", restored.cred)
+        }
     }
 }

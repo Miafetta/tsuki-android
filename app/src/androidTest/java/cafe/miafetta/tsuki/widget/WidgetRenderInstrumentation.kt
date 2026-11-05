@@ -40,7 +40,9 @@ class WidgetRenderInstrumentation : Instrumentation() {
     private var liveResult = ""
     private var hostProbe: String? = null
     private var widgetStartup = false
+    private var providerBreakdown = false
     override fun onCreate(arguments: Bundle?) {
+        providerBreakdown = arguments?.getString("providerBreakdown") == "true"
         appUi = arguments?.getString("appUi") == "true"
         redesignV4 = arguments?.getString("redesignV4")
         glassCalibration = arguments?.getString("glassCalibration") == "true"
@@ -62,6 +64,8 @@ class WidgetRenderInstrumentation : Instrumentation() {
         val probe = hostProbe
         when {
             widgetStartup -> finishWith(widgetStartupVerification(this))
+            providerBreakdown -> finishWith(runCatching { providerReadBreakdown(targetContext) }
+                .fold({ true to it }, { false to it.stackTraceToString() }))
             probe != null -> sendHostProbe(probe)
             lifecycle -> finishWith(cafe.miafetta.tsuki.ui.windowLifecycleVerification(this))
             comparison -> try {

@@ -67,10 +67,26 @@ internal class AppController(
             } finally { state.refreshing = false }
         }
     }
-    fun addAccount() {
+    // updating is the account opened from "更新 Cred"; its name is prefilled and its Cred is never read back.
+    fun addAccount(updating: UiAccount? = null) {
         if (AppRoute.AddAccount in nav.backStack || state.busy) return
         state.error = ""
+        draft.clear()
+        if (updating != null) {
+            draft.name = updating.name
+            draft.accountId = updating.id
+        }
         nav.push(AppRoute.AddAccount)
+    }
+    // A blank Cred while updating re-verifies the account with its stored Cred, so the name can change on its own.
+    fun saveAccount(name: String, cred: String) {
+        val accountId = draft.accountId
+        val keep = cred.isEmpty() && accountId != null
+        val extras = Bundle().apply {
+            putString(Storage.NAME, name)
+            if (keep) putString(Storage.ACCOUNT_ID, accountId) else putString(Storage.CRED, cred)
+        }
+        scope.launch { state.action(if (keep) Storage.REVERIFY else Storage.LOGIN, extras, inlineError = true) }
     }
     fun place(config: Bundle) {
         val accepted = try {

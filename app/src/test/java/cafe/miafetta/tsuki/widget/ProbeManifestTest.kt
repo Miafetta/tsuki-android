@@ -133,7 +133,8 @@ class ProbeManifestTest : WidgetResourceFixture() {
         assertTrue(screen.contains("PasswordVisualTransformation()"))
         assertFalse(screen.contains("var cred by rememberSaveable"))
         assertFalse(screen.contains("WindowManager.LayoutParams.FLAG_SECURE"))
-        assertEquals("true", manifest.children("application").single().attr("enableOnBackInvokedCallback"))
+        // No predictive back anywhere (docs/UI_DESIGN_CONVENTIONS.md): back runs on release, without gesture previews.
+        assertEquals("false", manifest.children("application").single().attr("enableOnBackInvokedCallback"))
     }
     @Test fun arknightsDeclaresHostBackgroundBlurOnItsReceiver() {
         val receiver = xml("AndroidManifest.xml").children("receiver").single {

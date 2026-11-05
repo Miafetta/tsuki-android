@@ -74,11 +74,13 @@ internal fun AccountCard(account: UiAccount, widgets: List<UiWidget>, busy: Bool
     onDelete: () -> Unit, authRoleKeys: Set<String> = emptySet()) {
     var menu by remember { mutableStateOf(false) }
     Card(Modifier.fillMaxWidth().testTag("account-card:${account.id}")) {
-        BasicComponent(title = account.name, summary = "${account.roles.size} 个角色", startAction = { AppLogo(platform = true, size = 40) },
+        // The name is the user's optional alias; an unnamed account is labelled by its platform, never by one of its roles.
+        BasicComponent(title = account.name.ifBlank { "${Branding.PLATFORM}账号" }, summary = "${account.roles.size} 个角色",
+            startAction = { AppLogo(platform = true, size = 40) },
             endActions = { Box {
                 CompositionLocalProvider(
-            LocalIndication provides (if (menu) MiuixIndication(Color.Transparent) else LocalIndication.current)
-        ) {
+                    LocalIndication provides (if (menu) MiuixIndication(Color.Transparent) else LocalIndication.current)
+                ) {
                     IconButton(onClick = { menu = true }, enabled = !busy) { Icon(MiuixIcons.More, "账号菜单") }
                 }
                 TsukiMenu(menu && !busy, listOf(DropdownItem("更新 Cred", onClick = onUpdate), DropdownItem("删除账号", onClick = onDelete)),

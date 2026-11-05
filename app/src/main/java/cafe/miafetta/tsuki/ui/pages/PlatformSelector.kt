@@ -19,11 +19,13 @@ internal fun PlatformSelector(busy: Boolean, blurEnabled: Boolean = true, onBack
     val transition = LocalNavTransitionScope.current
     val active by remember(transition) { derivedStateOf { !transition.isRunning && transition.relativeDepth == 0f } }
     PredictiveBackHandler(enabled = busy, onProgress = { events -> events.collect {} }, onCommit = {}, onCancel = {})
-    SecondaryScaffold("选择平台", blurEnabled, active, onBack, backEnabled = active && !busy,
+    // Controls keep their normal look during the slide-in; input is blocked then and clicks wait for an active page.
+    SecondaryScaffold("选择平台", blurEnabled, active, onBack, backEnabled = !busy,
         modifier = Modifier.testTag("platform-selector-page"), contentPadding = PaddingValues(horizontal = 12.dp)) {
         TsukiSmallTitle("平台")
         Card {
-            RadioButtonPreference(title = Branding.PLATFORM, selected = true, enabled = active && !busy, onClick = onBack,
+            RadioButtonPreference(title = Branding.PLATFORM, selected = true, enabled = !busy,
+                onClick = { if (active) onBack() },
                 modifier = Modifier.semantics(mergeDescendants = true) {
                     selected = true
                     if (busy || !active) disabled()

@@ -1,6 +1,8 @@
 package cafe.miafetta.tsuki.ui.pages
 
+import cafe.miafetta.tsuki.ui.components.ScrollToTopEffect
 import cafe.miafetta.tsuki.ui.components.bottomBarInset
+import cafe.miafetta.tsuki.ui.components.expandTopBar
 import cafe.miafetta.tsuki.ui.components.topBarInset
 import cafe.miafetta.tsuki.ui.glass.GlassIconButton
 import cafe.miafetta.tsuki.ui.glass.TopGlassFade
@@ -36,10 +38,44 @@ import top.yukonga.miuix.kmp.utils.overScrollVertical
 
 // Same layering as AppScaffold: scrolling content, then the top glass, then a transparent TopAppBar.
 // The title doubles as the pane title; the page leaves the accessibility tree while it is not the active destination.
+// scrollable = false is the compact variant (UI_DESIGN_CONVENTIONS C13) for content that scrolls itself, such as a
+// WebView: a SmallTopAppBar above a fixed-height body, without top glass or backdrop recording.
+// backEnabled only reflects real busy states. During the slide-in the button keeps its normal look: NavDisplay blocks
+// input then, and a click is ignored until the page is active.
 @Composable
 internal fun SecondaryScaffold(title: String, blurEnabled: Boolean, active: Boolean, onBack: () -> Unit,
-    modifier: Modifier = Modifier, backEnabled: Boolean = active, contentPadding: PaddingValues = PaddingValues(),
-    spacing: Dp = 0.dp, actions: @Composable RowScope.(Float) -> Unit = {}, content: @Composable ColumnScope.() -> Unit) {
+    modifier: Modifier = Modifier, backEnabled: Boolean = true, contentPadding: PaddingValues = PaddingValues(),
+    spacing: Dp = 0.dp, scrollable: Boolean = true, actions: @Composable RowScope.(Float) -> Unit = {},
+    content: @Composable ColumnScope.() -> Unit) {
+    TsukiGlassHost(blurEnabled, active) {
+        Box(Modifier.fillMaxSize().background(MiuixTheme.colorScheme.surface), contentAlignment = Alignment.TopCenter) {
+            Scaffold(Modifier.windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal))
+                .widthIn(max = 600.dp).fillMaxSize().then(modifier).semantics {
+                    paneTitle = title
+                    if (!active) hideFromAccessibility()
+                }) { padding ->
+                val onActiveBack = { if (active) onBack() }
+                val body = SecondaryBody(title, padding, active, onActiveBack, backEnabled, contentPadding, spacing, actions,
+                    content)
+                if (scrollable) ScrollingBody(body) else FixedBody(body)
+            }
+        }
+    }
+}
+
+private class SecondaryBody(val title: String, val padding: PaddingValues, val active: Boolean, val onBack: () -> Unit,
+    val backEnabled: Boolean, val contentPadding: PaddingValues, val spacing: Dp,
+    val actions: @Composable RowScope.(Float) -> Unit, val content: @Composable ColumnScope.() -> Unit)
+
+@Composable
+private fun BackButton(body: SecondaryBody, progress: Float) {
+    GlassIconButton(body.onBack, enabled = body.backEnabled, progress = progress) {
+        Icon(MiuixIcons.ChevronBackward, "返回")
+    }
+}
+
+@Composable
+private fun ScrollingBody(body: SecondaryBody) {
     val behavior = MiuixScrollBehavior()
     val visible by remember(behavior) { derivedStateOf { glassVisible(behavior.state.collapsedFraction) } }
     val progress by animateGlassVisibility(visible)
@@ -48,31 +84,37 @@ internal fun SecondaryScaffold(title: String, blurEnabled: Boolean, active: Bool
     val collapsed = top + TopAppBarDefaults.CollapsedHeight
     val density = LocalDensity.current
     var topHeight by remember { mutableStateOf(top + 120.dp) }
-    TsukiGlassHost(blurEnabled, active) {
-        Box(Modifier.fillMaxSize().background(MiuixTheme.colorScheme.surface), contentAlignment = Alignment.TopCenter) {
-            Scaffold(Modifier.windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal))
-                .widthIn(max = 600.dp).fillMaxSize().then(modifier).semantics {
-                    paneTitle = title
-                    if (!active) hideFromAccessibility()
-                }) { padding ->
-                // Only the content consumes the Scaffold insets; the TopAppBar still pads itself like AppScaffold's.
-                Box(Modifier.fillMaxSize()) {
-                    Column(Modifier.fillMaxSize().consumeWindowInsets(padding).tsukiBackdrop().background(MiuixTheme.colorScheme.surface)
-                        .overScrollVertical().nestedScroll(behavior.nestedScrollConnection)
-                        .verticalScroll(rememberScrollState(), overscrollEffect = null)
-                        .padding(top = topHeight, bottom = bottom + 16.dp).padding(contentPadding),
-                        verticalArrangement = Arrangement.spacedBy(spacing), content = content)
-                    TsukiGlass({ glassScrollProgress(behavior.state.collapsedFraction) }, collapsed - TopGlassFadeInset,
-                        Modifier.fillMaxWidth().height(collapsed + TopGlassFade))
-                    TopAppBar(title, color = Color.Transparent, scrollBehavior = behavior,
-                        modifier = Modifier.onSizeChanged { topHeight = with(density) { it.height.toDp() } },
-                        navigationIcon = {
-                            GlassIconButton(onBack, enabled = backEnabled, progress = progress) {
-                                Icon(MiuixIcons.ChevronBackward, "返回")
-                            }
-                        }, actions = { actions(progress) })
-                }
-            }
-        }
+    val scroll = rememberScrollState()
+    // HyperOS 4 status bar tap while this page is the active one (the compact variant leaves it to its own scroller).
+    ScrollToTopEffect(body.active, canScrollUp = { scroll.value > 0 || behavior.state.heightOffset < 0f }) {
+        scroll.animateScrollTo(0)
+        expandTopBar(behavior)
+    }
+    // Only the content consumes the Scaffold insets; the TopAppBar still pads itself like AppScaffold's.
+    Box(Modifier.fillMaxSize()) {
+        Column(Modifier.fillMaxSize().consumeWindowInsets(body.padding).tsukiBackdrop()
+            .background(MiuixTheme.colorScheme.surface)
+            .overScrollVertical().nestedScroll(behavior.nestedScrollConnection)
+            .verticalScroll(scroll, overscrollEffect = null)
+            .padding(top = topHeight, bottom = bottom + 16.dp).padding(body.contentPadding),
+            verticalArrangement = Arrangement.spacedBy(body.spacing), content = body.content)
+        TsukiGlass({ glassScrollProgress(behavior.state.collapsedFraction) }, collapsed - TopGlassFadeInset,
+            Modifier.fillMaxWidth().height(collapsed + TopGlassFade))
+        TopAppBar(body.title, color = Color.Transparent, scrollBehavior = behavior,
+            modifier = Modifier.onSizeChanged { topHeight = with(density) { it.height.toDp() } },
+            navigationIcon = { BackButton(body, progress) }, actions = { body.actions(this, progress) })
+    }
+}
+
+// The body fills the space between the bar and the navigation bar; nothing scrolls under the bar. As in
+// ScrollingBody only the content consumes the Scaffold insets: the bar pads itself for the status bar.
+@Composable
+private fun FixedBody(body: SecondaryBody) {
+    val bottom = bottomBarInset()
+    Column(Modifier.fillMaxSize()) {
+        SmallTopAppBar(body.title, color = MiuixTheme.colorScheme.surface,
+            navigationIcon = { BackButton(body, 0f) }, actions = { body.actions(this, 0f) })
+        Column(Modifier.weight(1f).fillMaxWidth().consumeWindowInsets(body.padding).padding(bottom = bottom)
+            .padding(body.contentPadding), verticalArrangement = Arrangement.spacedBy(body.spacing), content = body.content)
     }
 }

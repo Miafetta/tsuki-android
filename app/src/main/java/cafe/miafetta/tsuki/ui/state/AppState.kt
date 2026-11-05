@@ -10,7 +10,10 @@ import android.app.Application
 import cafe.miafetta.tsuki.core.*
 import cafe.miafetta.tsuki.storageCall
 import cafe.miafetta.tsuki.failureMessage
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.withContext
@@ -37,37 +40,39 @@ internal class AppState(context: Context, val notifier: UiNotifier = ToastUiNoti
     var dataKey by mutableStateOf("")
     private var request = 0
     private var refreshingRole = ""
+    private var initialLoad: Deferred<Unit>? = null
     val roles get() = accounts.flatMap { it.roles }
 
+    // Starts the first overview read as soon as the screen asks for its state, so the IPC and a cold :widgetProvider
+    // start overlap the first composition. Later calls are no-ops.
+    fun startInitialLoad() {
+        if (initialLoad == null && !loaded) initialLoad = viewModelScope.async { read() }
+    }
+
+    // While the initial read is still running, a load joins it instead of issuing a second read.
     suspend fun load() {
+        initialLoad?.takeIf { it.isActive }?.let {
+            it.await()
+            return
+        }
+        read()
+    }
+
+    private suspend fun read() {
         try {
             val result = withContext(Dispatchers.IO) { call(Storage.OVERVIEW, Bundle()) }
             if (result.getBoolean(Storage.ERROR)) {
                 messages.send(context.getString(failureMessage(result.getString(Storage.FAILURE))))
                 return
             }
-            val json = JSONObject(result.getString(Storage.JSON, "{}"))
-            val values = json.getJSONArray(Storage.ACCOUNTS)
-            val loadedAccounts = (0 until values.length()).map { index ->
-                val account = values.getJSONObject(index)
-                val id = account.getString(Storage.ID)
-                val name = account.getString(Storage.NAME)
-                val roles = account.getJSONArray(Storage.ROLES)
-                UiAccount(id, name, (0 until roles.length()).map { ri ->
-                    val role = roles.getJSONObject(ri)
-                    UiRole(id, name, role.getString(Storage.ID), role.getString(Storage.LABEL))
-                })
+            // Parsing, including widget snapshots, stays off the main thread; only the state assignment runs there.
+            val (loadedAccounts, loadedWidgets) = withContext(Dispatchers.Default) {
+                val json = JSONObject(result.getString(Storage.JSON, "{}"))
+                parseAccounts(json) to parseWidgets(json)
             }
             if (accounts.map { it.id } != loadedAccounts.map { it.id }) previewCache.evictAll()
             accounts = loadedAccounts
-            val instances = json.getJSONArray(Storage.WIDGETS)
-            widgets = (0 until instances.length()).map { index ->
-                val widget = instances.getJSONObject(index)
-                UiWidget(widget.getInt(Storage.ID), widget.optString(Storage.ACCOUNT_ID), widget.optString(Storage.CHARACTER_ID),
-                    widget.optString(Storage.PROVIDER_ID), widget.optString(Storage.THEME, "DARK"),
-                    widget.optJSONObject(Storage.SNAPSHOT)?.let(SnapshotJson::read), widget.optString(Storage.FAILURE),
-                        widget.optBoolean(Storage.SIMULATE_FAILURE))
-            }
+            widgets = loadedWidgets
             if (!cafe.miafetta.tsuki.BuildConfig.DEBUG) {
                 choices = roles
                 return
@@ -108,8 +113,13 @@ internal class AppState(context: Context, val notifier: UiNotifier = ToastUiNoti
             return
         }
         try {
-            data = RoleData(result.getString(Storage.SNAPSHOT)?.let { SnapshotJson.read(JSONObject(it)) },
-                result.getString(Storage.FAILURE)?.let(RefreshFailure::valueOf), result.getLong(Storage.RETRY_AT))
+            val parsed = withContext(Dispatchers.Default) {
+                RoleData(result.getString(Storage.SNAPSHOT)?.let { SnapshotJson.read(JSONObject(it)) },
+                    result.getString(Storage.FAILURE)?.let(RefreshFailure::valueOf), result.getLong(Storage.RETRY_AT))
+            }
+            // Parsing suspended; a newer request or role switch wins.
+            if (token != request || dataKey != role.key) return
+            data = parsed
             readFailures.clear()
             if (refresh) data.failure?.takeIf { it != RefreshFailure.RATE_LIMIT }?.let {
                 messages.send(context.getString(failureMessage(it.name)))
@@ -145,5 +155,30 @@ internal class AppState(context: Context, val notifier: UiNotifier = ToastUiNoti
             extras.clear()
             busy = false
         }
+    }
+}
+
+private fun parseAccounts(json: JSONObject): List<UiAccount> {
+    val values = json.getJSONArray(Storage.ACCOUNTS)
+    return (0 until values.length()).map { index ->
+        val account = values.getJSONObject(index)
+        val id = account.getString(Storage.ID)
+        val name = account.getString(Storage.NAME)
+        val roles = account.getJSONArray(Storage.ROLES)
+        UiAccount(id, name, (0 until roles.length()).map { ri ->
+            val role = roles.getJSONObject(ri)
+            UiRole(id, name, role.getString(Storage.ID), role.getString(Storage.LABEL))
+        })
+    }
+}
+
+private fun parseWidgets(json: JSONObject): List<UiWidget> {
+    val instances = json.getJSONArray(Storage.WIDGETS)
+    return (0 until instances.length()).map { index ->
+        val widget = instances.getJSONObject(index)
+        UiWidget(widget.getInt(Storage.ID), widget.optString(Storage.ACCOUNT_ID), widget.optString(Storage.CHARACTER_ID),
+            widget.optString(Storage.PROVIDER_ID), widget.optString(Storage.THEME, "DARK"),
+            widget.optJSONObject(Storage.SNAPSHOT)?.let(SnapshotJson::read), widget.optString(Storage.FAILURE),
+            widget.optBoolean(Storage.SIMULATE_FAILURE))
     }
 }

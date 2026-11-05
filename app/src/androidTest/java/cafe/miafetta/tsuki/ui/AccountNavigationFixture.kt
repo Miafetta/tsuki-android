@@ -2,6 +2,7 @@ package cafe.miafetta.tsuki.ui
 
 import cafe.miafetta.tsuki.ui.pages.AccountEditor
 import cafe.miafetta.tsuki.ui.pages.PlatformSelector
+import cafe.miafetta.tsuki.ui.pages.WebLoginPage
 import cafe.miafetta.tsuki.ui.state.AppRoute
 import cafe.miafetta.tsuki.ui.state.rememberAccountDraft
 
@@ -11,7 +12,7 @@ import top.yukonga.miuix.kmp.nav.core.*
 
 @Composable
 internal fun AccountNavigationFixture(activity: Activity, show: Boolean, onDismiss: () -> Unit,
-    background: @Composable (Boolean) -> Unit) {
+    onMessage: (String) -> Unit = {}, background: @Composable (Boolean) -> Unit) {
     val nav = rememberNavController<AppRoute>(AppRoute.Root)
     val draft = rememberAccountDraft()
     LaunchedEffect(show) {
@@ -35,8 +36,14 @@ internal fun AccountNavigationFixture(activity: Activity, show: Boolean, onDismi
             AccountEditor(activity, false, "", onDismiss, { _, _ -> error("Fixture must not save credentials") },
                 draft = draft, show = show, pageProgress = if (LocalNavTransitionScope.current.isRunning ||
                     LocalNavTransitionScope.current.relativeDepth != 0f) 0f else 1f,
-                onPlatform = { if (AppRoute.SelectPlatform !in nav.backStack) nav.push(AppRoute.SelectPlatform) })
+                onPlatform = { if (AppRoute.SelectPlatform !in nav.backStack) nav.push(AppRoute.SelectPlatform) },
+                onWebLogin = { if (AppRoute.WebLogin !in nav.backStack) nav.push(AppRoute.WebLogin) }, onMessage = onMessage)
         }
         entry<AppRoute.SelectPlatform> { PlatformSelector(false) { nav.pop() } }
+        // about:blank keeps device tests off the network; the official page is never loaded here.
+        entry<AppRoute.WebLogin> {
+            WebLoginPage(activity, onCred = { error("Fixture must not receive credentials") }, onBack = { nav.pop() },
+                startUrl = "about:blank")
+        }
     }
 }

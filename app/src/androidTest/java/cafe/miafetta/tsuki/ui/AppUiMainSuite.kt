@@ -130,10 +130,24 @@ private fun AppUiVerification.verifyAccountEditor(host: MainActivity, folder: Fi
     capture(folder, "platform-${palette.lowercase()}")
     click("返回")
     frames(host)
+    click("在森空岛网页登录")
+    // The first WebView in a process loads the provider, which can hold the transition for a moment.
+    framesUntil(host) { find("网页登录", exact = true) != null }
+    val bar = Rect().apply { checkNotNull(find("网页登录", exact = true)).getBoundsInScreen(this) }
+    val statusBar = host.window.decorView.rootWindowInsets.getInsets(android.view.WindowInsets.Type.statusBars()).top
+    check(bar.top >= statusBar) { "Web login title overlaps the status bar: ${bar.top} < $statusBar" }
+    capture(folder, "web-login-${palette.lowercase()}")
+    click("返回")
+    frames(host)
+    check(find("授权信息", exact = true) != null) { "Web login did not return to the editor" }
     check(find("保存", exact = true, clickable = true)?.isEnabled == true)
+    check(find("粘贴 Cred", exact = true) != null && find("显示 Cred", exact = true) != null) { "Cred field buttons missing" }
+    editorMessages.clear()
     click("保存")
     frames(host)
-    check(find("请填写 1～40 个字符的账号名称") != null)
+    // The name is optional, so an empty form only reports the missing Cred, as a toast rather than inline text.
+    check(editorMessages.toList() == listOf("请填写有效的 Cred。")) { "Editor messages: $editorMessages" }
+    check(find("请填写有效的 Cred") == null) { "Local validation is still shown inline" }
     verifyAccountKeyboard(host, folder, "account-${palette.lowercase()}")
 }
 

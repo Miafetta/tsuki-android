@@ -46,6 +46,8 @@ class AppUiVerification(internal val runner: Instrumentation) {
     internal val selectedRole = mutableIntStateOf(0)
     internal val theme = mutableStateOf("LIGHT")
     internal val dialog = mutableStateOf("")
+    // Toasts the account editor asked for; the production app shows them through UiMessages.
+    internal val editorMessages = java.util.concurrent.CopyOnWriteArrayList<String>()
     internal val fontScale = mutableStateOf(1f)
     internal val configBusy = mutableStateOf(false)
     internal val configTheme = mutableStateOf("LIGHT")
@@ -65,8 +67,9 @@ class AppUiVerification(internal val runner: Instrumentation) {
     fun run(redesignV4: String? = null): Pair<Boolean, String> {
         var activity: MainActivity? = null
         val folder = File(targetContext.getExternalFilesDir(null), "ui-tests-native").apply { mkdirs() }
-        // Restore the user's rotation lock afterwards; unfreezing alone would turn auto-rotate on.
-        val freezeRotation = redesignV4 !in listOf("probe", "dock")
+        // Restore the user's rotation lock afterwards; unfreezing alone would turn auto-rotate on. web-login-kill never
+        // reaches the restore, so the pair leaves rotation alone.
+        val freezeRotation = redesignV4 !in listOf("probe", "dock", "web-login-kill", "web-login-after-kill")
         val resolver = targetContext.contentResolver
         val autoRotate = Settings.System.getInt(resolver, Settings.System.ACCELEROMETER_ROTATION, 1) == 1
         val userRotation = Settings.System.getInt(resolver, Settings.System.USER_ROTATION, Surface.ROTATION_0)
@@ -97,7 +100,8 @@ class AppUiVerification(internal val runner: Instrumentation) {
             }
             return false to failure.stackTraceToString()
         } finally {
-            activity?.let { runOnMainSync { it.finish() } }
+            // A scenario may have recreated the activity; finish the current one.
+            (hostRunner.uiActivity ?: activity)?.let { runOnMainSync { it.finish() } }
             val deadline = System.currentTimeMillis() + 5000
             while (hostRunner.uiActivity?.isDestroyed == false && System.currentTimeMillis() < deadline) Thread.sleep(50)
             preferences.edit(commit = true) {
@@ -134,6 +138,10 @@ class AppUiVerification(internal val runner: Instrumentation) {
         "dock-tone" -> dockToneVerification(hostRunner, host)
         "page-swipe" -> PageSwipeVerification(hostRunner, host).run()
         "nav-corner" -> navCornerVerification(hostRunner, host)
+        // Loads the official start page (no sign-in); see WebLoginVerification.kt.
+        "web-login" -> verifyWebLogin(host, File(folder.parentFile, "web-login").apply { mkdirs() })
+        "web-login-kill" -> killDuringWebLogin(host, File(folder.parentFile, "web-login").apply { mkdirs() })
+        "web-login-after-kill" -> verifyWipedAfterKill()
         "errors-before", "errors" -> {
             verifyErrorMessages(host, folder)
             "PASS: refresh failure, page switch and sheet dismissal; Toast event counts"

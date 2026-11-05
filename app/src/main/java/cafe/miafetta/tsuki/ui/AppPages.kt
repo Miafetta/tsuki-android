@@ -18,6 +18,7 @@ import cafe.miafetta.tsuki.ui.state.AppPage
 import cafe.miafetta.tsuki.ui.state.AppRoute
 import cafe.miafetta.tsuki.ui.state.ConfigSheet
 import cafe.miafetta.tsuki.ui.state.Confirmation
+import cafe.miafetta.tsuki.ui.theme.Branding
 import top.yukonga.miuix.kmp.nav.core.*
 
 // One preview source for every page and the editor sheet.
@@ -41,7 +42,7 @@ private fun LazyListScope.appOverview(controller: AppController, activity: Activ
 }
 
 private fun LazyListScope.appWidgets(controller: AppController, activity: Activity) = with(controller) {
-    widgetPage(activity, state.widgets, homeSnapshot, catalog, previews, selected?.key.orEmpty(),
+    widgetPage(activity, state.widgets, homeSnapshot, catalog, previews, selected?.key.orEmpty(), page == AppPage.WIDGETS,
         { catalog = it }) { widget, chosenTheme ->
         state.error = ""
         configSheet = widget?.let { ConfigSheet.Edit(it.id, chosenTheme, it.provider == FakeArknightsAdapter.ID) }
@@ -54,14 +55,12 @@ private fun LazyListScope.appMe(controller: AppController, activity: Activity, b
         { changeTheme(it) },
         { changeBlur(it) },
         onAdd = { addAccount() },
-        onUpdate = {
-            draft.name = it.name
-            addAccount()
-        },
+        onUpdate = { addAccount(updating = it) },
         onDelete = { account ->
             val count = state.widgets.count { it.accountId == account.id }
+            val target = if (account.name.isBlank()) "这个${Branding.PLATFORM}账号" else "「${account.name}」"
             confirmation = Confirmation("删除账号",
-                "将删除「${account.name}」的 Cred 及 ${account.roles.size} 个角色的缓存，并解除 $count 个小部件的绑定。桌面上的这些小部件会显示为未配置，可以手动移除。",
+                "将删除${target}的 Cred 及 ${account.roles.size} 个角色的缓存，并解除 $count 个小部件的绑定。桌面上的这些小部件会显示为未配置，可以手动移除。",
                 Storage.LOGOUT, Bundle().apply { putString(Storage.ACCOUNT_ID, account.id) })
         }, onPrivacy = { nav.push(AppRoute.Privacy) }, onLicenses = { nav.push(AppRoute.Licenses) },
         onSimulation = {

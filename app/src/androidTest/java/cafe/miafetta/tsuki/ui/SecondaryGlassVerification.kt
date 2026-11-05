@@ -74,15 +74,16 @@ internal class SecondaryGlassVerification(private val runner: WidgetRenderInstru
         runner.settleUi()
     }
 
-    // NavDisplay blocks input while the page transition runs; the back button is enabled only once the page is active.
+    // NavDisplay blocks input while the page transition runs; the page joins the accessibility tree once it is active.
+    // The back button keeps its enabled look during the slide-in, so it is not a readiness signal.
     private fun awaitInteractive(label: String) {
         val deadline = android.os.SystemClock.uptimeMillis() + 5000
         while (android.os.SystemClock.uptimeMillis() < deadline) {
             var ready = false
             runner.runOnMainSync {
                 ready = host.semanticsNodes().any { node ->
-                    node.config.getOrNull(SemanticsProperties.ContentDescription)?.contains("返回") == true &&
-                        node.config.getOrNull(SemanticsProperties.Disabled) == null
+                    node.config.getOrNull(SemanticsProperties.PaneTitle) == label &&
+                        !node.config.contains(SemanticsProperties.HideFromAccessibility)
                 }
             }
             if (ready) return

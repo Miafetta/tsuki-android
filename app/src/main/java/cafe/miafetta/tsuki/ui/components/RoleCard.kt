@@ -39,8 +39,11 @@ internal fun RoleCard(roles: List<UiRole>, selected: UiRole, syncText: String, f
                             fontWeight = FontWeight.Medium, maxLines = 1, overflow = TextOverflow.Ellipsis)
                         if (roles.size > 1) Icon(MiuixIcons.Basic.ArrowUpDown, "切换角色", Modifier.padding(start = 4.dp).size(10.dp, 16.dp))
                     }
-                    TsukiMenu(menu, roles.map { role -> DropdownItem(role.name, summary = "${role.accountName}，${role.server}",
-                        selected = role.key == selected.key, onClick = { onSelect(role) }) }, { menu = false }, rightAligned = false)
+                    // The account alias is optional; without one the summary is just the server.
+                    TsukiMenu(menu, roles.map { role ->
+                        val summary = listOf(role.accountName, role.server).filter { it.isNotBlank() }.joinToString("，")
+                        DropdownItem(role.name, summary = summary, selected = role.key == selected.key, onClick = { onSelect(role) })
+                    }, { menu = false }, rightAligned = false)
                 }
                 Text("${selected.server} UID ${selected.id}", style = MiuixTheme.textStyles.body2,
                     color = MiuixTheme.colorScheme.onSurfaceVariantSummary, maxLines = 1, overflow = TextOverflow.Ellipsis)

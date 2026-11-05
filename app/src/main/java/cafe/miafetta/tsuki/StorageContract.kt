@@ -8,6 +8,8 @@ internal object StorageContract {
     const val PREVIEW = "preview"
     const val CHARACTERS = "characters"
     const val LOGIN = "login"
+    // Re-verifies one account with its stored Cred (blank Cred in "更新 Cred"); no operation returns a Cred.
+    const val REVERIFY = "reverify"
     const val LOGOUT = "logout"
     const val RESET_ACCOUNTS = "resetAccounts"
     const val CONFIGURE = "configure"

@@ -12,13 +12,17 @@ import top.yukonga.miuix.kmp.nav.core.*
 @Composable
 internal fun rememberAppController(activity: Activity, initialPage: Int, resumeTick: Int, configuringId: Int?,
     overviewWidgetId: Int?, onConfigured: () -> Unit): AppController {
+    // The first overview read starts here, before the rest of the screen composes; it is idempotent per ViewModel and
+    // the first reload joins it (AppState.load).
     val state = remember(activity) {
         ViewModelProvider(activity as ComponentActivity, viewModelFactory {
             initializer { AppState(activity.applicationContext) }
-        })[AppState::class.java]
+        })[AppState::class.java].also { it.startInitialLoad() }
     }
     val prefs = remember { activity.getSharedPreferences(UiPreferences.FILE, 0) }
-    val nav = rememberNavController(AppRoute.Root)
+    // The type argument picks the saved-state serializer: inferred as AppRoute.Root, every saved entry would come back as
+    // Root and a recreation on a secondary page would crash on the duplicate key.
+    val nav = rememberNavController<AppRoute>(AppRoute.Root)
     val draft = rememberAccountDraft()
     val session = rememberSaveable(saver = UiSession.Saver) {
         UiSession(initialPage.coerceIn(AppPage.OVERVIEW, AppPage.ME), prefs.getString(UiPreferences.ROLE, "") ?: "",

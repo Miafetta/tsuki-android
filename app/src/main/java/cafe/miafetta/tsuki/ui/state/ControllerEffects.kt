@@ -19,6 +19,8 @@ import top.yukonga.miuix.kmp.nav.core.*
 internal fun ControllerNavigationEffects(controller: AppController, activity: Activity,
     configuringId: Int?, onConfigured: () -> Unit) = with(controller) {
     var launchHandled by rememberSaveable { mutableStateOf(false) }
+    // Runs on every creation: a restored web login page keeps its session, anything else left behind is wiped.
+    LaunchedEffect(Unit) { if (AppRoute.WebLogin !in nav.backStack) WebLoginData.wipeIfStale(activity) }
     LaunchedEffect(Unit) {
         if (!launchHandled) {
             launchHandled = true
@@ -39,7 +41,7 @@ internal fun ControllerNavigationEffects(controller: AppController, activity: Ac
     }
     LaunchedEffect(state.completedAction) {
         when (state.completedAction) {
-            Storage.LOGIN -> {
+            Storage.LOGIN, Storage.REVERIFY -> {
                 draft.clear()
                 nav.popUntil { it == AppRoute.Root }
             }
@@ -58,6 +60,16 @@ internal fun ControllerDataEffects(controller: AppController, activity: Activity
     overviewWidgetId: Int?) = with(controller) {
     val awaitingOverview = overviewTargetPending(controller, overviewWidgetId)
     var loadedResume by remember { mutableStateOf<Int?>(null) }
+    // Once per activity: the first overview read has finished and the frame showing it is drawn. This is what
+    // `am start -W` and the system report as "Fully drawn".
+    var fullyDrawn by remember { mutableStateOf(false) }
+    LaunchedEffect(state.finishedLoads) {
+        if (!fullyDrawn && state.finishedLoads > 0) {
+            fullyDrawn = true
+            withFrameNanos {}
+            activity.reportFullyDrawn()
+        }
+    }
     LaunchedEffect(page, catalog, resumeTick) {
         val resumed = loadedResume != resumeTick
         if (resumed) theme = preferences.getString(Storage.THEME, "SYSTEM") ?: "SYSTEM"

@@ -4,7 +4,7 @@ import android.os.Bundle
 import android.appwidget.AppWidgetManager
 import android.content.Intent
 import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
+import cafe.miafetta.tsuki.ui.components.setTsukiContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -33,7 +33,7 @@ class MainActivity : ComponentActivity() {
             .takeIf { it in StatusWidgetProvider.owned(this) }
         setResult(RESULT_CANCELED)
         enableEdgeToEdge()
-        setContent { TsukiApp(this, initialPage = if (editingWidget.value == null) 0 else 1,
+        setTsukiContent { TsukiApp(this, initialPage = if (editingWidget.value == null) 0 else 1,
             resumeTick = resumeTick.intValue, configuringId = editingWidget.value,
             overviewWidgetId = overviewId.takeUnless { replayed },
             onConfigured = { setResult(RESULT_OK, Intent().putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, editingWidget.value ?: -1)) },

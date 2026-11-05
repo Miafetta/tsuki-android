@@ -53,12 +53,15 @@ $catalog = [ordered]@{
     'lifecycle' = @('lifecycle', 'true')
     'widgetStartup' = @('widgetStartup', 'true')
     'comparison' = @('comparison', 'true')
+    'provider-breakdown' = @('providerBreakdown', 'true')
 }
 # widget-editor-save and widget-editor-change are opt-in: they save an existing desktop instance. The change scenario edits the
 # palette and role, then restores the original configuration and verifies it.
+# web-login* are opt-in: they load the official start page without signing in. web-login-kill ends by killing the app
+# process with the login page open, so its instrumentation reports a crash; run web-login-after-kill right after it.
 foreach ($name in @('read-lifecycle', 'session-restore', 'widget-editor', 'widget-editor-save', 'widget-editor-change',
     'widget-navigation', 'top-refresh', 'errors', 'menu', 'secondary-glass', 'dock-tone', 'page-swipe', 'nav-corner',
-    'dock', 'visual', 'probe', 'baseline', 'theme-header')) {
+    'dock', 'visual', 'probe', 'baseline', 'theme-header', 'web-login', 'web-login-kill', 'web-login-after-kill')) {
     $catalog[$name] = @('redesignV4', $name)
 }
 
@@ -124,6 +127,7 @@ function Invoke-Scenario([string]$Name, [string[]]$Pairs) {
         Where-Object { $_ } | Select-Object -First 1
     $status = if (!$finished) { 'FAIL' }
         elseif ($Name -like 'widget-editor*' -and "$detail" -match 'Requires an existing (configured )?widget') { 'SKIP' }
+        elseif ($Name -eq 'web-login-kill' -and $text -match 'Process crashed' -and !$values.Contains('failure')) { 'PASS' }
         elseif ($parsed.Code -eq -1 -and !$values.Contains('failure') -and
             ($values.Contains('result') -or $values.Contains('surfaceOptions') -or "$($values['stream'])" -match '^PASS')) { 'PASS' }
         else { 'FAIL' }
