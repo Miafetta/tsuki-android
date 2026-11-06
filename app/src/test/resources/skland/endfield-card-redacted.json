@@ -1,0 +1,2444 @@
+{
+ "detail": {
+  "base": {
+   "serverName": "",
+   "roleId": "0000000011",
+   "name": "测试管理员",
+   "createTime": "1790000000",
+   "saveTime": "1790000000",
+   "lastLoginTime": "1790000000",
+   "exp": 0,
+   "level": 1,
+   "worldLevel": 1,
+   "gender": 2,
+   "avatarUrl": "https://example.invalid/endfield/avatar.png",
+   "mainMission": {
+    "id": "",
+    "description": "进程·复苏"
+   },
+   "charNum": 2,
+   "weaponNum": 2,
+   "docNum": 0
+  },
+  "chars": [
+   {
+    "charData": {
+     "id": "93e76fbbc07f7b480cfe0870c6414494",
+     "name": "管理员",
+     "avatarSqUrl": "https://bbs.hycdn.cn/image/2025/11/12/8dc051b31f89bdfb03e9b06d36dc4a66.png",
+     "avatarRtUrl": "https://bbs.hycdn.cn/image/2025/11/19/4865706e2981357ca7b07bad22dd91b1.png",
+     "rarity": {
+      "key": "rarity_6",
+      "value": "6"
+     },
+     "profession": {
+      "key": "profession_guard",
+      "value": "近卫"
+     },
+     "property": {
+      "key": "char_property_physical",
+      "value": "物理"
+     },
+     "weaponType": {
+      "key": "weapon_type_sword",
+      "value": "单手剑"
+     },
+     "skills": [
+      {
+       "id": "4d0a265144641a2305e13dfab4e58804",
+       "name": "毁伤序列",
+       "type": {
+        "key": "skill_type_normal_attack",
+        "value": "普通攻击"
+       },
+       "property": {
+        "key": "skill_property_physical",
+        "value": "物理"
+       },
+       "iconUrl": "https://bbs.hycdn.cn/image/2025/11/12/3996495ae2391d74974a0c59f97cd798.png",
+       "desc": "普通攻击：\n对敌人进行至多5段攻击，造成<@ba.pd>物理伤害</>。作为主控干员时，<#ba.lastcombo>重击</>会造成<@ba.poise>{poise:0}</>点失衡。\n \n下落攻击：\n处于空中时使用普通攻击，会下落并攻击附近敌人，造成<@ba.pd>物理伤害</>。\n \n处决攻击：\n附近有敌人处于失衡状态时使用普通攻击，将处决该敌人，造成大量<@ba.pd>物理伤害</>并恢复一定技力。",
+       "descParams": {
+        "atb": "20",
+        "atk_scale": "0.4",
+        "poise": "18"
+       },
+       "descLevelParams": {
+        "1": {
+         "level": "1",
+         "params": {
+          "atb": "20",
+          "atk_scale": "0.4",
+          "poise": "18"
+         }
+        },
+        "10": {
+         "level": "10",
+         "params": {
+          "atb": "20",
+          "atk_scale": "0.77",
+          "poise": "18"
+         }
+        },
+        "11": {
+         "level": "11",
+         "params": {
+          "atb": "20",
+          "atk_scale": "0.83",
+          "poise": "18"
+         }
+        },
+        "12": {
+         "level": "12",
+         "params": {
+          "atb": "20",
+          "atk_scale": "0.9",
+          "poise": "18"
+         }
+        },
+        "2": {
+         "level": "2",
+         "params": {
+          "atb": "20",
+          "atk_scale": "0.44",
+          "poise": "18"
+         }
+        },
+        "3": {
+         "level": "3",
+         "params": {
+          "atb": "20",
+          "atk_scale": "0.48",
+          "poise": "18"
+         }
+        },
+        "4": {
+         "level": "4",
+         "params": {
+          "atb": "20",
+          "atk_scale": "0.52",
+          "poise": "18"
+         }
+        },
+        "5": {
+         "level": "5",
+         "params": {
+          "atb": "20",
+          "atk_scale": "0.56",
+          "poise": "18"
+         }
+        },
+        "6": {
+         "level": "6",
+         "params": {
+          "atb": "20",
+          "atk_scale": "0.6",
+          "poise": "18"
+         }
+        },
+        "7": {
+         "level": "7",
+         "params": {
+          "atb": "20",
+          "atk_scale": "0.64",
+          "poise": "18"
+         }
+        },
+        "8": {
+         "level": "8",
+         "params": {
+          "atb": "20",
+          "atk_scale": "0.68",
+          "poise": "18"
+         }
+        },
+        "9": {
+         "level": "9",
+         "params": {
+          "atb": "20",
+          "atk_scale": "0.72",
+          "poise": "18"
+         }
+        }
+       },
+       "forms": [],
+       "descs": []
+      },
+      {
+       "id": "158d9d2e94684269595bcd9afcb9e11e",
+       "name": "构成序列",
+       "type": {
+        "key": "skill_type_normal_skill",
+        "value": "战技"
+       },
+       "property": {
+        "key": "skill_property_physical",
+        "value": "物理"
+       },
+       "iconUrl": "https://bbs.hycdn.cn/image/2025/11/12/fedeb223d2bc86d6d08f45ccd497d54a.png",
+       "desc": "使用<@ba.key>源石结晶</>冲击前方一定范围内的敌人，造成<@ba.pd>物理伤害</>和<#ba.crush>猛击</>。",
+       "descParams": {
+        "atk_scale": "1.56",
+        "poise": "10"
+       },
+       "descLevelParams": {
+        "1": {
+         "level": "1",
+         "params": {
+          "atk_scale": "1.56",
+          "poise": "10"
+         }
+        },
+        "10": {
+         "level": "10",
+         "params": {
+          "atk_scale": "3",
+          "poise": "10"
+         }
+        },
+        "11": {
+         "level": "11",
+         "params": {
+          "atk_scale": "3.23",
+          "poise": "10"
+         }
+        },
+        "12": {
+         "level": "12",
+         "params": {
+          "atk_scale": "3.5",
+          "poise": "10"
+         }
+        },
+        "2": {
+         "level": "2",
+         "params": {
+          "atk_scale": "1.71",
+          "poise": "10"
+         }
+        },
+        "3": {
+         "level": "3",
+         "params": {
+          "atk_scale": "1.87",
+          "poise": "10"
+         }
+        },
+        "4": {
+         "level": "4",
+         "params": {
+          "atk_scale": "2.02",
+          "poise": "10"
+         }
+        },
+        "5": {
+         "level": "5",
+         "params": {
+          "atk_scale": "2.18",
+          "poise": "10"
+         }
+        },
+        "6": {
+         "level": "6",
+         "params": {
+          "atk_scale": "2.34",
+          "poise": "10"
+         }
+        },
+        "7": {
+         "level": "7",
+         "params": {
+          "atk_scale": "2.49",
+          "poise": "10"
+         }
+        },
+        "8": {
+         "level": "8",
+         "params": {
+          "atk_scale": "2.65",
+          "poise": "10"
+         }
+        },
+        "9": {
+         "level": "9",
+         "params": {
+          "atk_scale": "2.8",
+          "poise": "10"
+         }
+        }
+       },
+       "forms": [],
+       "descs": []
+      },
+      {
+       "id": "22a08aeb0a12f95ca3618796fffd9809",
+       "name": "锁闭序列",
+       "type": {
+        "key": "skill_type_combo_skill",
+        "value": "连携技"
+       },
+       "property": {
+        "key": "skill_property_physical",
+        "value": "物理"
+       },
+       "iconUrl": "https://bbs.hycdn.cn/image/2025/11/12/d77d762eb616349cd77b4a3caaf182ad.png",
+       "desc": "当小队内其他干员的连携技造成伤害时可以发动。\n冲到敌人身边，对其造成<@ba.pd>物理伤害</>，并附着<@ba.key>源石结晶</>，在一段时间内将其封印。施加<#ba.physicalstatus>物理异常</>和<#ba.noguard>破防</>会击碎<@ba.key>源石结晶</>并额外造成<@ba.pd>物理伤害</>。",
+       "descParams": {
+        "atk_scale": "0.45",
+        "atk_scale_trigger": "1.78",
+        "duration": "4",
+        "originum_ult_break_scale": "2.67",
+        "poise": "10",
+        "usp": "10"
+       },
+       "descLevelParams": {
+        "1": {
+         "level": "1",
+         "params": {
+          "atk_scale": "0.45",
+          "atk_scale_trigger": "1.78",
+          "duration": "4",
+          "originum_ult_break_scale": "2.67",
+          "poise": "10",
+          "usp": "10"
+         }
+        },
+        "10": {
+         "level": "10",
+         "params": {
+          "atk_scale": "0.86",
+          "atk_scale_trigger": "3.42",
+          "duration": "4.5",
+          "originum_ult_break_scale": "5.14",
+          "poise": "10",
+          "usp": "10"
+         }
+        },
+        "11": {
+         "level": "11",
+         "params": {
+          "atk_scale": "0.93",
+          "atk_scale_trigger": "3.69",
+          "duration": "4.5",
+          "originum_ult_break_scale": "5.54",
+          "poise": "10",
+          "usp": "10"
+         }
+        },
+        "12": {
+         "level": "12",
+         "params": {
+          "atk_scale": "1",
+          "atk_scale_trigger": "4",
+          "duration": "5",
+          "originum_ult_break_scale": "6",
+          "poise": "10",
+          "usp": "10"
+         }
+        },
+        "2": {
+         "level": "2",
+         "params": {
+          "atk_scale": "0.49",
+          "atk_scale_trigger": "1.96",
+          "duration": "4",
+          "originum_ult_break_scale": "2.94",
+          "poise": "10",
+          "usp": "10"
+         }
+        },
+        "3": {
+         "level": "3",
+         "params": {
+          "atk_scale": "0.54",
+          "atk_scale_trigger": "2.13",
+          "duration": "4",
+          "originum_ult_break_scale": "3.2",
+          "poise": "10",
+          "usp": "10"
+         }
+        },
+        "4": {
+         "level": "4",
+         "params": {
+          "atk_scale": "0.58",
+          "atk_scale_trigger": "2.31",
+          "duration": "4",
+          "originum_ult_break_scale": "3.47",
+          "poise": "10",
+          "usp": "10"
+         }
+        },
+        "5": {
+         "level": "5",
+         "params": {
+          "atk_scale": "0.62",
+          "atk_scale_trigger": "2.49",
+          "duration": "4",
+          "originum_ult_break_scale": "3.74",
+          "poise": "10",
+          "usp": "10"
+         }
+        },
+        "6": {
+         "level": "6",
+         "params": {
+          "atk_scale": "0.67",
+          "atk_scale_trigger": "2.67",
+          "duration": "4",
+          "originum_ult_break_scale": "4",
+          "poise": "10",
+          "usp": "10"
+         }
+        },
+        "7": {
+         "level": "7",
+         "params": {
+          "atk_scale": "0.71",
+          "atk_scale_trigger": "2.84",
+          "duration": "4",
+          "originum_ult_break_scale": "4.27",
+          "poise": "10",
+          "usp": "10"
+         }
+        },
+        "8": {
+         "level": "8",
+         "params": {
+          "atk_scale": "0.76",
+          "atk_scale_trigger": "3.02",
+          "duration": "4",
+          "originum_ult_break_scale": "4.54",
+          "poise": "10",
+          "usp": "10"
+         }
+        },
+        "9": {
+         "level": "9",
+         "params": {
+          "atk_scale": "0.8",
+          "atk_scale_trigger": "3.2",
+          "duration": "4",
+          "originum_ult_break_scale": "4.8",
+          "poise": "10",
+          "usp": "10"
+         }
+        }
+       },
+       "forms": [],
+       "descs": []
+      },
+      {
+       "id": "b5457621458eaaebd41d7dc1e927e1b7",
+       "name": "轰击序列",
+       "type": {
+        "key": "skill_type_ultimate_skill",
+        "value": "终结技"
+       },
+       "property": {
+        "key": "skill_property_physical",
+        "value": "物理"
+       },
+       "iconUrl": "https://bbs.hycdn.cn/image/2025/11/12/8eab68e7f2bb82236b5e3a14d751cb64.png",
+       "desc": "使用<@ba.key>源石结晶</>轰击地面，对前方扇形范围内的敌人造成大量<@ba.pd>物理伤害</>。如果敌人身上附着<@ba.key>源石结晶</>，则击碎<@ba.key>源石结晶</>并额外造成一次<@ba.pd>物理伤害</>。",
+       "descParams": {
+        "atk_scale": "3.56",
+        "originum_ult_break_scale": "2.67",
+        "poise": "25"
+       },
+       "descLevelParams": {
+        "1": {
+         "level": "1",
+         "params": {
+          "atk_scale": "3.56",
+          "originum_ult_break_scale": "2.67",
+          "poise": "25"
+         }
+        },
+        "10": {
+         "level": "10",
+         "params": {
+          "atk_scale": "6.84",
+          "originum_ult_break_scale": "5.14",
+          "poise": "25"
+         }
+        },
+        "11": {
+         "level": "11",
+         "params": {
+          "atk_scale": "7.38",
+          "originum_ult_break_scale": "5.54",
+          "poise": "25"
+         }
+        },
+        "12": {
+         "level": "12",
+         "params": {
+          "atk_scale": "8",
+          "originum_ult_break_scale": "6",
+          "poise": "25"
+         }
+        },
+        "2": {
+         "level": "2",
+         "params": {
+          "atk_scale": "3.91",
+          "originum_ult_break_scale": "2.94",
+          "poise": "25"
+         }
+        },
+        "3": {
+         "level": "3",
+         "params": {
+          "atk_scale": "4.27",
+          "originum_ult_break_scale": "3.2",
+          "poise": "25"
+         }
+        },
+        "4": {
+         "level": "4",
+         "params": {
+          "atk_scale": "4.62",
+          "originum_ult_break_scale": "3.47",
+          "poise": "25"
+         }
+        },
+        "5": {
+         "level": "5",
+         "params": {
+          "atk_scale": "4.98",
+          "originum_ult_break_scale": "3.74",
+          "poise": "25"
+         }
+        },
+        "6": {
+         "level": "6",
+         "params": {
+          "atk_scale": "5.33",
+          "originum_ult_break_scale": "4",
+          "poise": "25"
+         }
+        },
+        "7": {
+         "level": "7",
+         "params": {
+          "atk_scale": "5.69",
+          "originum_ult_break_scale": "4.27",
+          "poise": "25"
+         }
+        },
+        "8": {
+         "level": "8",
+         "params": {
+          "atk_scale": "6.04",
+          "originum_ult_break_scale": "4.54",
+          "poise": "25"
+         }
+        },
+        "9": {
+         "level": "9",
+         "params": {
+          "atk_scale": "6.4",
+          "originum_ult_break_scale": "4.8",
+          "poise": "25"
+         }
+        }
+       },
+       "forms": [],
+       "descs": []
+      }
+     ],
+     "illustrationUrl": "https://bbs.hycdn.cn/image/2026/01/21/9b45d4718a4c0c787d5b0ae7519408c8.png",
+     "tags": [
+      "猛击",
+      "控制"
+     ],
+     "abilityTalents": [
+      {
+       "id": "chr_0003_endminf_1",
+       "name": "游刃",
+       "iconUrl": "https://bbs.hycdn.cn/image/2026/03/10/ba2bd0924e18d1ae48acf7a60d69e5ac.png",
+       "desc": "干员敏捷能力值提升10。",
+       "descParams": {},
+       "lockedIconUrl": ""
+      },
+      {
+       "id": "chr_0003_endminf_7",
+       "name": "游刃",
+       "iconUrl": "https://bbs.hycdn.cn/image/2026/03/10/ba2bd0924e18d1ae48acf7a60d69e5ac.png",
+       "desc": "干员敏捷能力值提升20。",
+       "descParams": {},
+       "lockedIconUrl": ""
+      },
+      {
+       "id": "chr_0003_endminf_3",
+       "name": "游刃",
+       "iconUrl": "https://bbs.hycdn.cn/image/2026/03/10/ba2bd0924e18d1ae48acf7a60d69e5ac.png",
+       "desc": "干员敏捷能力值提升15。",
+       "descParams": {},
+       "lockedIconUrl": ""
+      },
+      {
+       "id": "chr_0003_endminf_5",
+       "name": "游刃",
+       "iconUrl": "https://bbs.hycdn.cn/image/2026/03/10/ba2bd0924e18d1ae48acf7a60d69e5ac.png",
+       "desc": "干员敏捷能力值提升15。",
+       "descParams": {},
+       "lockedIconUrl": ""
+      }
+     ],
+     "combatTalents": [
+      {
+       "id": "chr_9000_endmin_passive_skill_0_2",
+       "name": "本质瓦解",
+       "iconUrl": "https://bbs.hycdn.cn/image/2026/03/10/440354793ebf542ba731baf7d1ff4c08.png",
+       "desc": "当敌人附着的<#ba.originium>源石结晶</>被<#ba.consume>消耗</>后，自身攻击力<@ba.vup>+{atk_up:0%}</>，持续{duration:0}秒，该效果无法叠加。",
+       "descParams": {
+        "atk_up": "0.3",
+        "duration": "15"
+       },
+       "lockedIconUrl": ""
+      },
+      {
+       "id": "chr_9000_endmin_passive_skill_0_1",
+       "name": "本质瓦解",
+       "iconUrl": "https://bbs.hycdn.cn/image/2026/03/10/440354793ebf542ba731baf7d1ff4c08.png",
+       "desc": "当敌人附着的<#ba.originium>源石结晶</>被<#ba.consume>消耗</>后，自身攻击力<@ba.vup>+{atk_up:0%}</>，持续{duration:0}秒，该效果无法叠加。",
+       "descParams": {
+        "atk_up": "0.15",
+        "duration": "15"
+       },
+       "lockedIconUrl": ""
+      },
+      {
+       "id": "chr_9000_endmin_passive_skill_1_2",
+       "name": "现实静滞",
+       "iconUrl": "https://bbs.hycdn.cn/image/2026/03/10/c49c5b57fadadfaf1ac1f6c45c44d274.png",
+       "desc": "附着<#ba.originium>源石结晶</>的敌人受到的物理伤害<@ba.vup>+{dmg:0%}</>。",
+       "descParams": {
+        "dmg": "0.2"
+       },
+       "lockedIconUrl": ""
+      },
+      {
+       "id": "chr_9000_endmin_passive_skill_1_1",
+       "name": "现实静滞",
+       "iconUrl": "https://bbs.hycdn.cn/image/2026/03/10/c49c5b57fadadfaf1ac1f6c45c44d274.png",
+       "desc": "附着<#ba.originium>源石结晶</>的敌人受到的物理伤害<@ba.vup>+{dmg:0%}</>。",
+       "descParams": {
+        "dmg": "0.1"
+       },
+       "lockedIconUrl": ""
+      }
+     ],
+     "cultivationTalents": []
+    },
+    "id": "db6d086bf664455a86eedf67d9439953",
+    "level": 1,
+    "userSkills": {
+     "158d9d2e94684269595bcd9afcb9e11e": {
+      "skillId": "158d9d2e94684269595bcd9afcb9e11e",
+      "level": 1,
+      "maxLevel": 1,
+      "skillFormType": "CHAR_SKILL_FORM_TYPE_UNSPECIFIED"
+     },
+     "22a08aeb0a12f95ca3618796fffd9809": {
+      "skillId": "22a08aeb0a12f95ca3618796fffd9809",
+      "level": 1,
+      "maxLevel": 1,
+      "skillFormType": "CHAR_SKILL_FORM_TYPE_UNSPECIFIED"
+     },
+     "4d0a265144641a2305e13dfab4e58804": {
+      "skillId": "4d0a265144641a2305e13dfab4e58804",
+      "level": 1,
+      "maxLevel": 1,
+      "skillFormType": "CHAR_SKILL_FORM_TYPE_UNSPECIFIED"
+     },
+     "b5457621458eaaebd41d7dc1e927e1b7": {
+      "skillId": "b5457621458eaaebd41d7dc1e927e1b7",
+      "level": 1,
+      "maxLevel": 1,
+      "skillFormType": "CHAR_SKILL_FORM_TYPE_UNSPECIFIED"
+     }
+    },
+    "evolvePhase": 0,
+    "potentialLevel": 0,
+    "weapon": {
+     "weaponData": {
+      "id": "43cfa19fb2698d35514f5476a2010df3",
+      "name": "塔尔11",
+      "iconUrl": "https://bbs.hycdn.cn/image/2025/11/29/01df95273ef9efe9fa26e8bea6836fda.png",
+      "rarity": {
+       "key": "rarity_3",
+       "value": "3"
+      },
+      "type": {
+       "key": "weapon_type_sword",
+       "value": "单手剑"
+      },
+      "function": "终末地干员用武器，装备之后可以显著提升干员的作战能力。",
+      "description": "终末地工业制造的干员基础装备之一。由武库工程师塔尔负责设计。它是许多外勤干员的第一把武器。",
+      "skills": [
+       {
+        "key": "wpn_attr_main_low",
+        "value": "主能力提升·小"
+       },
+       {
+        "key": "sk_wpn_sword_0003",
+        "value": "强攻·武装整备"
+       }
+      ],
+      "skillInfos": [
+       {
+        "skill": {
+         "key": "wpn_attr_main_low",
+         "value": "主能力提升·小"
+        },
+        "maxLevel": 9,
+        "gemTagId": "attr_main"
+       },
+       {
+        "skill": {
+         "key": "sk_wpn_sword_0003",
+         "value": "强攻·武装整备"
+        },
+        "maxLevel": 4,
+        "gemTagId": "force"
+       }
+      ]
+     },
+     "level": 1,
+     "refineLevel": 0,
+     "breakthroughLevel": 0,
+     "gem": null,
+     "wikiItemId": "58",
+     "skills": [
+      {
+       "key": "wpn_attr_main_low",
+       "level": 1,
+       "currentMaxLevel": 3,
+       "currentBaseLevel": 1,
+       "gemTermId": "",
+       "name": "主能力提升·小"
+      },
+      {
+       "key": "sk_wpn_sword_0003",
+       "level": 1,
+       "currentMaxLevel": 3,
+       "currentBaseLevel": 1,
+       "gemTermId": "",
+       "name": "强攻·武装整备"
+      }
+     ]
+    },
+    "gender": "CHAR_GENDER_FEMALE",
+    "ownTs": "1790000000",
+    "wikiItemId": "156",
+    "talent": {
+     "latestBreakNode": "default_break_stage",
+     "attrNodes": [],
+     "latestPassiveSkillNodes": [
+      "default_passive_skill_a",
+      "default_passive_skill_b"
+     ],
+     "latestFactorySkillNodes": [
+      "default_factory_skill_a",
+      "default_factory_skill_b"
+     ],
+     "latestSpaceshipSkillNodes": []
+    }
+   },
+   {
+    "charData": {
+     "id": "c4cf7541c23c93f991e2e464ee18bb18",
+     "name": "佩丽卡",
+     "avatarSqUrl": "https://bbs.hycdn.cn/image/2025/11/12/3bbc15c803354e16dece5ec65d327604.png",
+     "avatarRtUrl": "https://bbs.hycdn.cn/image/2025/11/19/d2ff445fa87f0fd4d65c77c197d65be7.png",
+     "rarity": {
+      "key": "rarity_5",
+      "value": "5"
+     },
+     "profession": {
+      "key": "profession_caster",
+      "value": "术师"
+     },
+     "property": {
+      "key": "char_property_pulse",
+      "value": "电磁"
+     },
+     "weaponType": {
+      "key": "weapon_type_wand",
+      "value": "施术单元"
+     },
+     "skills": [
+      {
+       "id": "5bcb587d98299ae6eac0f261273629e5",
+       "name": "协议α·突破",
+       "type": {
+        "key": "skill_type_normal_attack",
+        "value": "普通攻击"
+       },
+       "property": {
+        "key": "skill_property_pulse",
+        "value": "电磁"
+       },
+       "iconUrl": "https://bbs.hycdn.cn/image/2025/11/12/c83a4d189b320cd8f6cc67945509dc68.png",
+       "desc": "普通攻击：\n对敌人进行至多4段攻击，造成<@ba.pulse>电磁伤害</>。作为主控干员时，<#ba.lastcombo>重击</>会造成<@ba.poise>{poise:0}</>点失衡。\n\n下落攻击：\n处于空中时使用普通攻击，会下落并攻击附近敌人，造成<@ba.pulse>电磁伤害</>。\n\n处决攻击：\n附近有敌人处于失衡状态时使用普通攻击，将处决该敌人，造成大量<@ba.pulse>电磁伤害</>并恢复一定技力。",
+       "descParams": {
+        "atb": "15",
+        "atk_scale": "0.57",
+        "poise": "15"
+       },
+       "descLevelParams": {
+        "1": {
+         "level": "1",
+         "params": {
+          "atb": "15",
+          "atk_scale": "0.57",
+          "poise": "15"
+         }
+        },
+        "10": {
+         "level": "10",
+         "params": {
+          "atb": "15",
+          "atk_scale": "1.09",
+          "poise": "15"
+         }
+        },
+        "11": {
+         "level": "11",
+         "params": {
+          "atb": "15",
+          "atk_scale": "1.17",
+          "poise": "15"
+         }
+        },
+        "12": {
+         "level": "12",
+         "params": {
+          "atb": "15",
+          "atk_scale": "1.27",
+          "poise": "15"
+         }
+        },
+        "2": {
+         "level": "2",
+         "params": {
+          "atb": "15",
+          "atk_scale": "0.62",
+          "poise": "15"
+         }
+        },
+        "3": {
+         "level": "3",
+         "params": {
+          "atb": "15",
+          "atk_scale": "0.68",
+          "poise": "15"
+         }
+        },
+        "4": {
+         "level": "4",
+         "params": {
+          "atb": "15",
+          "atk_scale": "0.73",
+          "poise": "15"
+         }
+        },
+        "5": {
+         "level": "5",
+         "params": {
+          "atb": "15",
+          "atk_scale": "0.79",
+          "poise": "15"
+         }
+        },
+        "6": {
+         "level": "6",
+         "params": {
+          "atb": "15",
+          "atk_scale": "0.85",
+          "poise": "15"
+         }
+        },
+        "7": {
+         "level": "7",
+         "params": {
+          "atb": "15",
+          "atk_scale": "0.9",
+          "poise": "15"
+         }
+        },
+        "8": {
+         "level": "8",
+         "params": {
+          "atb": "15",
+          "atk_scale": "0.96",
+          "poise": "15"
+         }
+        },
+        "9": {
+         "level": "9",
+         "params": {
+          "atb": "15",
+          "atk_scale": "1.02",
+          "poise": "15"
+         }
+        }
+       },
+       "forms": [],
+       "descs": []
+      },
+      {
+       "id": "286e7001b2057e650f64f0e391223954",
+       "name": "协议ω·雷击",
+       "type": {
+        "key": "skill_type_normal_skill",
+        "value": "战技"
+       },
+       "property": {
+        "key": "skill_property_pulse",
+        "value": "电磁"
+       },
+       "iconUrl": "https://bbs.hycdn.cn/image/2025/11/12/33237708a663b5f73fdcb96a4520cd36.png",
+       "desc": "释放一道电磁能量从空中落下，对小范围内敌人造成<@ba.pulse>电磁伤害</>并施加<#ba.pulseinflict>电磁附着</>。",
+       "descParams": {
+        "atk_scale": "1.78",
+        "poise": "10"
+       },
+       "descLevelParams": {
+        "1": {
+         "level": "1",
+         "params": {
+          "atk_scale": "1.78",
+          "poise": "10"
+         }
+        },
+        "10": {
+         "level": "10",
+         "params": {
+          "atk_scale": "3.42",
+          "poise": "10"
+         }
+        },
+        "11": {
+         "level": "11",
+         "params": {
+          "atk_scale": "3.69",
+          "poise": "10"
+         }
+        },
+        "12": {
+         "level": "12",
+         "params": {
+          "atk_scale": "4",
+          "poise": "10"
+         }
+        },
+        "2": {
+         "level": "2",
+         "params": {
+          "atk_scale": "1.96",
+          "poise": "10"
+         }
+        },
+        "3": {
+         "level": "3",
+         "params": {
+          "atk_scale": "2.13",
+          "poise": "10"
+         }
+        },
+        "4": {
+         "level": "4",
+         "params": {
+          "atk_scale": "2.31",
+          "poise": "10"
+         }
+        },
+        "5": {
+         "level": "5",
+         "params": {
+          "atk_scale": "2.49",
+          "poise": "10"
+         }
+        },
+        "6": {
+         "level": "6",
+         "params": {
+          "atk_scale": "2.67",
+          "poise": "10"
+         }
+        },
+        "7": {
+         "level": "7",
+         "params": {
+          "atk_scale": "2.85",
+          "poise": "10"
+         }
+        },
+        "8": {
+         "level": "8",
+         "params": {
+          "atk_scale": "3.02",
+          "poise": "10"
+         }
+        },
+        "9": {
+         "level": "9",
+         "params": {
+          "atk_scale": "3.2",
+          "poise": "10"
+         }
+        }
+       },
+       "forms": [],
+       "descs": []
+      },
+      {
+       "id": "f49d5d010be4480e353521654e215a11",
+       "name": "即时协议·闪链",
+       "type": {
+        "key": "skill_type_combo_skill",
+        "value": "连携技"
+       },
+       "property": {
+        "key": "skill_property_pulse",
+        "value": "电磁"
+       },
+       "iconUrl": "https://bbs.hycdn.cn/image/2025/11/12/dac01437e1c4995147538187275af293.png",
+       "desc": "当主控干员对敌人造成<#ba.lastcombo>重击</>后可以发动。\n释放积蓄的电磁能量轰击目标，造成<@ba.pulse>电磁伤害</>并强制施加短暂的<#ba.conduct>导电</>。",
+       "descParams": {
+        "atk_scale": "0.8",
+        "duration": "5",
+        "poise": "10",
+        "usp": "10"
+       },
+       "descLevelParams": {
+        "1": {
+         "level": "1",
+         "params": {
+          "atk_scale": "0.8",
+          "duration": "5",
+          "poise": "10",
+          "usp": "10"
+         }
+        },
+        "10": {
+         "level": "10",
+         "params": {
+          "atk_scale": "1.54",
+          "duration": "5",
+          "poise": "10",
+          "usp": "10"
+         }
+        },
+        "11": {
+         "level": "11",
+         "params": {
+          "atk_scale": "1.66",
+          "duration": "5",
+          "poise": "10",
+          "usp": "10"
+         }
+        },
+        "12": {
+         "level": "12",
+         "params": {
+          "atk_scale": "1.8",
+          "duration": "5",
+          "poise": "10",
+          "usp": "10"
+         }
+        },
+        "2": {
+         "level": "2",
+         "params": {
+          "atk_scale": "0.88",
+          "duration": "5",
+          "poise": "10",
+          "usp": "10"
+         }
+        },
+        "3": {
+         "level": "3",
+         "params": {
+          "atk_scale": "0.96",
+          "duration": "5",
+          "poise": "10",
+          "usp": "10"
+         }
+        },
+        "4": {
+         "level": "4",
+         "params": {
+          "atk_scale": "1.04",
+          "duration": "5",
+          "poise": "10",
+          "usp": "10"
+         }
+        },
+        "5": {
+         "level": "5",
+         "params": {
+          "atk_scale": "1.12",
+          "duration": "5",
+          "poise": "10",
+          "usp": "10"
+         }
+        },
+        "6": {
+         "level": "6",
+         "params": {
+          "atk_scale": "1.2",
+          "duration": "5",
+          "poise": "10",
+          "usp": "10"
+         }
+        },
+        "7": {
+         "level": "7",
+         "params": {
+          "atk_scale": "1.28",
+          "duration": "5",
+          "poise": "10",
+          "usp": "10"
+         }
+        },
+        "8": {
+         "level": "8",
+         "params": {
+          "atk_scale": "1.36",
+          "duration": "5",
+          "poise": "10",
+          "usp": "10"
+         }
+        },
+        "9": {
+         "level": "9",
+         "params": {
+          "atk_scale": "1.44",
+          "duration": "5",
+          "poise": "10",
+          "usp": "10"
+         }
+        }
+       },
+       "forms": [],
+       "descs": []
+      },
+      {
+       "id": "b616572f709440d13664fcc2d28a70eb",
+       "name": "协议ε·70.41κ",
+       "type": {
+        "key": "skill_type_ultimate_skill",
+        "value": "终结技"
+       },
+       "property": {
+        "key": "skill_property_pulse",
+        "value": "电磁"
+       },
+       "iconUrl": "https://bbs.hycdn.cn/image/2025/11/12/3a428f8ad9bcb979e3e75a41e38b827e.png",
+       "desc": "立即传送一块巨大的轨道漂浮物对目标区域进行毁灭性打击，对区域内的敌人造成大量<@ba.pulse>电磁伤害</>。",
+       "descParams": {
+        "atk_scale": "4.45",
+        "poise": "20"
+       },
+       "descLevelParams": {
+        "1": {
+         "level": "1",
+         "params": {
+          "atk_scale": "4.45",
+          "poise": "20"
+         }
+        },
+        "10": {
+         "level": "10",
+         "params": {
+          "atk_scale": "8.56",
+          "poise": "20"
+         }
+        },
+        "11": {
+         "level": "11",
+         "params": {
+          "atk_scale": "9.23",
+          "poise": "20"
+         }
+        },
+        "12": {
+         "level": "12",
+         "params": {
+          "atk_scale": "10",
+          "poise": "20"
+         }
+        },
+        "2": {
+         "level": "2",
+         "params": {
+          "atk_scale": "4.89",
+          "poise": "20"
+         }
+        },
+        "3": {
+         "level": "3",
+         "params": {
+          "atk_scale": "5.34",
+          "poise": "20"
+         }
+        },
+        "4": {
+         "level": "4",
+         "params": {
+          "atk_scale": "5.78",
+          "poise": "20"
+         }
+        },
+        "5": {
+         "level": "5",
+         "params": {
+          "atk_scale": "6.22",
+          "poise": "20"
+         }
+        },
+        "6": {
+         "level": "6",
+         "params": {
+          "atk_scale": "6.67",
+          "poise": "20"
+         }
+        },
+        "7": {
+         "level": "7",
+         "params": {
+          "atk_scale": "7.11",
+          "poise": "20"
+         }
+        },
+        "8": {
+         "level": "8",
+         "params": {
+          "atk_scale": "7.56",
+          "poise": "20"
+         }
+        },
+        "9": {
+         "level": "9",
+         "params": {
+          "atk_scale": "8",
+          "poise": "20"
+         }
+        }
+       },
+       "forms": [],
+       "descs": []
+      }
+     ],
+     "illustrationUrl": "https://bbs.hycdn.cn/image/2026/01/21/e7858943c7ee4c856529bf8c9acbeb42.png",
+     "tags": [
+      "电磁附着",
+      "导电"
+     ],
+     "abilityTalents": [
+      {
+       "id": "chr_0004_pelica_5",
+       "name": "明晰",
+       "iconUrl": "https://bbs.hycdn.cn/image/2026/03/10/65f0d59f3643e6faf47263489e915abc.png",
+       "desc": "干员智识能力值提升15。",
+       "descParams": {},
+       "lockedIconUrl": ""
+      },
+      {
+       "id": "chr_0004_pelica_7",
+       "name": "明晰",
+       "iconUrl": "https://bbs.hycdn.cn/image/2026/03/10/65f0d59f3643e6faf47263489e915abc.png",
+       "desc": "干员智识能力值提升20。",
+       "descParams": {},
+       "lockedIconUrl": ""
+      },
+      {
+       "id": "chr_0004_pelica_1",
+       "name": "明晰",
+       "iconUrl": "https://bbs.hycdn.cn/image/2026/03/10/65f0d59f3643e6faf47263489e915abc.png",
+       "desc": "干员智识能力值提升10。",
+       "descParams": {},
+       "lockedIconUrl": ""
+      },
+      {
+       "id": "chr_0004_pelica_3",
+       "name": "明晰",
+       "iconUrl": "https://bbs.hycdn.cn/image/2026/03/10/65f0d59f3643e6faf47263489e915abc.png",
+       "desc": "干员智识能力值提升15。",
+       "descParams": {},
+       "lockedIconUrl": ""
+      }
+     ],
+     "combatTalents": [
+      {
+       "id": "chr_0004_pelica_passive_skill_1_1",
+       "name": "循环协议",
+       "iconUrl": "https://bbs.hycdn.cn/image/2026/03/10/5a732ca8e1fc28bc3abcd2e3632204d4.png",
+       "desc": "连携技<@ba.key>即时协议·闪链</>命中处于<#ba.noguard>破防</>状态的敌人时，还会弹射1次。",
+       "descParams": {
+        "talent2": "1"
+       },
+       "lockedIconUrl": ""
+      },
+      {
+       "id": "chr_0004_pelica_passive_skill_0_2",
+       "name": "歼灭协议",
+       "iconUrl": "https://bbs.hycdn.cn/image/2026/03/10/b31f97517d522d087419e6ebf05f6cbb.png",
+       "desc": "对<@ba.poise>失衡</>的敌人造成的伤害<@ba.vup>+{dmg:0%}</>。",
+       "descParams": {
+        "dmg": "0.3"
+       },
+       "lockedIconUrl": ""
+      },
+      {
+       "id": "chr_0004_pelica_passive_skill_0_1",
+       "name": "歼灭协议",
+       "iconUrl": "https://bbs.hycdn.cn/image/2026/03/10/b31f97517d522d087419e6ebf05f6cbb.png",
+       "desc": "对<@ba.poise>失衡</>的敌人造成的伤害<@ba.vup>+{dmg:0%}</>。",
+       "descParams": {
+        "dmg": "0.2"
+       },
+       "lockedIconUrl": ""
+      }
+     ],
+     "cultivationTalents": [
+      {
+       "id": "spaceship_skill_chr_0004_pelica_2_1",
+       "name": "协议调度·β",
+       "iconUrl": "https://bbs.hycdn.cn/image/2026/03/10/717ef0fb7017ddff29fe7e71b57d7624.png",
+       "desc": "进驻制造舱时，武器经验素材的生产效率提升20%",
+       "descParams": {},
+       "lockedIconUrl": "https://bbs.hycdn.cn/image/2026/03/10/609bccb11f2f6c1160b9bf4b70a431af.png"
+      },
+      {
+       "id": "spaceship_skill_chr_0004_pelica_2_2",
+       "name": "协议调度·γ",
+       "iconUrl": "https://bbs.hycdn.cn/image/2026/03/10/717ef0fb7017ddff29fe7e71b57d7624.png",
+       "desc": "进驻制造舱时，武器经验素材的生产效率提升30%",
+       "descParams": {},
+       "lockedIconUrl": "https://bbs.hycdn.cn/image/2026/03/10/609bccb11f2f6c1160b9bf4b70a431af.png"
+      },
+      {
+       "id": "spaceship_skill_chr_0004_pelica_1_1",
+       "name": "监督·α",
+       "iconUrl": "https://bbs.hycdn.cn/image/2026/03/10/47f82544e4b88a75583716984633cd8a.png",
+       "desc": "进驻总控中枢时，所有干员心情恢复提升8%",
+       "descParams": {},
+       "lockedIconUrl": "https://bbs.hycdn.cn/image/2026/03/10/c2bb7efb2b5955730e3dd411a2831cb5.png"
+      },
+      {
+       "id": "spaceship_skill_chr_0004_pelica_1_2",
+       "name": "监督·β",
+       "iconUrl": "https://bbs.hycdn.cn/image/2026/03/10/47f82544e4b88a75583716984633cd8a.png",
+       "desc": "进驻总控中枢时，所有干员心情恢复提升12%",
+       "descParams": {},
+       "lockedIconUrl": "https://bbs.hycdn.cn/image/2026/03/10/c2bb7efb2b5955730e3dd411a2831cb5.png"
+      }
+     ]
+    },
+    "id": "c4cf7541c23c93f991e2e464ee18bb18",
+    "level": 1,
+    "userSkills": {
+     "286e7001b2057e650f64f0e391223954": {
+      "skillId": "286e7001b2057e650f64f0e391223954",
+      "level": 1,
+      "maxLevel": 1,
+      "skillFormType": "CHAR_SKILL_FORM_TYPE_UNSPECIFIED"
+     },
+     "5bcb587d98299ae6eac0f261273629e5": {
+      "skillId": "5bcb587d98299ae6eac0f261273629e5",
+      "level": 1,
+      "maxLevel": 1,
+      "skillFormType": "CHAR_SKILL_FORM_TYPE_UNSPECIFIED"
+     },
+     "b616572f709440d13664fcc2d28a70eb": {
+      "skillId": "b616572f709440d13664fcc2d28a70eb",
+      "level": 1,
+      "maxLevel": 1,
+      "skillFormType": "CHAR_SKILL_FORM_TYPE_UNSPECIFIED"
+     },
+     "f49d5d010be4480e353521654e215a11": {
+      "skillId": "f49d5d010be4480e353521654e215a11",
+      "level": 1,
+      "maxLevel": 1,
+      "skillFormType": "CHAR_SKILL_FORM_TYPE_UNSPECIFIED"
+     }
+    },
+    "evolvePhase": 0,
+    "potentialLevel": 0,
+    "weapon": {
+     "weaponData": {
+      "id": "60c1b5283a0d13ef7000797687656f0d",
+      "name": "吉米尼12",
+      "iconUrl": "https://bbs.hycdn.cn/image/2025/11/29/45fd0dba68dcb8be40479f7552faa2cd.png",
+      "rarity": {
+       "key": "rarity_3",
+       "value": "3"
+      },
+      "type": {
+       "key": "weapon_type_wand",
+       "value": "施术单元"
+      },
+      "function": "终末地干员用武器，装备之后可以显著提升干员的作战能力。",
+      "description": "终末地工业制造的干员基础装备之一。由武库工程师吉米尼负责设计。这款施术单元格外受新进干员喜爱。",
+      "skills": [
+       {
+        "key": "wpn_attr_main_low",
+        "value": "主能力提升·小"
+       },
+       {
+        "key": "sk_wpn_funnel_0002",
+        "value": "强攻·武装整备"
+       }
+      ],
+      "skillInfos": [
+       {
+        "skill": {
+         "key": "wpn_attr_main_low",
+         "value": "主能力提升·小"
+        },
+        "maxLevel": 9,
+        "gemTagId": "attr_main"
+       },
+       {
+        "skill": {
+         "key": "sk_wpn_funnel_0002",
+         "value": "强攻·武装整备"
+        },
+        "maxLevel": 4,
+        "gemTagId": "force"
+       }
+      ]
+     },
+     "level": 1,
+     "refineLevel": 0,
+     "breakthroughLevel": 0,
+     "gem": null,
+     "wikiItemId": "116",
+     "skills": [
+      {
+       "key": "wpn_attr_main_low",
+       "level": 1,
+       "currentMaxLevel": 3,
+       "currentBaseLevel": 1,
+       "gemTermId": "",
+       "name": "主能力提升·小"
+      },
+      {
+       "key": "sk_wpn_funnel_0002",
+       "level": 1,
+       "currentMaxLevel": 3,
+       "currentBaseLevel": 1,
+       "gemTermId": "",
+       "name": "强攻·武装整备"
+      }
+     ]
+    },
+    "gender": "CHAR_GENDER_FEMALE",
+    "ownTs": "1790000000",
+    "wikiItemId": "5",
+    "talent": {
+     "latestBreakNode": "default_break_stage",
+     "attrNodes": [],
+     "latestPassiveSkillNodes": [
+      "default_passive_skill_a",
+      "default_passive_skill_b"
+     ],
+     "latestFactorySkillNodes": [
+      "default_factory_skill_a",
+      "default_factory_skill_b"
+     ],
+     "latestSpaceshipSkillNodes": []
+    }
+   }
+  ],
+  "achieve": {
+   "achieveMedals": [],
+   "display": {},
+   "count": 0
+  },
+  "spaceShip": {
+   "rooms": [
+    {
+     "id": "",
+     "type": 0,
+     "level": 1,
+     "chars": [],
+     "reports": {}
+    }
+   ]
+  },
+  "domain": [
+   {
+    "domainId": "domain_1",
+    "level": 1,
+    "settlements": [
+     {
+      "id": "stm_tundra_1",
+      "level": 0,
+      "exp": "0",
+      "expToLevelUp": "0",
+      "remainMoney": "0",
+      "moneyMax": "0",
+      "officerCharIds": "",
+      "officerCharAvatar": "",
+      "name": "难民暂居处",
+      "lastTickTime": "0",
+      "isFinalMaxLevel": false
+     },
+     {
+      "id": "stm_tundra_2",
+      "level": 0,
+      "exp": "0",
+      "expToLevelUp": "0",
+      "remainMoney": "0",
+      "moneyMax": "0",
+      "officerCharIds": "",
+      "officerCharAvatar": "",
+      "name": "基建前站",
+      "lastTickTime": "0",
+      "isFinalMaxLevel": false
+     },
+     {
+      "id": "stm_tundra_3",
+      "level": 0,
+      "exp": "0",
+      "expToLevelUp": "0",
+      "remainMoney": "0",
+      "moneyMax": "0",
+      "officerCharIds": "",
+      "officerCharAvatar": "",
+      "name": "重建指挥部",
+      "lastTickTime": "0",
+      "isFinalMaxLevel": false
+     }
+    ],
+    "moneyMgr": {
+     "total": "80000",
+     "count": "0"
+    },
+    "collections": [
+     {
+      "levelId": "",
+      "puzzleCount": 0,
+      "trchestCount": 0,
+      "equipTrchestCount": 0,
+      "pieceCount": 0,
+      "blackboxCount": 0,
+      "trstarCount": 0
+     },
+     {
+      "levelId": "",
+      "puzzleCount": 0,
+      "trchestCount": 0,
+      "equipTrchestCount": 0,
+      "pieceCount": 0,
+      "blackboxCount": 0,
+      "trstarCount": 0
+     },
+     {
+      "levelId": "",
+      "puzzleCount": 0,
+      "trchestCount": 0,
+      "equipTrchestCount": 0,
+      "pieceCount": 0,
+      "blackboxCount": 0,
+      "trstarCount": 0
+     },
+     {
+      "levelId": "",
+      "puzzleCount": 0,
+      "trchestCount": 0,
+      "equipTrchestCount": 0,
+      "pieceCount": 0,
+      "blackboxCount": 0,
+      "trstarCount": 0
+     },
+     {
+      "levelId": "",
+      "puzzleCount": 0,
+      "trchestCount": 0,
+      "equipTrchestCount": 0,
+      "pieceCount": 0,
+      "blackboxCount": 0,
+      "trstarCount": 0
+     },
+     {
+      "levelId": "",
+      "puzzleCount": 0,
+      "trchestCount": 0,
+      "equipTrchestCount": 0,
+      "pieceCount": 0,
+      "blackboxCount": 0,
+      "trstarCount": 0
+     }
+    ],
+    "levels": [
+     {
+      "levelId": "map01_lv001",
+      "name": "枢纽区",
+      "puzzleCount": {
+       "count": 0,
+       "total": 43
+      },
+      "trchestCount": {
+       "count": 0,
+       "total": 107
+      },
+      "equipTrchestCount": {
+       "count": 0,
+       "total": 0
+      },
+      "pieceCount": {
+       "count": 0,
+       "total": 0
+      },
+      "blackboxCount": {
+       "count": 0,
+       "total": 11
+      },
+      "trstarCount": {
+       "count": 0,
+       "total": 0
+      }
+     },
+     {
+      "levelId": "map01_lv002",
+      "name": "谷地通道",
+      "puzzleCount": {
+       "count": 0,
+       "total": 14
+      },
+      "trchestCount": {
+       "count": 0,
+       "total": 12
+      },
+      "equipTrchestCount": {
+       "count": 0,
+       "total": 0
+      },
+      "pieceCount": {
+       "count": 0,
+       "total": 0
+      },
+      "blackboxCount": {
+       "count": 0,
+       "total": 4
+      },
+      "trstarCount": {
+       "count": 0,
+       "total": 0
+      }
+     },
+     {
+      "levelId": "map01_lv003",
+      "name": "阿伯莉采石场",
+      "puzzleCount": {
+       "count": 0,
+       "total": 17
+      },
+      "trchestCount": {
+       "count": 0,
+       "total": 32
+      },
+      "equipTrchestCount": {
+       "count": 0,
+       "total": 0
+      },
+      "pieceCount": {
+       "count": 0,
+       "total": 1
+      },
+      "blackboxCount": {
+       "count": 0,
+       "total": 3
+      },
+      "trstarCount": {
+       "count": 0,
+       "total": 0
+      }
+     },
+     {
+      "levelId": "map01_lv005",
+      "name": "源石研究园",
+      "puzzleCount": {
+       "count": 0,
+       "total": 30
+      },
+      "trchestCount": {
+       "count": 0,
+       "total": 36
+      },
+      "equipTrchestCount": {
+       "count": 0,
+       "total": 0
+      },
+      "pieceCount": {
+       "count": 0,
+       "total": 1
+      },
+      "blackboxCount": {
+       "count": 0,
+       "total": 4
+      },
+      "trstarCount": {
+       "count": 0,
+       "total": 0
+      }
+     },
+     {
+      "levelId": "map01_lv006",
+      "name": "矿脉源区",
+      "puzzleCount": {
+       "count": 0,
+       "total": 39
+      },
+      "trchestCount": {
+       "count": 0,
+       "total": 65
+      },
+      "equipTrchestCount": {
+       "count": 0,
+       "total": 0
+      },
+      "pieceCount": {
+       "count": 0,
+       "total": 2
+      },
+      "blackboxCount": {
+       "count": 0,
+       "total": 3
+      },
+      "trstarCount": {
+       "count": 0,
+       "total": 0
+      }
+     },
+     {
+      "levelId": "map01_lv007",
+      "name": "供能高地",
+      "puzzleCount": {
+       "count": 0,
+       "total": 23
+      },
+      "trchestCount": {
+       "count": 0,
+       "total": 36
+      },
+      "equipTrchestCount": {
+       "count": 0,
+       "total": 0
+      },
+      "pieceCount": {
+       "count": 0,
+       "total": 0
+      },
+      "blackboxCount": {
+       "count": 0,
+       "total": 0
+      },
+      "trstarCount": {
+       "count": 0,
+       "total": 0
+      }
+     }
+    ],
+    "factory": null,
+    "name": "四号谷地"
+   }
+  ],
+  "dungeon": {
+   "curStamina": "125",
+   "maxTs": "0",
+   "maxStamina": "125"
+  },
+  "bpSystem": {
+   "curLevel": 0,
+   "maxLevel": 60
+  },
+  "dailyMission": {
+   "dailyActivation": 0,
+   "maxDailyActivation": 100
+  },
+  "weeklyMission": {
+   "score": 0,
+   "total": 10
+  },
+  "config": {
+   "charSwitch": true,
+   "standingsSwitch": false,
+   "charIds": [
+    "db6d086bf664455a86eedf67d9439953",
+    "c4cf7541c23c93f991e2e464ee18bb18"
+   ],
+   "modules": [
+    {
+     "id": "MODULE_CHAR",
+     "switch": true
+    },
+    {
+     "id": "MODULE_REALTIME",
+     "switch": true
+    },
+    {
+     "id": "MODULE_CRISIS_CONTRACT",
+     "switch": false
+    },
+    {
+     "id": "MODULE_ACHIEVE",
+     "switch": true
+    },
+    {
+     "id": "MODULE_DOMAIN_BUILD",
+     "switch": true
+    },
+    {
+     "id": "MODULE_DOMAIN_EXPLORE",
+     "switch": true
+    },
+    {
+     "id": "MODULE_WAR_ECHOES",
+     "switch": false
+    },
+    {
+     "id": "MODULE_INDIE_HARD",
+     "switch": false
+    },
+    {
+     "id": "MODULE_SPACESHIP",
+     "switch": true
+    }
+   ],
+   "realtimeModules": [
+    {
+     "id": "REALTIME_MODULE_DAILY_MISSION"
+    },
+    {
+     "id": "REALTIME_MODULE_WEEKLY_MISSION"
+    },
+    {
+     "id": "REALTIME_MODULE_BP_SYSTEM"
+    },
+    {
+     "id": "REALTIME_MODULE_SEEK_SUSPICION"
+    }
+   ]
+  },
+  "currentTs": "1793956828",
+  "quickaccess": [
+   {
+    "name": "养成计算器",
+    "icon": "https://bbs.hycdn.cn/image/2026/08/07/1fb7a6c5ed24b97fd994e32d27f02f3f.png",
+    "link": "skland://web?url=https%3A%2F%2Fgame.skland.com%2Ftools%2Fendfield%2Fcost-calculator%3Fheader%3D0"
+   },
+   {
+    "name": "每日签到",
+    "icon": "https://bbs.hycdn.cn/image/2026/01/22/a4348ea2407f43888a0cb3ea3056739a.png",
+    "link": "skland://web?url=https%3A%2F%2Fgame.skland.com%2Fendfield%2Fsign-in%3Fheader%3D0"
+   },
+   {
+    "name": "配队工具",
+    "icon": "https://bbs.hycdn.cn/image/2026/01/22/5ba247ba7d196184fbd1ce2257d11450.png",
+    "link": "skland://web?url=https%3A%2F%2Fgame.skland.com%2Ftools%2Fendfield%2Frec-team%3Fheader%3D0%26ctr_orientation%3Dlandscape%26routeId%3D0"
+   },
+   {
+    "name": "养成建议",
+    "icon": "https://bbs.hycdn.cn/image/2026/01/22/3c3f63afd766e97125b654472cf43a75.png",
+    "link": "skland://web?url=https%3A%2F%2Fgame.skland.com%2Ftools%2Fendfield%2Fbuild-guide%3Fheader%3D0%26ctr_orientation%3Dlandscape%26routeId%3D1"
+   },
+   {
+    "name": "地图工具",
+    "icon": "https://bbs.hycdn.cn/image/2026/01/22/802975d55707096d88175db904b637e9.png",
+    "link": "skland://web?url=https%3A%2F%2Fgame.skland.com%2Fmap%2Fendfield%3Fheader%3D0"
+   }
+  ],
+  "indieHard": {
+   "indieHardGroups": [
+    {
+     "id": "2d8251dca781f78a8e9c23a74968ff0f",
+     "name": "深林呓语",
+     "pic": "https://bbs.hycdn.cn/image/2026/10/19/a8102c3e177b725b04584fe0a56a5ee6.png",
+     "dungeonGroups": [
+      {
+       "normalDungeon": {
+        "id": "242ad4193299c2d26f5b9b2259077b11",
+        "name": "虫傀呼应",
+        "isPass": false
+       },
+       "hardDungeon": {
+        "id": "62985d0c15da221ce6d55bab707d7498",
+        "name": "虫傀呼应·苦难",
+        "isPass": false
+       }
+      },
+      {
+       "normalDungeon": {
+        "id": "a447d88cf2d8d058f38fa04de51cc1c1",
+        "name": "受缚之影",
+        "isPass": false
+       },
+       "hardDungeon": {
+        "id": "fb4a35a9f9a618d1ce47cdf06fc2d851",
+        "name": "受缚之影·苦难",
+        "isPass": false
+       }
+      },
+      {
+       "normalDungeon": {
+        "id": "647f689cfa08ea8b10ca957551f79f4d",
+        "name": "相引之骸",
+        "isPass": false
+       },
+       "hardDungeon": {
+        "id": "8dca819ff321f720e147671a6f85e00d",
+        "name": "相引之骸·苦难",
+        "isPass": false
+       }
+      },
+      {
+       "normalDungeon": {
+        "id": "c80b3583a1846a6f2f6a2f7d965d4d64",
+        "name": "怨怒延展",
+        "isPass": false
+       },
+       "hardDungeon": {
+        "id": "829403bff8d66ad3ba54023e13197c41",
+        "name": "怨怒延展·苦难",
+        "isPass": false
+       }
+      }
+     ],
+     "activityStartTs": "1792641600",
+     "activityEndTs": "0",
+     "activityName": "深林呓语",
+     "isInActivity": false
+    },
+    {
+     "id": "c2c04d697965e22f6ad4a1aa642f8fe0",
+     "name": "幽影刻形",
+     "pic": "https://bbs.hycdn.cn/image/2026/09/23/d73cba3d5fcca6d8b7fcb1d88307721e.png",
+     "dungeonGroups": [
+      {
+       "normalDungeon": {
+        "id": "1fab00d40e9535fc40b6c006ef982d34",
+        "name": "三角定位",
+        "isPass": false
+       },
+       "hardDungeon": {
+        "id": "34278e67b06c0a9ef9d9318dc044cc98",
+        "name": "三角定位·苦难",
+        "isPass": false
+       }
+      },
+      {
+       "normalDungeon": {
+        "id": "9b509d9481c9af4084e9d99089ce34f9",
+        "name": "兽影生杀",
+        "isPass": false
+       },
+       "hardDungeon": {
+        "id": "348fc2a28a1cb2de26f5f6583f88c3cb",
+        "name": "兽影生杀·苦难",
+        "isPass": false
+       }
+      },
+      {
+       "normalDungeon": {
+        "id": "b4d592c36eb7c744f1470d49e1ac2c35",
+        "name": "沛然轰鸣",
+        "isPass": false
+       },
+       "hardDungeon": {
+        "id": "b045d273183c65a6a3624bcf3c7804ca",
+        "name": "沛然轰鸣·苦难",
+        "isPass": false
+       }
+      },
+      {
+       "normalDungeon": {
+        "id": "b322bca3b9c728c52c7662a6f89a91b8",
+        "name": "暗曜白霆",
+        "isPass": false
+       },
+       "hardDungeon": {
+        "id": "ce963015b38763c380b0d564580a599f",
+        "name": "暗曜白霆·苦难",
+        "isPass": false
+       }
+      }
+     ],
+     "activityStartTs": "1791172800",
+     "activityEndTs": "0",
+     "activityName": "幽影刻形",
+     "isInActivity": false
+    },
+    {
+     "id": "1a5c11e8e51aa225199b282d3dc3941e",
+     "name": "山中见犼",
+     "pic": "https://bbs.hycdn.cn/image/2026/08/06/8bdfec2ceb3459fb445661a8d94c4170.png",
+     "dungeonGroups": [
+      {
+       "normalDungeon": {
+        "id": "bf4064b5784e7429c35bf5d9e9d9d078",
+        "name": "清波访客",
+        "isPass": false
+       },
+       "hardDungeon": {
+        "id": "93273b4e23b8ec1f3a528a3581ce8e70",
+        "name": "清波访客·苦难",
+        "isPass": false
+       }
+      },
+      {
+       "normalDungeon": {
+        "id": "849ec852ed8601b76adfe2ca4dc1c371",
+        "name": "撼山雾火",
+        "isPass": false
+       },
+       "hardDungeon": {
+        "id": "4c88dd150b43783deb3d0e4be9ebb741",
+        "name": "撼山雾火·苦难",
+        "isPass": false
+       }
+      },
+      {
+       "normalDungeon": {
+        "id": "b3fe0f0a89da9879f1fa82738042ca29",
+        "name": "兽群把戏",
+        "isPass": false
+       },
+       "hardDungeon": {
+        "id": "92e9284dd32b1dfb787a757998d99062",
+        "name": "兽群把戏·苦难",
+        "isPass": false
+       }
+      },
+      {
+       "normalDungeon": {
+        "id": "50d4c903cfa011bc2f8ca2d98a6681dc",
+        "name": "山犼争王",
+        "isPass": false
+       },
+       "hardDungeon": {
+        "id": "fc2bb6cb45729bca7f3e329d31502969",
+        "name": "山犼争王·苦难",
+        "isPass": false
+       }
+      }
+     ],
+     "activityStartTs": "1785988800",
+     "activityEndTs": "0",
+     "activityName": "山中见犼",
+     "isInActivity": false
+    },
+    {
+     "id": "bb58be58833298b2dd521ddf13a2f39f",
+     "name": "死寂争鸣",
+     "pic": "https://bbs.hycdn.cn/image/2026/07/01/2c0ccab4bbe8dd0186ff05ad1f729201.png",
+     "dungeonGroups": [
+      {
+       "normalDungeon": {
+        "id": "1e43a7c3823c591138f9ca4511ea42c3",
+        "name": "刺痛盾阵",
+        "isPass": false
+       },
+       "hardDungeon": {
+        "id": "c2a499266ee045a0a53192b6fd5c38d6",
+        "name": "刺痛盾阵·苦难",
+        "isPass": false
+       }
+      },
+      {
+       "normalDungeon": {
+        "id": "bc294e9ec31cd8eb6cc14e89eb9d080a",
+        "name": "溶解窥看",
+        "isPass": false
+       },
+       "hardDungeon": {
+        "id": "d58ab5ee0640567251525fa21c531e93",
+        "name": "溶解窥看·苦难",
+        "isPass": false
+       }
+      },
+      {
+       "normalDungeon": {
+        "id": "e7a5e5b662d40790538853693a4df63a",
+        "name": "仪式旋流",
+        "isPass": false
+       },
+       "hardDungeon": {
+        "id": "e440ed649b131f44f5b0e01e5d5a8262",
+        "name": "仪式旋流·苦难",
+        "isPass": false
+       }
+      },
+      {
+       "normalDungeon": {
+        "id": "a0864c9b6c5d53e5eb0752092b6f65af",
+        "name": "冯河断水",
+        "isPass": false
+       },
+       "hardDungeon": {
+        "id": "de8f6850e86fd72675067211055c3b27",
+        "name": "冯河断水·苦难",
+        "isPass": false
+       }
+      },
+      {
+       "normalDungeon": {
+        "id": "e9ba004da3db0f67d6cbdc94c714c9d3",
+        "name": "死寂表象",
+        "isPass": false
+       },
+       "hardDungeon": {
+        "id": "c03dfa9d9fced4e0121ae910ca8e1201",
+        "name": "死寂表象·苦难",
+        "isPass": false
+       }
+      },
+      {
+       "normalDungeon": {
+        "id": "61e39dc9e0fee9fd7bea608e2f3ac7c5",
+        "name": "忿鼓咆声",
+        "isPass": false
+       },
+       "hardDungeon": {
+        "id": "0e500c1dd58da284639170fecc6d0ae1",
+        "name": "忿鼓咆声·苦难",
+        "isPass": false
+       }
+      }
+     ],
+     "activityStartTs": "1782964800",
+     "activityEndTs": "0",
+     "activityName": "死寂争鸣",
+     "isInActivity": false
+    },
+    {
+     "id": "249b8afb6d538d82a83b7d7de54e8b36",
+     "name": "浊流具现",
+     "pic": "https://bbs.hycdn.cn/image/2026/05/13/500c0c27e3ef8adca5efee2fbdad8e96.png",
+     "dungeonGroups": [
+      {
+       "normalDungeon": {
+        "id": "5b73f6d4a76e33917dde444bf21586c7",
+        "name": "沉寂视界",
+        "isPass": false
+       },
+       "hardDungeon": {
+        "id": "289e3ff2eefc213e5f1d99b6d81669fa",
+        "name": "沉寂视界·苦难",
+        "isPass": false
+       }
+      },
+      {
+       "normalDungeon": {
+        "id": "0e3a1b3e1dedd6d44ab2318d0f669b36",
+        "name": "枯竭海退",
+        "isPass": false
+       },
+       "hardDungeon": {
+        "id": "05bb04f5ed839757aeb896e751bcb7c3",
+        "name": "枯竭海退·苦难",
+        "isPass": false
+       }
+      },
+      {
+       "normalDungeon": {
+        "id": "bae9d8494170155eaf070e7b2eb6ae61",
+        "name": "潮涌遗恨",
+        "isPass": false
+       },
+       "hardDungeon": {
+        "id": "06e2d6ca26d85ef108996e98000c5fec",
+        "name": "潮涌遗恨·苦难",
+        "isPass": false
+       }
+      },
+      {
+       "normalDungeon": {
+        "id": "a072d9439a3931db38db48b336d105ac",
+        "name": "潜流绝窟",
+        "isPass": false
+       },
+       "hardDungeon": {
+        "id": "2bead5a2335b20dc107f602799855bb5",
+        "name": "潜流绝窟·苦难",
+        "isPass": false
+       }
+      },
+      {
+       "normalDungeon": {
+        "id": "99ba3683b604050a90f70116ee740901",
+        "name": "污浊血脉",
+        "isPass": false
+       },
+       "hardDungeon": {
+        "id": "6aae9e0eb29c3b61d0f9584e57d15806",
+        "name": "污浊血脉·苦难",
+        "isPass": false
+       }
+      },
+      {
+       "normalDungeon": {
+        "id": "73ceb5d9c156612d38405d897e994590",
+        "name": "霜冻联结",
+        "isPass": false
+       },
+       "hardDungeon": {
+        "id": "b31b19da4c7929a6383d78e617eacb93",
+        "name": "霜冻联结·苦难",
+        "isPass": false
+       }
+      }
+     ],
+     "activityStartTs": "1778212800",
+     "activityEndTs": "0",
+     "activityName": "浊流具现",
+     "isInActivity": false
+    },
+    {
+     "id": "b468ab05c1c9a6db51c5a881bb5879b5",
+     "name": "灼痛疤痕",
+     "pic": "https://bbs.hycdn.cn/image/2026/05/13/0c463f4fa0a70292c18c49266ea0cb0c.png",
+     "dungeonGroups": [
+      {
+       "normalDungeon": {
+        "id": "19f5bf18af6adaa1ea49169166bdefd6",
+        "name": "怨憎雾海",
+        "isPass": false
+       },
+       "hardDungeon": {
+        "id": "78a1e0c9bc3ac92c042e998c17103cdd",
+        "name": "怨憎雾海·苦难",
+        "isPass": false
+       }
+      },
+      {
+       "normalDungeon": {
+        "id": "48409f8c854898ec291becb3ac593bfd",
+        "name": "血肉熔点",
+        "isPass": false
+       },
+       "hardDungeon": {
+        "id": "cab75b11fd7820d65a57c8c678fe6ae1",
+        "name": "血肉熔点·苦难",
+        "isPass": false
+       }
+      },
+      {
+       "normalDungeon": {
+        "id": "0b1c729326054406119086645574ab99",
+        "name": "呼吼炽焰",
+        "isPass": false
+       },
+       "hardDungeon": {
+        "id": "432241e152f5bc8fcd4649182d3d9878",
+        "name": "呼吼炽焰·苦难",
+        "isPass": false
+       }
+      }
+     ],
+     "activityStartTs": "1774497600",
+     "activityEndTs": "0",
+     "activityName": "灼痛疤痕",
+     "isInActivity": false
+    },
+    {
+     "id": "1a22a993798b925d527e782a67603fe7",
+     "name": "无机造物",
+     "pic": "https://bbs.hycdn.cn/image/2026/05/13/fc6696a9d6547e05a146d795eacc1605.png",
+     "dungeonGroups": [
+      {
+       "normalDungeon": {
+        "id": "90f5a41274c6746072a4c7866d94a043",
+        "name": "矢影环伺",
+        "isPass": false
+       },
+       "hardDungeon": {
+        "id": "9f797b0021ade8f5d19f3ae2863a5d7b",
+        "name": "矢影环伺·苦难",
+        "isPass": false
+       }
+      },
+      {
+       "normalDungeon": {
+        "id": "b070b395ae96afa8caba72aed6d4e430",
+        "name": "狂冲盾止",
+        "isPass": false
+       },
+       "hardDungeon": {
+        "id": "69dbc864f9ae2f2dbdac0c23ee1e6c24",
+        "name": "狂冲盾止·苦难",
+        "isPass": false
+       }
+      },
+      {
+       "normalDungeon": {
+        "id": "07d384d19a6889fdf9cdf073ff0da908",
+        "name": "安于磐石",
+        "isPass": false
+       },
+       "hardDungeon": {
+        "id": "75ce78088f75f0809924788d0d384d64",
+        "name": "安于磐石·苦难",
+        "isPass": false
+       }
+      }
+     ],
+     "activityStartTs": "1771732800",
+     "activityEndTs": "0",
+     "activityName": "无机造物",
+     "isInActivity": false
+    },
+    {
+     "id": "73a436af4d6ea1aadc2805bdaf2f1555",
+     "name": "大地的弃子",
+     "pic": "https://bbs.hycdn.cn/image/2026/05/13/af983c506e7ca6effd489d7221e93a35.png",
+     "dungeonGroups": [
+      {
+       "normalDungeon": {
+        "id": "10f6865b91233407110e9813437b6a2f",
+        "name": "毒雾求生",
+        "isPass": false
+       },
+       "hardDungeon": {
+        "id": "78a9f440312dc3f612eaae728e99dcdf",
+        "name": "毒雾求生·苦难",
+        "isPass": false
+       }
+      },
+      {
+       "normalDungeon": {
+        "id": "bf6413e8333648bb694eb19daad12aae",
+        "name": "旁门外道",
+        "isPass": false
+       },
+       "hardDungeon": {
+        "id": "00ba84c3e93f8eb37c921a2b3a969cfe",
+        "name": "旁门外道·苦难",
+        "isPass": false
+       }
+      },
+      {
+       "normalDungeon": {
+        "id": "4682496021f7c8953362991dbaaed43b",
+        "name": "弩斧相应",
+        "isPass": false
+       },
+       "hardDungeon": {
+        "id": "d787f96eb28a813559d560cf8e606c3a",
+        "name": "弩斧相应·苦难",
+        "isPass": false
+       }
+      }
+     ],
+     "activityStartTs": "1770868800",
+     "activityEndTs": "0",
+     "activityName": "大地的弃子",
+     "isInActivity": false
+    }
+   ]
+  },
+  "warEchoes": {
+   "seasons": [
+    {
+     "id": "6",
+     "name": "狂热赛季",
+     "kvImage": "https://bbs.hycdn.cn/image/2026/11/05/baad2dacff036529122c05f0eb793fd6.png",
+     "headerImage": "https://bbs.hycdn.cn/image/2026/11/05/6c40cc01b8d4f706a185f57a3b2667c8.png",
+     "startTs": "1793851200",
+     "endTs": "1795557600",
+     "stars": 0,
+     "allPlusTasks": false,
+     "weeks": [
+      {
+       "id": "1",
+       "name": "狂热轮换Ⅰ",
+       "startTs": "1793851200",
+       "endTs": "1794427200",
+       "stars": 0,
+       "allPlusTasks": false,
+       "dungeonGroups": [
+        {
+         "star": 0,
+         "plusTask": false,
+         "name": "复仇记录：碾骨"
+        },
+        {
+         "star": 0,
+         "plusTask": false,
+         "name": "造物记录：傀"
+        },
+        {
+         "star": 0,
+         "plusTask": false,
+         "name": "铳弹砺石"
+        }
+       ]
+      }
+     ]
+    }
+   ],
+   "activity": {
+    "name": ""
+   }
+  },
+  "seekSuspicion": {
+   "count": 0,
+   "total": 200000
+  },
+  "crisisContract": [
+   {
+    "id": "2b98d70ff72c60026f5cf697a8aebbe2",
+    "highest": 0,
+    "challengeCount": 0,
+    "achieve": {
+     "achievementData": {
+      "id": "20d3dc68d6511cf0e1e92a2809402334",
+      "name": "“洗尽浊蓝”",
+      "initIcon": "https://bbs.hycdn.cn/image/2026/11/03/6bde383796ea5f9ffa9eb0b8c524d657.png",
+      "reforge2Icon": "",
+      "reforge3Icon": "",
+      "platedIcon": "https://bbs.hycdn.cn/image/2026/11/03/811ac31856a4a857493c6aedaad4938b.png",
+      "cateName": "活动奖章",
+      "canCertify": false,
+      "cate": "achv_type_event",
+      "initLevel": 3
+     },
+     "level": 0,
+     "isPlated": false,
+     "obtainTs": "0"
+    },
+    "weeklyMission": {
+     "count": 0,
+     "total": 1
+    },
+    "indicatorMission": {
+     "count": 0,
+     "total": 5
+    },
+    "stageMission": {
+     "count": 0,
+     "total": 2
+    },
+    "name": "危机合约 浸蓝测试作战",
+    "kvImage": "https://bbs.hycdn.cn/image/2026/11/05/c78ea65a4c92e108a0aa30c4c04b7aa1.png",
+    "startAtTs": "1793851200",
+    "endAtTs": "1796155200",
+    "gameplayEndAtTs": "1795557600",
+    "headerImage": "https://bbs.hycdn.cn/image/2026/11/05/c78ea65a4c92e108a0aa30c4c04b7aa1.png"
+   }
+  ],
+  "credit": {
+   "count": 0,
+   "total": 300,
+   "hasToday": false,
+   "nextRefreshTs": "1793995200"
+  }
+ }
+}

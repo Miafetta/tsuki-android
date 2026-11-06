@@ -150,15 +150,15 @@ class DashboardTest {
     @Test fun roleCacheRoundTripFailureIsolationAndClear() {
         val folder = Files.createTempDirectory("tsuki-role-test").toFile()
         try {
-            val store = RoleDataStore(folder)
+            val store = RoleDataStore(folder, "skland")
             val snapshot = ArknightsParser.snapshot(fixture(), "000000001", 1700000000000)
             val original = RoleData(snapshot, RefreshFailure.NETWORK, 123)
-            store.write("account-a", "000000001", original)
-            store.write("account-b", "000000001", RoleData(snapshot))
-            assertEquals(original, store.read("account-a", "000000001"))
+            store.write("skland", "account-a", "000000001", original)
+            store.write("skland", "account-b", "000000001", RoleData(snapshot))
+            assertEquals(original, store.read("skland", "account-a", "000000001"))
             store.clear("account-a")
-            assertNull(store.read("account-a", "000000001").snapshot)
-            assertEquals(snapshot, store.read("account-b", "000000001").snapshot)
+            assertNull(store.read("skland", "account-a", "000000001").snapshot)
+            assertEquals(snapshot, store.read("skland", "account-b", "000000001").snapshot)
         } finally { folder.deleteRecursively() }
     }
 
@@ -174,10 +174,12 @@ class DashboardTest {
     @Test fun roleCacheRejectsTraversalAndUnknownSchema() {
         val folder = Files.createTempDirectory("tsuki-role-test").toFile()
         try {
-            val store = RoleDataStore(folder)
-            assertThrows(IllegalArgumentException::class.java) { store.read("../outside", "1") }
+            val store = RoleDataStore(folder, "skland")
+            assertThrows(IllegalArgumentException::class.java) { store.read("skland", "../outside", "1") }
+            assertThrows(IllegalArgumentException::class.java) { store.read("../skland", "account", "1") }
+            assertThrows(IllegalArgumentException::class.java) { store.read("skland.endfield", "account", "../1") }
             java.io.File(folder, "account.1.json").writeText("{\"version\":99}")
-            assertThrows(IllegalArgumentException::class.java) { store.read("account", "1") }
+            assertThrows(IllegalArgumentException::class.java) { store.read("skland", "account", "1") }
         } finally { folder.deleteRecursively() }
     }
 }

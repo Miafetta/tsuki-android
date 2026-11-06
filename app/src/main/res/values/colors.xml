@@ -27,4 +27,18 @@
     <color name="widget_progress_dark">#FFD9D9D9</color>
     <color name="widget_progress_light">@color/miuix_widget_primary_light</color>
     <color name="widget_time_light">@color/miuix_widget_summary_light</color>
+    <!-- Endfield card, sampled from the official 明日方舟：终末地数据工具 (maintainer's screenshot, 2026-11-06); always dark. The
+         official surface texture is not copied: the card uses its average tone. -->
+    <color name="widget_endfield_surface">#FF444444</color>
+    <color name="widget_endfield_panel">#FF383838</color>
+    <color name="widget_endfield_yellow">#FFFAEE1C</color>
+    <color name="widget_endfield_text">#FFFFFFFF</color>
+    <color name="widget_endfield_secondary">#FF9E9E9E</color>
+    <color name="widget_endfield_pill">#FF474747</color>
+    <color name="widget_endfield_dot">#FFF27D1E</color>
+    <color name="widget_endfield_divider">#FF4A4A4A</color>
+    <color name="widget_endfield_track">#FF545454</color>
+    <color name="widget_endfield_fill">#FFE0E0E0</color>
+    <color name="widget_endfield_magenta">#FFE040D3</color>
+    <color name="widget_endfield_cyan">#FF22C7AC</color>
 </resources>

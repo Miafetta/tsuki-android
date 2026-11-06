@@ -12,6 +12,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import cafe.miafetta.tsuki.*
 import cafe.miafetta.tsuki.core.*
 import cafe.miafetta.tsuki.widget.*
+import cafe.miafetta.tsuki.ui.theme.Branding
 import kotlinx.coroutines.launch
 import top.yukonga.miuix.kmp.nav.core.*
 
@@ -90,12 +91,20 @@ internal fun ControllerDataEffects(controller: AppController, activity: Activity
         activity.contentResolver.registerContentObserver(WidgetStorageProvider.URI, false, observer)
         onDispose { activity.contentResolver.unregisterContentObserver(observer) }
     }
+    // "全部小部件" previews every game's widget with that game's own role, whatever the overview tab shows.
+    LaunchedEffect(page, state.finishedLoads, selected?.key, previewVersion) {
+        if (page != AppPage.WIDGETS) return@LaunchedEffect
+        catalogSnapshots = Branding.games.associate { (game, _) -> game to gameRole(game)?.let { state.previewSnapshot(it) } }
+    }
     val selected = selected
     // While a widget tap is unresolved, skip the remembered role so it is not written back or refreshed in its place.
     LaunchedEffect(selected?.key, page, resumeTick, awaitingOverview) {
         if (selected != null && page == AppPage.OVERVIEW && !awaitingOverview) {
             selectedKey = selected.key
-            preferences.edit { putString(UiPreferences.ROLE, selected.key) }
+            preferences.edit {
+                putString(UiPreferences.ROLE, selected.key)
+                putString(UiPreferences.gameRole(selected.game), selected.key)
+            }
             state.dashboard(selected)
             if (dashboardNeedsRefresh(state.data.snapshot, System.currentTimeMillis()) &&
                 state.data.failure == null && state.error.isEmpty() && !state.refreshing) {
@@ -116,8 +125,8 @@ private fun overviewTargetPending(controller: AppController, overviewWidgetId: I
     LaunchedEffect(target, state.finishedLoads) {
         val id = target
         if (id == null || state.finishedLoads == 0) return@LaunchedEffect
-        widgetRoleKey(state.widgets, state.roles, id)?.let {
-            selectedKey = it
+        widgetRoleKey(state.widgets, state.roles, id)?.let { key ->
+            state.roles.firstOrNull { it.key == key }?.let(::selectRole)
             page = AppPage.OVERVIEW
         }
         target = null

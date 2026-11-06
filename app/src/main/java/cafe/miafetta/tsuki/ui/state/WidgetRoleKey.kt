@@ -6,5 +6,5 @@ package cafe.miafetta.tsuki.ui.state
 internal fun widgetRoleKey(widgets: List<UiWidget>, roles: List<UiRole>, widgetId: Int): String? {
     val widget = widgets.firstOrNull { it.id == widgetId } ?: return null
     if (widget.accountId.isEmpty() || widget.roleId.isEmpty()) return null
-    return roles.firstOrNull { it.accountId == widget.accountId && it.id == widget.roleId }?.key
+    return roles.firstOrNull(widget::bindsTo)?.key
 }

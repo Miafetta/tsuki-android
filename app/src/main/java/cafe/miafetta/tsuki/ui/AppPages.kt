@@ -35,18 +35,18 @@ internal fun LazyListScope.appPages(visiblePage: Int, controller: AppController,
 private fun LazyListScope.appOverview(controller: AppController, activity: Activity) = with(controller) {
     val failure = state.data.failure?.takeIf { state.dataKey == selected?.key && it != RefreshFailure.RATE_LIMIT }
         ?.let { activity.getString(failureMessage(it.name)) }.orEmpty()
-    homePage(state.roles, selected, homeSnapshot, { selectedKey = it.key }, {
+    homePage(gameRoles, selected, homeSnapshot, ::selectRole, {
         page = AppPage.ME
         addAccount()
-    }, failure, previews, portraitLoad)
+    }, failure, previews, portraitLoad, selectedGame, state.accounts.isNotEmpty())
 }
 
 private fun LazyListScope.appWidgets(controller: AppController, activity: Activity) = with(controller) {
     widgetPage(activity, state.widgets, homeSnapshot, catalog, previews, selected?.key.orEmpty(), page == AppPage.WIDGETS,
-        { catalog = it }) { widget, chosenTheme ->
+        { catalog = it }, selectedGame, catalogSnapshots) { widget, chosenTheme, game ->
         state.error = ""
         configSheet = widget?.let { ConfigSheet.Edit(it.id, chosenTheme, it.provider == FakeArknightsAdapter.ID) }
-            ?: ConfigSheet.New(chosenTheme)
+            ?: ConfigSheet.New(chosenTheme, game = game)
     }
 }
 

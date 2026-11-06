@@ -17,8 +17,8 @@ internal fun interface SklandTransport {
 
 internal class SklandHttpsTransport : SklandTransport {
     override fun request(pathAndQuery: String, headers: Map<String, String>): SklandResponse {
-        require(pathAndQuery.substringBefore('?') in setOf("/api/v1/auth/refresh",
-            "/api/v1/game/player/binding", "/api/v1/game/player/info"))
+        require(pathAndQuery.substringBefore('?') in setOf("/api/v1/auth/refresh", "/api/v1/game/player/binding",
+            "/api/v1/game/player/info", "/api/v1/user/teenager", "/web/v1/game/endfield/card/detail"))
         val connection = URI("https://zonai.skland.com$pathAndQuery").toURL().openConnection() as HttpURLConnection
         try {
             connection.instanceFollowRedirects = false
@@ -66,23 +66,22 @@ internal object SklandSigner {
     private fun ByteArray.hex() = joinToString("") { "%02x".format(it.toInt() and 255) }
 }
 
-internal data class SklandRole(val uid: String, val label: String) {
-    init { require(uid.matches(Regex("[0-9]{1,20}")) && label.isNotBlank() && label.length <= 80) }
-}
-
 internal class SklandClient(private val transport: SklandTransport,
     private val clock: () -> Long = System::currentTimeMillis) {
     private data class Session(val token: String, val expires: Long)
     private val sessions = mutableMapOf<String, Session>()
     private val blockedUntil = mutableMapOf<String, Long>()
+    private val userIds = mutableMapOf<String, String>()
 
     @Synchronized fun forget(cred: String) {
         sessions.remove(cred)
         blockedUntil.remove(cred)
+        userIds.remove(cred)
     }
     @Synchronized fun clear() {
         sessions.clear()
         blockedUntil.clear()
+        userIds.clear()
     }
 
     @Synchronized fun roles(cred: String): List<SklandRole> = parseRoles(signed(cred, "/api/v1/game/player/binding"))
@@ -91,6 +90,22 @@ internal class SklandClient(private val transport: SklandTransport,
         require(uid.matches(Regex("[0-9]{1,20}")))
         return signed(cred, "/api/v1/game/player/info?uid=${URLEncoder.encode(uid, Charsets.UTF_8.name())}")
     }
+
+    // Endfield cards are requested with the Skland user ID, which only /user/teenager returns without the whole
+    // profile. It never changes for a Cred, so it is kept for the session.
+    @Synchronized fun endfieldCard(cred: String, serverId: String, roleId: String): JSONObject {
+        SklandRole.endfieldId(serverId, roleId)
+        val userId = userIds[cred] ?: userId(cred).also { userIds[cred] = it }
+        val query = listOf("roleId" to roleId, "serverId" to serverId, "userId" to userId)
+            .joinToString("&") { (key, value) -> "$key=${URLEncoder.encode(value, Charsets.UTF_8.name())}" }
+        return signed(cred, "/web/v1/game/endfield/card/detail?$query")
+    }
+
+    private fun userId(cred: String): String = try {
+        signed(cred, "/api/v1/user/teenager").getJSONObject("teenager").getString("userId")
+            .also { require(it.matches(Regex("[0-9]{1,20}"))) }
+    } catch (_: org.json.JSONException) { throw DataSourceFailure(RefreshFailure.INVALID_DATA) }
+    catch (_: IllegalArgumentException) { throw DataSourceFailure(RefreshFailure.INVALID_DATA) }
 
     private fun signed(cred: String, path: String): JSONObject {
         validateCred(cred)
@@ -147,25 +162,8 @@ internal class SklandClient(private val transport: SklandTransport,
     companion object {
         fun validateCred(cred: String) { require(cred.matches(Regex("[!-~]{10,4096}"))) { "Invalid credential" } }
 
-        fun parseRoles(data: JSONObject): List<SklandRole> = try {
-            val apps = data.getJSONArray("list")
-            val roles = mutableListOf<SklandRole>()
-            for (index in 0 until apps.length()) {
-                val app = apps.getJSONObject(index)
-                if (app.getString("appCode") != "arknights") continue
-                val bindings = app.getJSONArray("bindingList")
-                require(bindings.length() <= 20)
-                for (bindingIndex in 0 until bindings.length()) {
-                    val role = bindings.getJSONObject(bindingIndex)
-                    val uid = role.getString("uid")
-                    val name = role.getString("nickName").take(40)
-                    val channel = role.optString("channelName", "").take(20)
-                    roles.add(SklandRole(uid, "$name · $channel · $uid".take(80)))
-                }
-            }
-            require(roles.isNotEmpty() && roles.size <= 20 && roles.distinctBy { it.uid }.size == roles.size)
-            roles
-        } catch (_: org.json.JSONException) { throw DataSourceFailure(RefreshFailure.INVALID_DATA) }
+        fun parseRoles(data: JSONObject): List<SklandRole> = try { SklandRoles.parse(data) }
+        catch (_: org.json.JSONException) { throw DataSourceFailure(RefreshFailure.INVALID_DATA) }
         catch (_: IllegalArgumentException) { throw DataSourceFailure(RefreshFailure.INVALID_DATA) }
 
         fun retryAt(value: String?, now: Long): Long {

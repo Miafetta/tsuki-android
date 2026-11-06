@@ -23,21 +23,38 @@ import top.yukonga.miuix.kmp.squircle.squircleClip
 internal object Branding {
     const val GAME_ID = "arknights"
     const val GAME = "明日方舟"
+    const val ENDFIELD_ID = "endfield"
+    // Short name for tabs and summaries; the widget names in strings.xml use the full title.
+    const val ENDFIELD = "终末地"
     const val PLATFORM = "森空岛"
+    // Game tabs in display order: game ID to name.
+    val games = listOf(GAME_ID to GAME, ENDFIELD_ID to ENDFIELD)
+
+    fun gameName(id: String) = games.firstOrNull { it.first == id }?.second ?: GAME
 }
 
 // Widget palettes in display order: stored value to label.
 internal val widgetThemes = listOf("LIGHT" to "浅色", "DARK" to "深色")
 
-// The same name the launcher's widget list shows, for example "明日方舟 浅色".
+// The same name the launcher's widget list shows, for example "明日方舟数据工具 浅色". The Endfield card has one palette.
 @Composable
-internal fun widgetName(dark: Boolean): String =
-    stringResource(if (dark) R.string.status_widget_dark_name else R.string.status_widget_name)
+internal fun widgetName(dark: Boolean, game: String = Branding.GAME_ID): String = stringResource(when {
+    game == Branding.ENDFIELD_ID -> R.string.endfield_widget_name
+    dark -> R.string.status_widget_dark_name
+    else -> R.string.status_widget_name
+})
+
+// Every widget in catalog order: game ID, stored palette. Only Arknights offers a light and a dark card.
+internal val widgetCatalog = listOf(Branding.GAME_ID to "LIGHT", Branding.GAME_ID to "DARK", Branding.ENDFIELD_ID to "DARK")
 
 @Composable
-internal fun AppLogo(platform: Boolean = false, size: Int = 34) {
+internal fun AppLogo(platform: Boolean = false, size: Int = 34, game: String = Branding.GAME_ID) {
     val resources = LocalResources.current
-    val id = if (platform) R.drawable.logo_skland else R.drawable.logo_arknights
+    val id = when {
+        platform -> R.drawable.logo_skland
+        game == Branding.ENDFIELD_ID -> R.drawable.logo_endfield
+        else -> R.drawable.logo_arknights
+    }
     Image(remember(id) { BrandLogos.get(resources, id) }, null, Modifier.size(size.dp).squircleClip((size * 0.3f).dp))
 }
 
@@ -61,6 +78,7 @@ internal object BrandLogos {
         thread(name = "tsuki-logos") {
             get(resources, R.drawable.logo_skland)
             get(resources, R.drawable.logo_arknights)
+            get(resources, R.drawable.logo_endfield)
         }
     }
 }

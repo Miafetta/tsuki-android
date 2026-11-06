@@ -24,7 +24,9 @@ internal class WidgetPinRequest(private val file: File) {
         writeAtomic(file, bytes)
     }
 
-    fun candidate(owned: Map<Int, WidgetTheme>, configured: Set<Int>, now: Long, boot: Int): WidgetInstanceConfig? {
+    // [features] is the widget feature of each owned instance's provider; a new instance of another game never matches.
+    fun candidate(owned: Map<Int, WidgetTheme>, configured: Set<Int>, now: Long, boot: Int,
+        features: Map<Int, String> = emptyMap()): WidgetInstanceConfig? {
         val values = read() ?: return null
         val age = now - values.getProperty("time").toLong()
         if (age !in 0..120_000L || values.getProperty("boot").toInt() != boot) {
@@ -33,13 +35,16 @@ internal class WidgetPinRequest(private val file: File) {
         }
         val previous = values.getProperty("owned").split(',').filter(String::isNotEmpty).map(String::toInt).toSet()
         val theme = WidgetTheme.valueOf(values.getProperty("theme"))
-        val candidates = owned.filter { (id, palette) -> id !in previous && id !in configured && palette == theme }.keys
+        val feature = values.getProperty("feature")
+        val candidates = owned.filter { (id, palette) ->
+            id !in previous && id !in configured && palette == theme && (features[id] ?: feature) == feature
+        }.keys
         if (candidates.size > 1) {
             clear()
             return null
         }
         if (candidates.isEmpty()) return null
-        return WidgetInstanceConfig(candidates.single(), values.getProperty("provider"), values.getProperty("feature"),
+        return WidgetInstanceConfig(candidates.single(), values.getProperty("provider"), feature,
             values.getProperty("account"), values.getProperty("character"), theme, values.getProperty("failure").toBooleanStrict())
     }
 

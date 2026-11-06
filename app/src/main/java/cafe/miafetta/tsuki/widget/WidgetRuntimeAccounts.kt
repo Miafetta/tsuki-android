@@ -3,6 +3,7 @@ package cafe.miafetta.tsuki.widget
 import cafe.miafetta.tsuki.providers.AndroidCredentialKey
 import cafe.miafetta.tsuki.providers.SklandAccount
 import cafe.miafetta.tsuki.providers.SklandClient
+import cafe.miafetta.tsuki.providers.SklandGame
 import cafe.miafetta.tsuki.providers.matchingAccountForLogin
 import java.util.UUID
 
@@ -22,13 +23,13 @@ internal fun WidgetRuntime.login(name: String, cred: String) {
         accountGeneration++
         if (existing != null && (existing.cred != cred || existing.roles != roles)) {
             previousCred = existing.cred.takeIf { it != cred }
-            skland.forget(existing.id)
+            sklandGames.forEach { it.forget(existing.id) }
             roleData.clear(existing.id)
             // Widgets keep their binding when the role is still on the account; otherwise they become unconfigured.
             repository.ids().forEach { id ->
                 val config = read(id)?.config
                 if (config?.accountId != existing.id) return@forEach
-                if (roles.none { it.uid == config.characterId }) {
+                if (roles.none { it.game.providerId == config.providerId && it.uid == config.characterId }) {
                     delete(id)
                     redraw(id)
                 } else {
@@ -54,7 +55,7 @@ internal fun WidgetRuntime.logout(accountId: String) {
         accountGeneration++
         cred = accounts.list().singleOrNull { it.id == accountId }?.cred
         accounts.delete(accountId)
-        skland.forget(accountId)
+        sklandGames.forEach { it.forget(accountId) }
         roleData.clear(accountId)
         clearAccountWidgets(accountId)
     }
@@ -66,7 +67,7 @@ internal fun WidgetRuntime.resetAccounts() {
         accountGeneration++
         clearAccountWidgets(null)
         accounts.clear()
-        skland.forget()
+        sklandGames.forEach { it.forget() }
         roleData.clear()
         AndroidCredentialKey.delete()
     }
@@ -76,7 +77,8 @@ internal fun WidgetRuntime.resetAccounts() {
 private fun WidgetRuntime.clearAccountWidgets(accountId: String?) {
     repository.ids().forEach { id ->
         val config = repository.read(id)?.config
-        if (config?.providerId == skland.id && (accountId == null || config.accountId == accountId)) {
+        if (config != null && config.providerId in SklandGame.providerIds &&
+            (accountId == null || config.accountId == accountId)) {
             coordinator.delete(id)
             scheduler.cancel(id)
             if (id in StatusWidgetProvider.owned(application)) render(id, null)

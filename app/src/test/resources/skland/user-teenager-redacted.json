@@ -1,0 +1,24 @@
+{
+ "ts": 1793956828,
+ "teenager": {
+  "userId": "1000001",
+  "status": 1,
+  "allow": true,
+  "popup": false,
+  "popupRestReminder": false
+ },
+ "teenagerMeta": {
+  "duration": 2400,
+  "start": "06:00",
+  "end": "22:00",
+  "restReminderInterval": 1200,
+  "age": 16
+ },
+ "customizedTeenagerMeta": {
+  "duration": 2400,
+  "start": "06:00",
+  "end": "22:00",
+  "restReminderInterval": 1200,
+  "age": 16
+ }
+}

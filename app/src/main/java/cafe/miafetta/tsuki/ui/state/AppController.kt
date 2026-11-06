@@ -35,6 +35,7 @@ internal class AppController(
     var page by session::page
     var catalog by session::catalog
     var selectedKey by session::selectedKey
+    var selectedGame by session::selectedGame
     var configSheet by session::configSheet
     var pendingPin by session::pendingPin
     var permissionDialog by session::permissionDialog
@@ -44,8 +45,34 @@ internal class AppController(
     val previewRender = WidgetPreviewSource(activity)::render
     val portraitLoad = TrainingPortraitSource(activity)::load
     val addingAccount get() = AppRoute.AddAccount in nav.backStack
-    val selected get() = state.roles.firstOrNull { it.key == selectedKey } ?: state.roles.firstOrNull()
+    // Roles of the selected game tab; the overview shows one of them.
+    val gameRoles get() = state.roles.filter { it.game == selectedGame }
+    val selected get() = gameRoles.firstOrNull { it.key == selectedKey } ?: gameRoles.firstOrNull()
     val homeSnapshot get() = state.data.snapshot.takeIf { state.dataKey == selected?.key }
+
+    // The catalog previews of every game: each game's own remembered role, read from the local cache.
+    var catalogSnapshots by mutableStateOf(emptyMap<String, WidgetSnapshot?>())
+
+    // The role a game tab shows: the selected one for the current tab, otherwise the last one shown in that game.
+    fun gameRole(game: String): UiRole? {
+        if (game == selectedGame) return selected
+        val roles = state.roles.filter { it.game == game }
+        val remembered = preferences.getString(UiPreferences.gameRole(game), null)
+        return roles.firstOrNull { it.key == remembered } ?: roles.firstOrNull()
+    }
+
+    fun selectRole(role: UiRole) {
+        selectedGame = role.game
+        selectedKey = role.key
+    }
+
+    // A game tab returns to the role last shown in that game.
+    fun selectGame(game: String) {
+        if (game == selectedGame) return
+        selectedGame = game
+        selectedKey = preferences.getString(UiPreferences.gameRole(game), null)
+            ?: preferences.getString(UiPreferences.ROLE, "")?.takeIf { gameOfKey(it) == game } ?: ""
+    }
 
     fun changeTheme(value: String) {
         theme = value

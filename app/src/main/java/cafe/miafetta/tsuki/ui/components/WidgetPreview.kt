@@ -1,5 +1,6 @@
 package cafe.miafetta.tsuki.ui.components
 
+import cafe.miafetta.tsuki.ui.theme.Branding
 import cafe.miafetta.tsuki.ui.theme.isTsukiDarkTheme
 
 import android.util.LruCache
@@ -19,20 +20,22 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.dp
 import cafe.miafetta.tsuki.core.*
 
-// What every widget preview needs from the state layer: the renderer, the shared bitmap cache and the refresh version.
+// What every widget preview needs from the state layer: the renderer (snapshot, dark palette, Branding game ID), the shared
+// bitmap cache and the refresh version.
 @Immutable
-internal class WidgetPreviews(val render: suspend (WidgetSnapshot?, Boolean) -> ImageBitmap?,
+internal class WidgetPreviews(val render: suspend (WidgetSnapshot?, Boolean, String) -> ImageBitmap?,
     val cache: LruCache<String, ImageBitmap>, val version: Int)
 
 // One preview that may be shown later, e.g. on the other tab of the Widgets page.
 @Immutable
-internal data class PreviewTarget(val snapshot: WidgetSnapshot?, val dark: Boolean, val previewId: String)
+internal data class PreviewTarget(val snapshot: WidgetSnapshot?, val dark: Boolean, val previewId: String,
+    val game: String = Branding.GAME_ID)
 
 // The single widget preview used by Overview, the Widgets page and the widget editor.
 @Composable
 internal fun WidgetPreviewStage(previews: WidgetPreviews, snapshot: WidgetSnapshot?, dark: Boolean, previewId: String,
-    modifier: Modifier = Modifier, imageModifier: Modifier = Modifier) {
-    WidgetStage(modifier) { WidgetPreview(previews, snapshot, dark, previewId, imageModifier) }
+    modifier: Modifier = Modifier, imageModifier: Modifier = Modifier, game: String = Branding.GAME_ID) {
+    WidgetStage(modifier) { WidgetPreview(previews, snapshot, dark, previewId, imageModifier, game) }
 }
 
 // Renders previews that are not on screen yet into the shared cache, so they appear at once and current when shown,
@@ -43,8 +46,8 @@ internal fun WarmWidgetPreviews(previews: WidgetPreviews, targets: List<PreviewT
     val night = isNightConfiguration()
     LaunchedEffect(targets, previews.version, night) {
         targets.forEach { target ->
-            val key = previewKey(target.previewId, target.dark, night)
-            previews.render(target.snapshot, target.dark)?.let { previews.cache.put(key, it) }
+            val key = previewKey("${target.game}:${target.previewId}", target.dark, night)
+            previews.render(target.snapshot, target.dark, target.game)?.let { previews.cache.put(key, it) }
         }
     }
 }
@@ -65,12 +68,12 @@ internal const val PreviewFadeMillis = 180
 
 @Composable
 private fun WidgetPreview(previews: WidgetPreviews, snapshot: WidgetSnapshot?, dark: Boolean, previewId: String,
-    modifier: Modifier) {
-    val cacheKey = previewKey(previewId, dark, isNightConfiguration())
+    modifier: Modifier, game: String) {
+    val cacheKey = previewKey("$game:$previewId", dark, isNightConfiguration())
     val image by key(cacheKey) {
         produceState(previews.cache.get(cacheKey), snapshot, previews.version) {
             previews.cache.get(cacheKey)?.let { value = it }
-            val rendered = previews.render(snapshot, dark)
+            val rendered = previews.render(snapshot, dark, game)
             if (rendered != null) {
                 previews.cache.put(cacheKey, rendered)
                 value = rendered

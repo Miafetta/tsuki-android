@@ -17,7 +17,8 @@ internal class SklandAccount(val id: String, val name: String, val cred: String,
         // name is the user's optional alias; the UI shows the platform name when it is blank.
         require(id.matches(Regex("[a-zA-Z0-9-]{1,80}")) && name.length <= 80)
         SklandClient.validateCred(cred)
-        require(roles.isNotEmpty() && roles.size <= 20 && roles.distinctBy { it.uid }.size == roles.size && retryAt >= 0)
+        require(roles.isNotEmpty() && roles.size <= SklandRoles.LIMIT && roles.distinctBy { it.key }.size == roles.size &&
+            retryAt >= 0)
     }
     override fun toString() = "SklandAccount(redacted)"
 }
@@ -30,13 +31,13 @@ internal interface AccountRepository {
 }
 
 internal fun matchingAccountForLogin(accounts: List<SklandAccount>, cred: String, roles: List<SklandRole>): SklandAccount? {
-    val ids = roles.map { it.uid }.toSet()
-    require(ids.isNotEmpty())
-    val matches = accounts.filter { it.cred == cred || it.roles.any { role -> role.uid in ids } }
+    val keys = roles.map { it.key }.toSet()
+    require(keys.isNotEmpty())
+    val matches = accounts.filter { it.cred == cred || it.roles.any { role -> role.key in keys } }
     require(matches.size <= 1) { "Roles belong to multiple stored accounts" }
     return matches.singleOrNull()?.also { existing ->
-        cafe.miafetta.tsuki.core.validateAccountUpdate(existing.roles.map { it.uid }, ids.toList(),
-            accounts.filter { it.id != existing.id }.flatMap { it.roles }.map { it.uid })
+        cafe.miafetta.tsuki.core.validateAccountUpdate(existing.roles.map { it.key }, keys.toList(),
+            accounts.filter { it.id != existing.id }.flatMap { it.roles }.map { it.key })
     }
 }
 
@@ -74,10 +75,8 @@ internal class FileAccountRepository(private val file: File, private val cipher:
                     val value = values.getJSONObject(index)
                     val roles = value.getJSONArray("roles")
                     SklandAccount(value.getString("id"), value.getString("name"), value.getString("cred"),
-                        (0 until roles.length()).map { roleIndex ->
-                            val role = roles.getJSONObject(roleIndex)
-                            SklandRole(role.getString("uid"), role.getString("label"))
-                        }, value.optLong("retryAt", 0))
+                        (0 until roles.length()).map { roleIndex -> readRole(roles.getJSONObject(roleIndex)) },
+                        value.optLong("retryAt", 0))
                 }.also { accounts -> require(accounts.distinctBy { it.id }.size == accounts.size) }
             } finally { plaintext.fill(0) }
         } catch (_: GeneralSecurityException) { throw DataSourceFailure(RefreshFailure.STORAGE) }
@@ -100,7 +99,10 @@ internal class FileAccountRepository(private val file: File, private val cipher:
         val values = JSONArray()
         accounts.forEach { account ->
             val roles = JSONArray()
-            account.roles.forEach { roles.put(JSONObject().put("uid", it.uid).put("label", it.label)) }
+            account.roles.forEach {
+                roles.put(JSONObject().put("uid", it.uid).put("label", it.label).put("game", it.game.appCode)
+                    .put("server", it.server))
+            }
             values.put(JSONObject().put("id", account.id).put("name", account.name).put("cred", account.cred)
                 .put("roles", roles).put("retryAt", account.retryAt))
         }
@@ -110,4 +112,9 @@ internal class FileAccountRepository(private val file: File, private val cipher:
         catch (_: java.security.ProviderException) { throw DataSourceFailure(RefreshFailure.STORAGE) }
         finally { plaintext.fill(0) }
     }
+
+    // Roles saved before 2.2.0 have neither "game" nor "server"; they are all Arknights roles.
+    private fun readRole(role: JSONObject) = SklandRole(role.getString("uid"), role.getString("label"),
+        requireNotNull(SklandGame.fromAppCode(role.optString("game", SklandGame.ARKNIGHTS.appCode))),
+        role.optString("server").takeIf { it.isNotEmpty() })
 }

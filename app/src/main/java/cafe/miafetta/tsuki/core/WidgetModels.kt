@@ -70,10 +70,13 @@ data class WidgetInstanceConfig(
         featureId == other.featureId && accountId == other.accountId && characterId == other.characterId
 }
 
+// [metricId] is the stable identity used by reminders; snapshots saved before 2.2.0 have none (see MetricIds.kt).
 data class WidgetMetric(val label: String, val value: Int, val maximum: Int? = null, val recoveryAt: Long? = null,
-    val timer: MetricTimer = MetricTimer.FULL, val text: String? = null, val estimated: Boolean = false) {
+    val timer: MetricTimer = MetricTimer.FULL, val text: String? = null, val estimated: Boolean = false,
+    val metricId: String? = null) {
     init {
         require(label.isNotBlank() && label.length <= 40 && value >= 0)
+        require(metricId == null || metricId.matches(Regex("[a-z][a-z0-9_]{0,19}(\\.[a-z0-9_]{1,30}){1,2}")))
         require(maximum == null || maximum > 0)
         require(recoveryAt == null || recoveryAt >= 0)
         require(text == null || text.isNotBlank() && text.length <= 80 && !text.contains('\n') && !text.contains('\r'))

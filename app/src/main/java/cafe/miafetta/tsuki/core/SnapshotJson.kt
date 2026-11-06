@@ -8,6 +8,7 @@ internal object SnapshotJson {
         JSONObject().put("label", metric.label).put("value", metric.value)
             .put("maximum", metric.maximum).put("recoveryAt", metric.recoveryAt)
             .put("timer", metric.timer.name).put("text", metric.text).put("estimated", metric.estimated)
+            .put("id", metric.metricId)
     })
 
     fun readMetrics(values: JSONArray, limit: Int): List<WidgetMetric> {
@@ -18,7 +19,7 @@ internal object SnapshotJson {
                 if (value.has("maximum")) value.getInt("maximum") else null,
                 if (value.has("recoveryAt")) value.getLong("recoveryAt") else null,
                 MetricTimer.valueOf(value.getString("timer")), value.optString("text").takeIf { it.isNotEmpty() },
-                value.getBoolean("estimated"))
+                value.getBoolean("estimated"), value.optString("id").takeIf { it.isNotEmpty() })
         }
     }
 

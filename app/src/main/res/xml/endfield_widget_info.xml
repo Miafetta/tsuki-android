@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
+    android:minWidth="300dp" android:minHeight="110dp" android:initialLayout="@layout/endfield_widget_loading"
+    android:targetCellWidth="4" android:targetCellHeight="2" android:previewLayout="@layout/endfield_widget_preview"
+    android:configure="cafe.miafetta.tsuki.WidgetConfigActivity" android:widgetFeatures="reconfigurable"
+    android:description="@string/endfield_description" android:updatePeriodMillis="0"
+    android:resizeMode="none" android:widgetCategory="home_screen" />

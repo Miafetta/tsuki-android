@@ -31,6 +31,8 @@ import cafe.miafetta.tsuki.providers.FakeArknightsAdapter
 import cafe.miafetta.tsuki.providers.FileAccountRepository
 import cafe.miafetta.tsuki.providers.SklandArknightsAdapter
 import cafe.miafetta.tsuki.providers.SklandClient
+import cafe.miafetta.tsuki.providers.SklandEndfieldAdapter
+import cafe.miafetta.tsuki.providers.SklandGame
 import cafe.miafetta.tsuki.providers.SklandHttpsTransport
 import java.io.File
 
@@ -42,13 +44,21 @@ internal class WidgetRuntime private constructor(internal val application: Appli
         CredentialCipher(AndroidCredentialKey::get))
     internal val client = SklandClient(SklandHttpsTransport())
     private val fake = FakeArknightsAdapter()
-    internal val roleData = RoleDataStore(File(application.noBackupFilesDir, "roles"))
+    internal val roleData = RoleDataStore(File(application.noBackupFilesDir, "roles"), SklandArknightsAdapter.ID)
     internal val skland = SklandArknightsAdapter(accounts, client, onSnapshot = { account, role, snapshot ->
-        roleData.write(account, role, RoleData(snapshot))
+        roleData.write(SklandArknightsAdapter.ID, account, role, RoleData(snapshot))
     })
-    private val adapters = listOf(fake, skland)
-    internal val coordinator = WidgetUpdateCoordinator(repository,
-        mapOf(FEATURE to WidgetDefinition(FEATURE, skland.id, setOf(fake.id))), adapters.associateBy { it.id })
+    internal val endfield = SklandEndfieldAdapter(accounts, client, onSnapshot = { account, role, snapshot ->
+        roleData.write(SklandGame.ENDFIELD.providerId, account, role, RoleData(snapshot))
+    })
+    // Every Skland game; account changes reset all of them.
+    internal val sklandGames = listOf(skland, endfield)
+    private val adapters = listOf(fake) + sklandGames
+    private val roleFetchers = sklandGames.associate { it.id to it::fetchRole }
+    internal val coordinator = WidgetUpdateCoordinator(repository, mapOf(
+        FEATURE to WidgetDefinition(FEATURE, skland.id, setOf(fake.id)),
+        ENDFIELD_FEATURE to WidgetDefinition(ENDFIELD_FEATURE, endfield.id),
+    ), adapters.associateBy { it.id })
     private val avatars = AvatarCache(File(application.cacheDir, "official-avatars"))
     private val renderer = StatusWidgetRenderer(avatars)
     internal val scheduler: JobScheduler = application.getSystemService(JobScheduler::class.java)
@@ -72,8 +82,9 @@ internal class WidgetRuntime private constructor(internal val application: Appli
     private fun recoverPin(id: Int) {
         if (!pinRequest.pending) return
         val owned = owned().associateWith { StatusWidgetProvider.theme(application, it) }
+        val features = owned.keys.associateWith { StatusWidgetProvider.feature(application, it) }
         val configured = owned.keys.filter { repository.read(it) != null }.toSet()
-        val config = pinRequest.candidate(owned, configured, SystemClock.elapsedRealtime(), bootCount()) ?: return
+        val config = pinRequest.candidate(owned, configured, SystemClock.elapsedRealtime(), bootCount(), features) ?: return
         if (config.widgetId != id) return
         // HyperOS may bind the widget without delivering requestPinAppWidget's success callback.
         coordinator.configure(config)
@@ -82,8 +93,9 @@ internal class WidgetRuntime private constructor(internal val application: Appli
 
     @Synchronized fun read(id: Int, accountIds: Set<String>? = null): WidgetRecord? {
         val record = repository.read(id)
-        if (record?.config?.providerId == skland.id &&
-            !(accountIds?.contains(record.config.accountId) ?: accounts.list().any { it.id == record.config.accountId })) {
+        val config = record?.config
+        if (config != null && config.providerId in SklandGame.providerIds &&
+            !(accountIds?.contains(config.accountId) ?: accounts.list().any { it.id == config.accountId })) {
             coordinator.delete(id)
             return null
         }
@@ -102,8 +114,8 @@ internal class WidgetRuntime private constructor(internal val application: Appli
             recoverPin(id)
             val record = read(id)
             when {
-                record == null || record.config.providerId == skland.id && accounts.list().none { it.id == record.config.accountId } ->
-                    render(id, record)
+                record == null || record.config.providerId in SklandGame.providerIds &&
+                    accounts.list().none { it.id == record.config.accountId } -> render(id, record)
                 record.config.providerId == fake.id -> render(id, coordinator.refresh(id, System.currentTimeMillis()))
                 else -> scheduleRefresh(id, record, force)
             }
@@ -204,37 +216,43 @@ internal class WidgetRuntime private constructor(internal val application: Appli
     // Each choice is paired with the ID of the adapter that listed it, so callers never guess the data source.
     fun characters() = adapters.flatMap { adapter -> adapter.characters.map { adapter.id to it } }
 
-    @Synchronized fun dashboard(accountId: String, characterId: String): RoleData {
+    @Synchronized fun dashboard(providerId: String, accountId: String, characterId: String): RoleData {
+        val game = requireNotNull(SklandGame.fromProvider(providerId))
         val currentAccounts = accounts.list()
-        require(currentAccounts.any { it.id == accountId && it.roles.any { role -> role.uid == characterId } })
+        require(currentAccounts.any { it.id == accountId && it.roles.any { role -> role.game == game && role.uid == characterId } })
         val accountIds = currentAccounts.map { it.id }.toSet()
-        val saved = roleData.read(accountId, characterId)
+        val saved = roleData.read(providerId, accountId, characterId)
         val cached = owned().toList().mapNotNull { id ->
-            read(id, accountIds)?.takeIf { it.config.accountId == accountId && it.config.characterId == characterId }?.snapshot
+            read(id, accountIds)?.takeIf { it.config.binds(providerId, accountId, characterId) }?.snapshot
         }.maxByOrNull { it.fetchedAt }
         return saved.copy(snapshot = listOfNotNull(saved.snapshot, cached).maxByOrNull { it.fetchedAt })
     }
 
-    fun refreshRole(accountId: String, characterId: String) {
+    fun refreshRole(providerId: String, accountId: String, characterId: String) {
+        val fetch = requireNotNull(roleFetchers[providerId]) { "Unsupported data source" }
         val generation = synchronized(this) {
-            dashboard(accountId, characterId)
+            dashboard(providerId, accountId, characterId)
             accountGeneration
         }
-        try { skland.fetchRole(accountId, characterId) }
+        try { fetch(accountId, characterId) }
         catch (failure: DataSourceFailure) {
             synchronized(this) {
                 if (generation == accountGeneration) {
-                    val previous = dashboard(accountId, characterId)
-                    roleData.write(accountId, characterId, previous.copy(failure = failure.reason, retryAt = failure.retryAt))
+                    val previous = dashboard(providerId, accountId, characterId)
+                    roleData.write(providerId, accountId, characterId,
+                        previous.copy(failure = failure.reason, retryAt = failure.retryAt))
                 }
             }
         }
         synchronized(this) {
             if (generation != accountGeneration) return
-            owned().filter { id -> read(id)?.config?.let { it.accountId == accountId && it.characterId == characterId } == true }
+            owned().filter { id -> read(id)?.config?.binds(providerId, accountId, characterId) == true }
                 .forEach { update(it, true) }
         }
     }
+
+    private fun WidgetInstanceConfig.binds(providerId: String, accountId: String, characterId: String) =
+        this.providerId == providerId && this.accountId == accountId && this.characterId == characterId
 
     fun avatar(url: String?): ByteArray? = avatars.read(url)
     fun prepareAvatar(url: String?) {
@@ -242,8 +260,8 @@ internal class WidgetRuntime private constructor(internal val application: Appli
     }
 
     // The preview is shared with the app process; a shared copy avoids keeping two large bitmaps alive.
-    fun preview(snapshot: WidgetSnapshot?, theme: WidgetTheme): Bitmap {
-        val bitmap = renderer.preview(application, snapshot, theme)
+    fun preview(snapshot: WidgetSnapshot?, theme: WidgetTheme, feature: String = FEATURE): Bitmap {
+        val bitmap = renderer.preview(application, snapshot, theme, feature)
         val shared = try {
             bitmap.asShared()
         } catch (failure: Exception) {
@@ -256,6 +274,14 @@ internal class WidgetRuntime private constructor(internal val application: Appli
 
     companion object {
         const val FEATURE = "skland.arknights.status"
+        const val ENDFIELD_FEATURE = "skland.endfield.status"
+
+        // Widget feature of a role's data source; the debug fixture shares the Arknights widget.
+        fun featureFor(providerId: String) = when (providerId) {
+            SklandGame.ENDFIELD.providerId -> ENDFIELD_FEATURE
+            else -> FEATURE
+        }
+
         private var instance: WidgetRuntime? = null
         @Synchronized fun get(context: Context): WidgetRuntime = instance
             ?: WidgetRuntime(context.applicationContext as Application).also { instance = it }

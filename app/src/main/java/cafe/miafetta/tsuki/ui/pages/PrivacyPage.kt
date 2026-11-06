@@ -6,23 +6,24 @@ import androidx.compose.runtime.Composable
 import cafe.miafetta.tsuki.BuildConfig
 
 // Update the date whenever the content below changes; every statement is checked against the code.
-private const val PrivacyUpdated = "2026 年 11 月 5 日"
+private const val PrivacyUpdated = "2026 年 11 月 6 日"
 
 private val privacySections = listOf(
     InfoSection("我们保存的信息", listOf(
         "${Branding.PLATFORM}凭据" to "你填写或通过网页登录取得的 Cred，以及你填写的账号名称（可以不填）。" +
             "Cred 加密后保存，不会写入日志或崩溃信息。",
-        "角色信息" to "通过${Branding.PLATFORM}获取的角色名称、服务器与 UID。",
-        "游戏数据" to "最近一次同步的理智、任务、基建等数据以及角色头像，用于离线查看和显示小部件。",
+        "角色信息" to "通过${Branding.PLATFORM}获取的明日方舟与明日方舟：终末地角色名称、服务器与 UID。",
+        "游戏数据" to "最近一次同步的理智、任务、基建、活跃度、通行证等数据以及角色头像，用于离线查看和显示小部件。",
         "小部件配置" to "每个小部件绑定的角色与配色。",
-        "偏好设置" to "深色模式、界面模糊效果与上次查看的角色。")),
+        "偏好设置" to "深色模式、界面模糊效果与上次查看的游戏和角色。")),
     InfoSection("信息的使用", listOf(
         "用途" to "上述信息仅用于在应用内和桌面小部件中展示你的游戏数据。",
         "剪贴板" to "只在你点击 Cred 输入框的粘贴按钮时读取一次剪贴板，用来填入 Cred；不在后台读取，也不保存剪贴板内容。",
         "不进行的处理" to "Tsuki 不包含广告、统计分析或任何第三方 SDK，不收集设备标识符，" +
             "除下文所列的网络请求外，不会向任何第三方提供你的信息。")),
     InfoSection("网络通信", listOf(
-        "${Branding.PLATFORM}（zonai.skland.com）" to "使用 Cred 验证账号并获取角色数据。Cred 只会发送到该地址。",
+        "${Branding.PLATFORM}（zonai.skland.com）" to "使用 Cred 验证账号，并获取明日方舟与终末地的角色数据。获取终末地数据前，" +
+            "会先读取一次${Branding.PLATFORM}账号的用户 ID，它只保存在内存中。Cred 只会发送到该地址。",
         "鹰角网络素材服务器（web.hycdn.cn）" to "下载公开的游戏头像，请求中不包含任何账号信息。",
         "${Branding.PLATFORM}官方登录页（仅在你选择网页登录时）" to "在应用内网页中打开官方页面。账号、密码与验证码由你直接" +
             "提交给官方页面及其加载的服务（包括人机验证），Tsuki 不读取这些内容；登录完成后，Tsuki 只从页面读取 Cred，" +

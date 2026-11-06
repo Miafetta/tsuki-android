@@ -8,6 +8,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.os.Build
 import android.util.Log
+import cafe.miafetta.tsuki.core.WidgetTheme
 
 open class StatusWidgetProvider : AppWidgetProvider() {
     override fun onReceive(context: Context, intent: Intent) {
@@ -74,19 +75,35 @@ open class StatusWidgetProvider : AppWidgetProvider() {
     companion object {
         const val MANUAL_REFRESH = "cafe.miafetta.tsuki.action.STATUS_REFRESH"
         // Refresh, configuration and pin callbacks ignore instances of any provider missing from this list.
-        private val providers = listOf(StatusWidgetProvider::class.java, OpaqueWidgetProvider::class.java)
+        private val providers = listOf(StatusWidgetProvider::class.java, OpaqueWidgetProvider::class.java,
+            EndfieldWidgetProvider::class.java)
+
         fun owned(context: Context): IntArray {
             val manager = AppWidgetManager.getInstance(context)
             return providers.flatMap { manager.getAppWidgetIds(ComponentName(context, it)).asList() }.toIntArray()
         }
-        internal fun providerClass(theme: cafe.miafetta.tsuki.core.WidgetTheme) =
-            if (theme == cafe.miafetta.tsuki.core.WidgetTheme.DARK) OpaqueWidgetProvider::class.java
-            else StatusWidgetProvider::class.java
-        internal fun theme(context: Context, id: Int): cafe.miafetta.tsuki.core.WidgetTheme =
-            if (AppWidgetManager.getInstance(context).getAppWidgetInfo(id)?.provider?.className == StatusWidgetProvider::class.java.name)
-                cafe.miafetta.tsuki.core.WidgetTheme.LIGHT else cafe.miafetta.tsuki.core.WidgetTheme.DARK
+        // Arknights has a light and a dark card; the Endfield card is always dark, like the official widget.
+        internal fun providerClass(feature: String, theme: WidgetTheme): Class<out StatusWidgetProvider> = when {
+            feature == WidgetRuntime.ENDFIELD_FEATURE -> EndfieldWidgetProvider::class.java
+            theme == WidgetTheme.DARK -> OpaqueWidgetProvider::class.java
+            else -> StatusWidgetProvider::class.java
+        }
+        // The palettes a feature offers; only Arknights lets the user choose.
+        internal fun themes(feature: String) =
+            if (feature == WidgetRuntime.ENDFIELD_FEATURE) listOf(WidgetTheme.DARK) else listOf(WidgetTheme.LIGHT, WidgetTheme.DARK)
+        private fun className(context: Context, id: Int) =
+            AppWidgetManager.getInstance(context).getAppWidgetInfo(id)?.provider?.className
+        // Only the light Arknights provider keeps the host's blur; the others draw their own dark surface.
+        internal fun theme(context: Context, id: Int): WidgetTheme =
+            if (className(context, id) == StatusWidgetProvider::class.java.name) WidgetTheme.LIGHT else WidgetTheme.DARK
+        // The widget feature an instance shows, from its provider; Arknights for an unknown instance.
+        internal fun feature(context: Context, id: Int) =
+            if (className(context, id) == EndfieldWidgetProvider::class.java.name) WidgetRuntime.ENDFIELD_FEATURE else WidgetRuntime.FEATURE
     }
 }
 
 // shortcut: existing IDs cannot change provider; re-add cards to change the launcher material.
 class OpaqueWidgetProvider : StatusWidgetProvider()
+
+// The Endfield card, always dark; refresh, pin and configuration share StatusWidgetProvider's handling.
+class EndfieldWidgetProvider : StatusWidgetProvider()

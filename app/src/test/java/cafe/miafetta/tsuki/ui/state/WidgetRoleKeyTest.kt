@@ -36,6 +36,28 @@ class WidgetRoleKeyTest {
         assertNull(widgetRoleKey(listOf(widget(7, "b", "2")), roles, 7))
     }
 
+    @Test fun dataSourceMustMatchToo() {
+        // An Endfield widget whose role digits equal an Arknights role must not select the Arknights role.
+        val endfieldRole = UiRole("a", "账号", "1~1", "管理员", "skland.endfield", "官服")
+        val widget = UiWidget(7, "a", "1~1", "skland.endfield", "DARK", null, "", false)
+        assertNull(widgetRoleKey(listOf(widget.copy(roleId = "1")), roles + endfieldRole, 7))
+        assertEquals("skland.endfield/a/1~1", widgetRoleKey(listOf(widget), roles + endfieldRole, 7))
+    }
+
+    @Test fun roleKeysNamesAndServers() {
+        // Arknights keeps the key installed versions saved as the selected role, and its legacy label form.
+        val arknights = UiRole("a", "", "000000001", "测试博士 · 官服 · 000000001")
+        assertEquals("a/000000001", arknights.key)
+        assertEquals("测试博士", arknights.name)
+        assertEquals("官服", arknights.server)
+        assertEquals("000000001", arknights.displayId)
+        val endfield = UiRole("a", "", "1~000000001", "测试管理员", "skland.endfield", "官服")
+        assertEquals("skland.endfield/a/1~000000001", endfield.key)
+        assertEquals("测试管理员", endfield.name)
+        assertEquals("官服", endfield.server)
+        assertEquals("000000001", endfield.displayId)
+    }
+
     private fun role(account: String, id: String) = UiRole(account, "账号", id, "角色")
 
     private fun widget(id: Int, account: String, roleId: String) =

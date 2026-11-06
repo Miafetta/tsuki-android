@@ -41,8 +41,10 @@ class WidgetRenderInstrumentation : Instrumentation() {
     private var hostProbe: String? = null
     private var widgetStartup = false
     private var providerBreakdown = false
+    private var runEndfieldProbe = false
     override fun onCreate(arguments: Bundle?) {
         providerBreakdown = arguments?.getString("providerBreakdown") == "true"
+        runEndfieldProbe = arguments?.getString("endfieldProbe") == "true"
         appUi = arguments?.getString("appUi") == "true"
         redesignV4 = arguments?.getString("redesignV4")
         glassCalibration = arguments?.getString("glassCalibration") == "true"
@@ -65,6 +67,8 @@ class WidgetRenderInstrumentation : Instrumentation() {
         when {
             widgetStartup -> finishWith(widgetStartupVerification(this))
             providerBreakdown -> finishWith(runCatching { providerReadBreakdown(targetContext) }
+                .fold({ true to it }, { false to it.stackTraceToString() }))
+            runEndfieldProbe -> finishWith(runCatching { endfieldProbe(targetContext) }
                 .fold({ true to it }, { false to it.stackTraceToString() }))
             probe != null -> sendHostProbe(probe)
             lifecycle -> finishWith(cafe.miafetta.tsuki.ui.windowLifecycleVerification(this))

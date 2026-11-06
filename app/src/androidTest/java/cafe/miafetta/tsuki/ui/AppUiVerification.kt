@@ -36,7 +36,7 @@ class AppUiVerification(internal val runner: Instrumentation) {
     internal val catalog = mutableIntStateOf(0)
     private val previewCache = android.util.LruCache<String, androidx.compose.ui.graphics.ImageBitmap>(8)
     internal val previewVersion = mutableIntStateOf(0)
-    private var previewRender: (suspend (WidgetSnapshot?, Boolean) -> androidx.compose.ui.graphics.ImageBitmap?)? = null
+    private var previewRender: (suspend (WidgetSnapshot?, Boolean, String) -> androidx.compose.ui.graphics.ImageBitmap?)? = null
     internal fun previews() = WidgetPreviews(checkNotNull(previewRender), previewCache, previewVersion.intValue)
     internal val canRefresh = mutableStateOf(true)
     internal var refreshClicks = 0

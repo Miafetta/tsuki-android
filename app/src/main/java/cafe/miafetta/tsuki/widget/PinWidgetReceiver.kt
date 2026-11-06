@@ -49,8 +49,9 @@ class PinWidgetReceiver : BroadcastReceiver() {
             val callback = PendingIntent.getBroadcast(context, 0, intent,
                 PendingIntent.FLAG_MUTABLE or PendingIntent.FLAG_ONE_SHOT)
             val theme = cafe.miafetta.tsuki.core.WidgetTheme.valueOf(requireNotNull(config.getString(Storage.THEME)))
+            val provider = StatusWidgetProvider.providerClass(requireNotNull(config.getString(Storage.FEATURE_ID)), theme)
             val accepted = try {
-                manager.requestPinAppWidget(ComponentName(context, StatusWidgetProvider.providerClass(theme)), null, callback)
+                manager.requestPinAppWidget(ComponentName(context, provider), null, callback)
             } catch (failure: RuntimeException) {
                 context.storageCall(Storage.CLEAR_PIN, selection)
                 callback.cancel()

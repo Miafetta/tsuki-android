@@ -12,7 +12,7 @@
     <string name="event_manual">手动刷新</string>
     <string name="event_options">尺寸或选项变化</string>
     <string name="refresh">点此刷新</string>
-    <string name="status_widget_name">明日方舟 浅色</string>
+    <string name="status_widget_name">明日方舟数据工具 浅色</string>
     <string name="status_description">查看明日方舟的理智、任务与基建进度</string>
     <string name="status_unconfigured">点击配置明日方舟</string>
     <string name="status_storage_error">无法读取小部件设置，请重试</string>
@@ -23,7 +23,7 @@
     <string name="error_data">数据不完整</string>
     <string name="error_network">网络连接失败</string>
     <string name="error_server">服务器异常</string>
-    <string name="status_widget_dark_name">明日方舟 深色</string>
+    <string name="status_widget_dark_name">明日方舟数据工具 深色</string>
     <string name="status_loading">正在加载明日方舟数据</string>
     <!-- Summary cell labels, shared by the renderer and the picker preview. -->
     <string name="status_label_recruit">公开招募</string>
@@ -52,4 +52,24 @@
     <string name="status_preview_rest" translatable="false">18/20</string>
     <string name="status_preview_manufacture" translatable="false">15/64</string>
     <string name="status_preview_tower" translatable="false">36/84</string>
+    <!-- Endfield card, after the official 明日方舟：终末地数据工具: one card, always dark like the official widget. -->
+    <string name="endfield_widget_name">明日方舟：终末地数据工具</string>
+    <string name="endfield_description">查看明日方舟：终末地的理智与任务进度</string>
+    <string name="endfield_unconfigured">点击配置明日方舟：终末地</string>
+    <string name="endfield_loading">正在加载明日方舟：终末地数据</string>
+    <string name="endfield_sanity_full">理智已达上限</string>
+    <string name="endfield_tap_configure">点击配置</string>
+    <string name="endfield_brand_platform">森空岛</string>
+    <string name="endfield_brand_game">终末地</string>
+    <string name="endfield_label_sanity">理智</string>
+    <string name="endfield_label_recovery">回复时间</string>
+    <string name="endfield_label_daily">日常活跃度</string>
+    <string name="endfield_label_weekly">每周事务</string>
+    <string name="endfield_label_pass">通行证等级</string>
+    <!-- Neutral sample card for the Endfield picker preview: never a real nickname or UID. -->
+    <string name="endfield_preview_sanity" translatable="false"><font color="#FFFAEE1C">84</font><font size="13" color="#FF9E9E9E"> /125</font></string>
+    <string name="endfield_preview_sanity_time">5小时40分钟</string>
+    <string name="endfield_preview_daily" translatable="false">60<font color="#FF9E9E9E">\u0020\u0020/100</font></string>
+    <string name="endfield_preview_weekly" translatable="false">4<font color="#FF9E9E9E">\u0020\u0020/\u200710</font></string>
+    <string name="endfield_preview_pass" translatable="false">12<font color="#FF9E9E9E">\u0020\u0020/\u200760</font></string>
 </resources>

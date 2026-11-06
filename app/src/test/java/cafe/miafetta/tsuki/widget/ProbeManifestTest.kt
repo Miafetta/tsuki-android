@@ -14,22 +14,28 @@ class ProbeManifestTest : WidgetResourceFixture() {
     // Startup shows the placeholder card and the picker a sample card; neither may be a blank surface (HyperOS widget rules).
     @Test fun startupShowsTheLoadingCardAndThePickerAFilledPreviewForEachPalette() {
         val colors = resolvedColors()
-        for ((file, palette) in listOf("status_widget_info.xml" to "light", "status_widget_dark_info.xml" to "dark")) {
-            val info = xml("res/xml/$file")
-            assertEquals("@layout/status_widget_loading_$palette", info.attr("initialLayout"))
-            assertEquals("@layout/status_widget_preview_$palette", info.attr("previewLayout"))
+        // Arknights has a light and a dark card; the Endfield card is always dark, like the official widget.
+        val cards = listOf(Triple("status_widget_info", "status_widget_%s_light", "widget_host_light"),
+            Triple("status_widget_dark_info", "status_widget_%s_dark", "widget_host_dark"),
+            Triple("endfield_widget_info", "endfield_widget_%s", "widget_endfield_surface"))
+        for ((info, layout, surface) in cards) {
+            val file = xml("res/xml/$info.xml")
+            assertEquals("@layout/${layout.format("loading")}", file.attr("initialLayout"))
+            assertEquals("@layout/${layout.format("preview")}", file.attr("previewLayout"))
+            assertEquals("4", file.attr("targetCellWidth"))
+            assertEquals("2", file.attr("targetCellHeight"))
             for (kind in listOf("loading", "preview")) {
-                val root = xml("res/layout/status_widget_${kind}_$palette.xml")
+                val root = xml("res/layout/${layout.format(kind)}.xml")
                 assertEquals("@android:id/background", root.attr("id"))
                 assertEquals("match_parent", root.attr("layout_width"))
                 assertEquals("match_parent", root.attr("layout_height"))
                 assertEquals("false", root.attr("forceDarkAllowed"))
-                assertEquals("@drawable/widget_host_$palette", root.attr("background"))
-                val fill = xml("res/drawable/widget_host_$palette.xml").children("solid").single().attr("color")
+                assertEquals("@drawable/$surface", root.attr("background"))
+                val fill = xml("res/drawable/$surface.xml").children("solid").single().attr("color")
                 val argb = colors.getValue(fill.removePrefix("@color/")).removePrefix("#")
-                assertTrue("$kind $palette card surface is transparent", argb.length == 6 || argb.take(2) != "00")
+                assertTrue("$kind $surface card surface is transparent", argb.length == 6 || argb.take(2) != "00")
                 val elements = listOf(root) + root.children("*")
-                assertTrue("$kind $palette hides content", elements.none { it.attr("visibility") in listOf("invisible", "gone") })
+                assertTrue("$kind $surface hides content", elements.none { it.attr("visibility") in listOf("invisible", "gone") })
                 assertTrue(root.children("include").isEmpty())
             }
         }
@@ -66,7 +72,7 @@ class ProbeManifestTest : WidgetResourceFixture() {
             meta.attr("name") == "android.appwidget.provider" } }
         assertEquals("false", manifest.children("receiver").single {
             it.attr("name").endsWith("PinWidgetReceiver") }.attr("exported"))
-        assertEquals(3, receivers.size)
+        assertEquals(4, receivers.size)
         assertFalse(receivers.any { it.attr("name").endsWith("AndroidProbeProvider") })
         for (receiver in receivers) {
             assertEquals(":widgetProvider", receiver.attr("process"))
@@ -143,9 +149,11 @@ class ProbeManifestTest : WidgetResourceFixture() {
         val support = receiver.children("meta-data").single { it.attr("name") == "supportBackgroundBlur" }
         assertEquals("true", support.attr("value"))
         val receivers = xml("AndroidManifest.xml").children("receiver")
-        val opaque = receivers.single { it.attr("name").endsWith("OpaqueWidgetProvider") }
+        val opaque = receivers.single { it.attr("name") == ".widget.OpaqueWidgetProvider" }
+        // The Endfield card draws its own dark surface, like the dark Arknights card.
+        val endfield = receivers.single { it.attr("name") == ".widget.EndfieldWidgetProvider" }
         val probe = receivers.single { it.attr("name").endsWith("XiaomiProbeProvider") }
-        for (card in listOf(opaque, probe))
+        for (card in listOf(opaque, endfield, probe))
             assertFalse(card.children("meta-data").any { it.attr("name") == "supportBackgroundBlur" })
         val info = xml("res/xml/status_widget_dark_info.xml")
         assertEquals("cafe.miafetta.tsuki.WidgetConfigActivity", info.attr("configure"))

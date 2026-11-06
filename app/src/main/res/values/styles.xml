@@ -44,4 +44,16 @@
     </style>
     <style name="WidgetRefreshTime" parent="WidgetRefresh" />
     <style name="WidgetValue" parent="WidgetSummary" />
+    <!-- Endfield card text, sized like the official widget (widget_endfield_dimens.xml); fixed dp like the other widget text. -->
+    <style name="WidgetEndfield" parent="WidgetSummary">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+    </style>
+    <style name="WidgetEndfield.Brand"><item name="android:textSize">@dimen/widget_endfield_brand</item></style>
+    <style name="WidgetEndfield.Amount"><item name="android:textSize">@dimen/widget_endfield_amount</item></style>
+    <style name="WidgetEndfield.SanityLabel"><item name="android:textSize">@dimen/widget_endfield_sanity_label</item></style>
+    <style name="WidgetEndfield.Caption"><item name="android:textSize">@dimen/widget_endfield_caption</item></style>
+    <style name="WidgetEndfield.Pill"><item name="android:textSize">@dimen/widget_endfield_pill</item></style>
+    <style name="WidgetEndfield.Row"><item name="android:textSize">@dimen/widget_endfield_row</item></style>
+    <style name="WidgetEndfield.Value"><item name="android:textSize">@dimen/widget_endfield_value</item></style>
 </resources>

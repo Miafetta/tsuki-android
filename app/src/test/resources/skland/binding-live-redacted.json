@@ -1,0 +1,64 @@
+{
+ "list": [
+  {
+   "appCode": "arknights",
+   "appName": "明日方舟",
+   "bindingList": [
+    {
+     "uid": "000000001",
+     "isOfficial": true,
+     "isDefault": true,
+     "channelMasterId": "1",
+     "channelName": "官服",
+     "nickName": "测试博士",
+     "isDelete": false,
+     "gameName": "明日方舟",
+     "gameId": 1,
+     "roles": [],
+     "defaultRole": null
+    }
+   ],
+   "defaultUid": "000000001"
+  },
+  {
+   "appCode": "endfield",
+   "appName": "明日方舟：终末地",
+   "bindingList": [
+    {
+     "uid": "000000009",
+     "isOfficial": true,
+     "isDefault": false,
+     "channelMasterId": "1",
+     "channelName": "官服",
+     "nickName": "测试管理员",
+     "isDelete": false,
+     "gameName": "明日方舟：终末地",
+     "gameId": 3,
+     "roles": [
+      {
+       "serverId": "1",
+       "roleId": "0000000011",
+       "nickname": "测试管理员",
+       "level": 1,
+       "isDefault": false,
+       "isBanned": false,
+       "serverType": "domestic",
+       "serverName": "China"
+      }
+     ],
+     "defaultRole": {
+      "serverId": "1",
+      "roleId": "0000000011",
+      "nickname": "测试管理员",
+      "level": 1,
+      "isDefault": false,
+      "isBanned": false,
+      "serverType": "domestic",
+      "serverName": "China"
+     }
+    }
+   ]
+  }
+ ],
+ "serverDefaultBinding": {}
+}

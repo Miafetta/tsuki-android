@@ -14,7 +14,7 @@
         android:enableOnBackInvokedCallback="false"
         android:usesCleartextTraffic="false"
         android:theme="@style/Theme.Tsuki">
-        <meta-data android:name="miuiWidgetVersion" android:value="52" />
+        <meta-data android:name="miuiWidgetVersion" android:value="53" />
         <activity android:name=".MainActivity" android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -66,6 +66,20 @@
                 <action android:name="miui.appwidget.action.APPWIDGET_UPDATE" />
             </intent-filter>
             <meta-data android:name="android.appwidget.provider" android:resource="@xml/status_widget_dark_info" />
+            <meta-data android:name="miuiWidget" android:value="true" />
+            <meta-data android:name="miuiWidgetRefresh" android:value="exposure" />
+            <meta-data android:name="miuiWidgetRefreshMinInterval" android:value="20000" />
+        </receiver>
+        <receiver
+            android:name=".widget.EndfieldWidgetProvider"
+            android:exported="true"
+            android:label="@string/endfield_widget_name"
+            android:process=":widgetProvider">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+                <action android:name="miui.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data android:name="android.appwidget.provider" android:resource="@xml/endfield_widget_info" />
             <meta-data android:name="miuiWidget" android:value="true" />
             <meta-data android:name="miuiWidgetRefresh" android:value="exposure" />
             <meta-data android:name="miuiWidgetRefreshMinInterval" android:value="20000" />

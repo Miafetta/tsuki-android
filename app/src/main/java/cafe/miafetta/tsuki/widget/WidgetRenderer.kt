@@ -29,10 +29,13 @@ internal class CardViews(val context: Context, val views: RemoteViews, val light
 }
 
 internal class StatusWidgetRenderer(private val avatars: AvatarCache) {
-    internal fun preview(context: Context, snapshot: WidgetSnapshot?, theme: WidgetTheme): Bitmap {
+    internal fun preview(context: Context, snapshot: WidgetSnapshot?, theme: WidgetTheme,
+        feature: String = WidgetRuntime.FEATURE): Bitmap {
         val referenceContext = referenceContext(context)
-        val views = renderAtSize(referenceContext, 0, null, false, REFERENCE_WIDTH, REFERENCE_HEIGHT,
-            snapshotOverride = snapshot, themeOverride = theme, native = true)
+        val views = if (feature == WidgetRuntime.ENDFIELD_FEATURE) EndfieldCard.render(referenceContext, 0, null, false,
+            REFERENCE_WIDTH, REFERENCE_HEIGHT, snapshot)
+            else renderAtSize(referenceContext, 0, null, false, REFERENCE_WIDTH, REFERENCE_HEIGHT,
+                snapshotOverride = snapshot, themeOverride = theme, native = true)
         val content = layoutReference(referenceContext, views)
         return createBitmap(1028, 462).also { content.draw(Canvas(it)) }
     }
@@ -42,9 +45,15 @@ internal class StatusWidgetRenderer(private val avatars: AvatarCache) {
 
     internal fun renderNative(context: Context, id: Int, record: WidgetRecord?, storageError: Boolean, options: Bundle): RemoteViews {
         val loading = showsLoadingPlaceholder(record, storageError)
+        // The instance's provider decides the game; a stored configuration always matches it (WidgetStorageProvider).
+        val endfield = (record?.config?.featureId ?: StatusWidgetProvider.feature(context, id)) == WidgetRuntime.ENDFIELD_FEATURE
         return sizedViews(context, options) { width, height ->
-            if (loading) renderLoading(context, id, record, storageError, width, height)
-            else renderAtSize(context, id, record, storageError, width, height, native = true)
+            when {
+                endfield && loading -> EndfieldCard.loading(context, id, record, storageError, width, height)
+                endfield -> EndfieldCard.render(context, id, record, storageError, width, height)
+                loading -> renderLoading(context, id, record, storageError, width, height)
+                else -> renderAtSize(context, id, record, storageError, width, height, native = true)
+            }
         }
     }
 

@@ -54,6 +54,8 @@ $catalog = [ordered]@{
     'widgetStartup' = @('widgetStartup', 'true')
     'comparison' = @('comparison', 'true')
     'provider-breakdown' = @('providerBreakdown', 'true')
+    # Opt-in, stage 0 only: sends real requests with the stored Cred; pass -PullArtifacts to copy the responses.
+    'endfield-probe' = @('endfieldProbe', 'true')
 }
 # widget-editor-save and widget-editor-change are opt-in: they save an existing desktop instance. The change scenario edits the
 # palette and role, then restores the original configuration and verifies it.

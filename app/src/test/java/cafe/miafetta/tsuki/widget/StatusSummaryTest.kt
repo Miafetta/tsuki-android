@@ -121,8 +121,14 @@ class StatusSummaryTest : WidgetResourceFixture() {
         assertEquals(10000, progressLevel(WidgetMetric("合成玉", Int.MAX_VALUE, Int.MAX_VALUE)))
     }
     @Test fun darkPinsUseTheOpaqueProviderWhileLightPinsKeepHostBlur() {
-        assertEquals(OpaqueWidgetProvider::class.java, StatusWidgetProvider.providerClass(WidgetTheme.DARK))
-        assertEquals(StatusWidgetProvider::class.java, StatusWidgetProvider.providerClass(WidgetTheme.LIGHT))
+        assertEquals(OpaqueWidgetProvider::class.java, StatusWidgetProvider.providerClass(WidgetRuntime.FEATURE, WidgetTheme.DARK))
+        assertEquals(StatusWidgetProvider::class.java, StatusWidgetProvider.providerClass(WidgetRuntime.FEATURE, WidgetTheme.LIGHT))
+        // The Endfield card has one provider in any palette, so an Endfield pin never lands on an Arknights card.
+        for (theme in WidgetTheme.entries) {
+            assertEquals(EndfieldWidgetProvider::class.java, StatusWidgetProvider.providerClass(WidgetRuntime.ENDFIELD_FEATURE, theme))
+        }
+        assertEquals(listOf(WidgetTheme.DARK), StatusWidgetProvider.themes(WidgetRuntime.ENDFIELD_FEATURE))
+        assertEquals(listOf(WidgetTheme.LIGHT, WidgetTheme.DARK), StatusWidgetProvider.themes(WidgetRuntime.FEATURE))
     }
     @Test fun widgetAmountsOmitApproximationWithoutChangingSnapshotOrProgress() {
         val metrics = listOf(WidgetMetric("理智", 42, 210, estimated = true),

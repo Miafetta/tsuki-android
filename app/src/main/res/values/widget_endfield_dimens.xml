@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Text sizes of the Endfield card at its 360dp reference, measured against the official 明日方舟：终末地数据工具
+     (maintainer's screenshot, glyph heights compared at the same card width). EndfieldCard.kt scales them per widget size;
+     the picker preview uses them directly. -->
+<resources>
+    <dimen name="widget_endfield_brand">10.8dp</dimen>
+    <dimen name="widget_endfield_amount">17.2dp</dimen>
+    <dimen name="widget_endfield_amount_max">13.2dp</dimen>
+    <dimen name="widget_endfield_sanity_label">11.6dp</dimen>
+    <dimen name="widget_endfield_caption">10.8dp</dimen>
+    <dimen name="widget_endfield_pill">9.6dp</dimen>
+    <dimen name="widget_endfield_row">10.8dp</dimen>
+    <dimen name="widget_endfield_value">11.4dp</dimen>
+</resources>

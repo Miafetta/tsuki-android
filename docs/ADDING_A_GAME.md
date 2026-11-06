@@ -7,9 +7,9 @@
 | 层 | 已经通用 | 目前只属于《明日方舟》 |
 | --- | --- | --- |
 | 数据源 | `DataSourceAdapter` 接口、`WidgetDefinition`、`WidgetUpdateCoordinator` 的配置、失败缓存与恢复 | `SklandArknightsAdapter`、`ArknightsParser` |
-| 平台与账号 | 实例级的账号／角色绑定（`WidgetInstanceConfig`） | `SklandClient.parseRoles` 只保留 `appCode == "arknights"` 的角色；账号仓库只存森空岛账号 |
-| 数据模型 | `WidgetSnapshot`、`WidgetMetric` | `WidgetTraining`、`core/Dashboard.kt` 中的指标标签与重置规则 |
-| 桌面小部件 | 曝光刷新、后台任务、添加流程（`PinWidgetReceiver`） | `StatusWidgetProvider`／`OpaqueWidgetProvider`、`status_widget_*` 布局与 `StatusWidgetRenderer` |
+| 平台与账号 | 实例级的账号／角色绑定（`WidgetInstanceConfig`）；森空岛绑定列表按游戏解析（`SklandGame`、`SklandRoles`）；角色缓存、界面角色键与选中角色都带数据源 ID | 账号仓库只存森空岛账号；应用界面只列出 `AppState` 中 `SHOWN_PROVIDERS` 的游戏 |
+| 数据模型 | `WidgetSnapshot`、`WidgetMetric`（含稳定的 `metricId`） | `WidgetTraining`、`core/Dashboard.kt` 中的指标标签与重置规则 |
+| 桌面小部件 | 曝光刷新、后台任务、添加流程（`PinWidgetReceiver`）；Provider 按功能与配色选择（`StatusWidgetProvider.providerClass`、`feature`、`theme`）；`StatusWidgetRenderer` 按实例的功能选择卡片 | 每款游戏自己的 Provider 子类、布局与卡片渲染（方舟：浅色与深色两个 Provider、`status_widget_*` 与 `StatusWidgetRenderer`；终末地：一个固定深色的 Provider、`endfield_widget*` 与 `EndfieldCard`） |
 | 应用界面 | `GameTabs` 的标签 ID 与选择回调、`Branding`、`WidgetPreviewStage` | 概览页的卡片与指标顺序、部件页只列出一款游戏 |
 
 已规划的功能标识（`featureId`）：
@@ -17,16 +17,17 @@
 | 功能标识 | 状态 |
 | --- | --- |
 | `skland.arknights.status` | 已实现 |
-| `skland.endfield.status` | 未实现 |
+| `skland.endfield.status` | 已实现 |
 | `miyoushe.genshin.status` | 未实现 |
 | `miyoushe.starrail.status` | 未实现 |
+| `miyoushe.zzz.status` | 未实现 |
 
 ## 2. 不能改动的部分
 
 新游戏只能**新增**代码和资源，不能改变已发布内容的含义。下面几条约束摘自[开发约束 §1](DEVELOPMENT_CONSTRAINTS.md#1-已安装实例兼容)：
 
 - 已有的 Provider、Activity、Receiver 类名，以及 `widget-resource-ids.txt` 中的资源 ID，保持不变。
-- 不修改《明日方舟》的布局、`miuiWidgetVersion` 或小部件元数据。
+- 不修改《明日方舟》的布局或小部件元数据。`miuiWidgetVersion` 是应用级、所有部件共用的，新增部件时只升不降。
 - 不改变现有快照与缓存格式的含义。新字段必须可选，旧数据要能照常读取。
 - 应用内自动获取凭据只能像森空岛一样使用官方网页登录；手动获取的方法只写成添加页上的一段说明文字。边界见[开发约束 §3](DEVELOPMENT_CONSTRAINTS.md#3-凭据与账号数据)。
 
@@ -46,14 +47,17 @@
 - `characters`：当前已保存账号下、属于这款游戏的全部角色。
 - `fetch(config, now)`：返回 `WidgetSnapshot`。失败时抛出 `DataSourceFailure`，用 `RefreshFailure` 区分网络、授权失效、限流、数据异常等原因。同一角色在短时间内的重复请求要复用上次的成功结果，参考 `SklandArknightsAdapter` 的 20 秒窗口。
 
+每个指标都设置 `metricId`（格式为 `<游戏>.<指标>`，例如 `endfield.sanity`），提醒等功能按它识别指标，不按中文标签识别；只有 2.2.0 之前缓存的《明日方舟》快照没有它，由 `core/MetricIds.kt` 按标签补上。
+
 解析逻辑放在独立的 `*Parser` 中，不依赖 Android API，以便 JVM 测试。脱敏后的接口样本放在 `app/src/test/resources/<平台>/`，样本里不能包含真实的 UID、昵称或凭据。
 
 ### 3.3 账号与平台
 
 - **同属森空岛的游戏**：复用 `SklandClient` 与现有账号，不需要用户再次登录。要做以下几件事：
-  - 让 `parseRoles` 按 `appCode` 区分游戏，不再只保留《明日方舟》。`SklandRole` 与加密账号文件目前没有游戏字段，新增字段必须可选，旧记录按《明日方舟》读取。
-  - `WidgetStorageProvider` 的 `OVERVIEW` 返回的角色要带上所属游戏的数据源 ID。`CHARACTERS` 已经按适配器给出数据源 ID，不需要再改。
-  - 角色 UID 只在同一款游戏内唯一。`RoleDataStore` 的文件名、`UiRole.key` 与保存的选中角色目前都只由账号和角色组成，要加上数据源 ID，并保证现有缓存仍能读取（见[开发约束 §1](DEVELOPMENT_CONSTRAINTS.md#1-已安装实例兼容)）。
+  - 在 `SklandGame` 中登记游戏的 `appCode` 与数据源 ID，并在 `SklandRoles` 中解析它的绑定结构。角色 UID 只在同一款游戏内唯一；需要服务器才能确定角色时，把服务器编进角色 ID（参考 `SklandRole.endfieldId`）。加密账号文件中没有游戏字段的旧角色按《明日方舟》读取。
+  - `WidgetStorageProvider` 的 `OVERVIEW` 返回的角色已带数据源 ID 与服务器，`CHARACTERS` 按适配器给出数据源 ID，都不需要再改。
+  - `RoleDataStore` 与 `UiRole.key` 已带数据源 ID：《明日方舟》沿用已安装版本写下的路径与键，其他游戏的角色缓存按数据源分目录（见[开发约束 §1](DEVELOPMENT_CONSTRAINTS.md#1-已安装实例兼容)）。
+  - 游戏完成概览与小部件后，把数据源加入 `AppState` 的 `SHOWN_PROVIDERS`，以及 `WidgetRuntime` 的 `roleFetchers` 与 `featureFor`。
 - **其他平台**：需要以下几部分：
   - 新的网络客户端与账号仓库。凭据继续用 `CredentialCipher` 加密，保存在 `noBackupFilesDir` 中。
   - 新的登录方法，在 `StorageContract` 中定义。
@@ -73,9 +77,9 @@
 ### 3.5 桌面小部件
 
 - 新增浅色与深色两个 `AppWidgetProvider` 子类，在 `AndroidManifest.xml` 中声明，运行在 `:widgetProvider` 进程。小米桌面所需的 `meta-data` 照抄现有 Receiver。
-- 把新 Provider 加入 `StatusWidgetProvider` 伴生对象中的 `providers` 列表。`WidgetRuntime`、`WidgetStorageProvider` 与 `PinWidgetReceiver` 都通过 `owned()` 判断实例是否属于本应用，不在列表中的实例，刷新与配置都会被忽略。`providerClass`／`theme` 目前只在两个《明日方舟》类之间按配色选择，要改为先按游戏选择。
+- 把新 Provider 加入 `StatusWidgetProvider` 伴生对象中的 `providers` 列表，并在 `providerClass`、`themes`、`theme` 与 `feature` 中登记。`WidgetRuntime`、`WidgetStorageProvider` 与 `PinWidgetReceiver` 都通过 `owned()` 判断实例是否属于本应用，不在列表中的实例，刷新与配置都会被忽略；`WidgetStorageProvider` 只接受与实例 Provider 同一功能的配置。参考终末地的 `EndfieldWidgetProvider`。
 - 新增 `res/xml/<游戏>_widget_info.xml`、布局与资源，命名不能与 `status_widget_*` 冲突。`previewLayout` 用带中性示例数据的静态预览布局，`initialLayout` 用加载占位布局，参照 `status_widget_preview_*` 与 `status_widget_loading_*`。
-- 在 `strings.xml` 中新增小部件名称，格式为“游戏名 浅色”“游戏名 深色”。部件页通过 `widgetName` 显示同一个名称，不要另写一份。
+- 在 `strings.xml` 中新增小部件名称，沿用官方小组件的名称。外观照官方：官方固定一种外观就只做一个 Provider（例如终末地固定深色）；官方随系统外观切换，就做一个 Provider，用 `values-night` 资源跟随系统；不再像《明日方舟》那样拆成浅色、深色两个部件。部件页通过 `widgetName` 显示同一个名称，不要另写一份。
 - 渲染逻辑放在新的 Renderer 中。`widget` 包不能引用 Compose 或 `ui` 包。
 - 首次发布后，把新资源的 ID 追加到 `app/widget-resource-ids.txt`，此后不再改变。
 
@@ -83,7 +87,7 @@
 
 - **游戏标签**：把新游戏加入 `AppScaffold` 的 `games` 列表。只显示已经实现的游戏。
 - **概览**：按游戏拆分 `core/Dashboard.kt` 中的指标标签与说明函数。新游戏使用自己的卡片组合，界面规格遵守[界面设计约定](UI_DESIGN_CONVENTIONS.md)。
-- **部件页与配置面板**：全部小部件按游戏列出；配置面板的角色列表只显示所选游戏的角色。预览统一使用 `WidgetPreviewStage`。`AppConfigSheet` 保存时固定写入 `WidgetRuntime.FEATURE`，`UiRole` 的数据源默认是森空岛《明日方舟》，两处都要改为取自所选角色。
+- **部件页与配置面板**：全部小部件按游戏列出；配置面板的角色列表只显示所选游戏的角色。预览统一使用 `WidgetPreviewStage`。`AppConfigSheet` 按所选角色的数据源取功能标识（`WidgetRuntime.featureFor`）。
 - **品牌素材**：游戏与平台图标放在 `res/drawable-nodpi/`，在 `AppLogo` 中引用。
 
 ### 3.7 隐私、许可与文档

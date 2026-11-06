@@ -12,15 +12,15 @@
 ![Android 13+](https://img.shields.io/badge/Android-13%2B-3DDC84?logo=android&logoColor=white)
 ![Kotlin](https://img.shields.io/badge/Kotlin-2.4-7F52FF?logo=kotlin&logoColor=white)
 
-Tsuki 是一款面向小米 HyperOS 的 Android 桌面小部件应用，在桌面上显示《明日方舟》的理智、任务与基建进度。数据来自森空岛，账号信息只保存在本机。
+Tsuki 是一款面向小米 HyperOS 的 Android 桌面小部件应用，在桌面上显示《明日方舟》的理智、任务与基建进度，以及《明日方舟：终末地》的理智、活跃度与通行证进度。数据来自森空岛，账号信息只保存在本机。
 
 > Tsuki 是非官方的第三方应用，与鹰角网络（Hypergryph）及森空岛没有任何关联。
 
 ## 功能
 
-- **桌面小部件**：4×2 尺寸，提供浅色和深色两种外观；每个小部件独立绑定角色，可单独刷新。
+- **桌面小部件**：“明日方舟数据工具”（浅色、深色）和“明日方舟：终末地数据工具”（与官方一样固定为深色），4×2 尺寸；每个小部件独立绑定角色，可单独刷新。小部件名称沿用官方小组件，桌面上的这些小部件由 Tsuki 提供。
 - **概览**：查看理智、无人机、训练室、公开招募、每日／每周任务、基建等全部指标，以及恢复和完成时间。
-- **多账号与多角色**：添加多个森空岛账号，在概览和小部件中自由切换角色。
+- **多账号与多角色**：添加多个森空岛账号，在概览顶部切换游戏，在概览和小部件中自由切换角色。
 - **HyperOS 风格界面**：基于 [Miuix](https://github.com/compose-miuix-ui/miuix) 构建，支持浅色／深色模式；在 HyperOS 4 上使用系统原生模糊材质，其他设备自动回退。
 - **注重隐私**：没有自己的服务器，不含广告、统计或第三方 SDK；凭据经 Android Keystore 加密，不参与云备份。
 
@@ -104,5 +104,5 @@ Tsuki 没有自己的服务器，只连接森空岛接口 `zonai.skland.com` 与
 
 本项目代码以 [MIT License](LICENSE) 发布。以下内容不在 MIT 许可范围内，逐项出处见[素材来源](docs/UI_ASSET_SOURCES.md)：
 
-- 鹰角网络（Hypergryph）的商标与素材：森空岛、《明日方舟》的名称和图标，小部件指标图标，以及运行时下载的游戏头像。
+- 鹰角网络（Hypergryph）的商标与素材：森空岛、《明日方舟》与《明日方舟：终末地》的名称和图标，小部件指标图标，以及运行时下载的游戏头像。
 - 源自 Miuix 的图标资源，按 Apache License 2.0 分发，全文随应用打包在 `app/src/main/assets/third_party/`。

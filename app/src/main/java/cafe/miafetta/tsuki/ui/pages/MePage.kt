@@ -1,6 +1,5 @@
 package cafe.miafetta.tsuki.ui.pages
 
-import cafe.miafetta.tsuki.ui.components.server
 import cafe.miafetta.tsuki.ui.theme.AppLogo
 import cafe.miafetta.tsuki.ui.theme.Branding
 import cafe.miafetta.tsuki.ui.components.EmptyCard
@@ -87,13 +86,15 @@ internal fun AccountCard(account: UiAccount, widgets: List<UiWidget>, busy: Bool
                     { menu = false }, destructiveIndex = 1, dividerBefore = 1)
             } })
         account.roles.forEach { role ->
-            val bound = widgets.filter { it.accountId == account.id && it.roleId == role.id }
+            val bound = widgets.filter { it.bindsTo(role) }
             val auth = role.key in authRoleKeys || bound.any { it.failure == RefreshFailure.AUTH_EXPIRED.name }
-            BasicComponent(startAction = { Box(Modifier.width(40.dp), contentAlignment = Alignment.Center) { AppLogo(size = 34) } },
+            BasicComponent(startAction = {
+                    Box(Modifier.width(40.dp), contentAlignment = Alignment.Center) { AppLogo(size = 34, game = role.game) }
+                },
                 endActions = { Text(if (auth) "需重新授权" else "${bound.size} 个小部件", style = MiuixTheme.textStyles.body2,
                     color = if (auth) MiuixTheme.colorScheme.error else MiuixTheme.colorScheme.onSurfaceVariantSummary) }) {
                 Text(role.name, style = MiuixTheme.textStyles.headline1, fontWeight = FontWeight.Medium)
-                Text("${role.server} UID ${role.id}", style = MiuixTheme.textStyles.body2,
+                Text("${role.server} UID ${role.displayId}", style = MiuixTheme.textStyles.body2,
                     color = MiuixTheme.colorScheme.onSurfaceVariantSummary, maxLines = 1, overflow = TextOverflow.Ellipsis)
             }
         }

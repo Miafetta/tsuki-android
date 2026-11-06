@@ -32,8 +32,9 @@ private val licenseSections = listOf(
         "Kotlin 2.4 与 kotlinx.serialization 1.12" to "许可证：$Apache。版权所有：JetBrains s.r.o. 及其贡献者。" +
             "提供语言运行库与 JSON 序列化。")),
     InfoSection("商标与素材", listOf(
-        "${Branding.PLATFORM}与${Branding.GAME}" to "相关名称、图标、小部件指标图标和角色头像归上海鹰角网络科技有限公司" +
-            "（Hypergryph）及其关联公司所有，不适用上述开源许可，仅用于标识所接入的平台和游戏。",
+        "${Branding.PLATFORM}、${Branding.GAME}与明日方舟：终末地" to "相关名称、图标、小部件指标图标和角色头像归上海鹰角网络" +
+            "科技有限公司（Hypergryph）及其关联公司所有，不适用上述开源许可，仅用于标识所接入的平台和游戏。" +
+            "小部件名称沿用官方小组件的名称，桌面上的这些小部件由 Tsuki 提供。",
         "非官方声明" to "Tsuki 是非官方第三方应用，与鹰角网络及${Branding.PLATFORM}不存在任何合作或授权关系。")))
 
 // The source files wrap at ~70 columns; join wrapped lines so paragraphs reflow to the screen width.

@@ -26,7 +26,7 @@
 | `tsuki.ui.sheets` | 配置面板、确认 / 权限弹窗等浮层 | 同上 |
 
 - 依赖只能沿表格向上或同层，`components` 不得引用 `pages`、`sheets`、`state.AppState`。
-- 主进程中的 `ui.*` 引用 `widget`／`providers` 只限：数据源与功能标识常量（适配器的 `ID`、`WidgetRuntime.FEATURE`）、Provider 类（`StatusWidgetProvider`、`OpaqueWidgetProvider`、`XiaomiProbeProvider`）、添加流程入口（`PinWidgetReceiver.request`、`DesktopShortcutPermission`、`WidgetStorageProvider.URI`），以及与桌面共用的无状态头像函数（`OfficialAvatars`、`WidgetBitmaps.kt`，只在 `ui.state` 中调用），和网页登录的常量与纯函数（`SklandWebLogin`，只在 `WebLoginPage` 中调用，不含网络客户端）。`WidgetRuntime` 实例、仓库与网络客户端属于 `:widgetProvider` 进程，只经由 `StorageContract` 调用。
+- 主进程中的 `ui.*` 引用 `widget`／`providers` 只限：数据源与功能标识常量（适配器的 `ID`、`SklandGame`、`WidgetRuntime.FEATURE`、`ENDFIELD_FEATURE` 与 `featureFor`）、Provider 类及其按实例判断配色与功能的伴生函数（`StatusWidgetProvider`、`OpaqueWidgetProvider`、`EndfieldWidgetProvider`、`XiaomiProbeProvider`）、添加流程入口（`PinWidgetReceiver.request`、`DesktopShortcutPermission`、`WidgetStorageProvider.URI`），以及与桌面共用的无状态头像函数（`OfficialAvatars`、`WidgetBitmaps.kt`，只在 `ui.state` 中调用），和网页登录的常量与纯函数（`SklandWebLogin`，只在 `WebLoginPage` 中调用，不含网络客户端）。`WidgetRuntime` 实例、仓库与网络客户端属于 `:widgetProvider` 进程，只经由 `StorageContract` 调用。
 - Debug 专用代码（预览、诊断开关、测试夹具）放 `src/debug` 或 `src/androidTest`，不得进入 `src/main` 的 Release 路径；确需在 main 中判断时只用 `BuildConfig.DEBUG`。
 
 ## 3. 文件与函数

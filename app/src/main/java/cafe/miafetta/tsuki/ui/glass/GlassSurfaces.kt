@@ -74,17 +74,13 @@ internal fun Modifier.tsukiGlass(surface: GlassSurface, progress: Float = 1f, se
         val glassTint = if (selected) idle.copy(alpha = .9f) else
             (if (dark) lerp(colors.surfaceContainer, colors.onSurface, .04f) else colors.surfaceContainer).copy(alpha = .55f)
         val rim = (if (dark) colors.onSurface else colors.surfaceContainer).copy(alpha = if (dark) .12f else .9f)
-        val chipShadow = if (selected) Modifier else Modifier.dropShadow(shape) {
-            this.radius = 16.dp.toPx()
-            offset = androidx.compose.ui.geometry.Offset(0f, 4.dp.toPx())
-            color = Color.Black
-            alpha = .06f * currentProgress
-        }
+        // No chip casts a shadow: with two or more chips, a shadow under the unselected ones smeared into the content
+        // below the row. The 1dp highlight keeps an unselected chip apart from the page.
         val overlay: DrawScope.() -> Unit = {
             glassOverlay(currentProgress, native, radius, lerp(idle, glassTint, currentProgress),
                 if (selected) null else rim)
         }
-        return this.then(chipShadow).then(if (native) Modifier.drawBehind(overlay) else Modifier
+        return this.then(if (native) Modifier.drawBehind(overlay) else Modifier
             .drawBackdrop(glass.backdrop, shape = { shape }, effects = {
                 blur((if (selected) 20.dp else 24.dp).toPx())
                 colorControls(saturation = if (selected) 1.6f else 1.8f)

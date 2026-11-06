@@ -10,6 +10,8 @@ import android.app.Application
 import cafe.miafetta.tsuki.core.*
 import cafe.miafetta.tsuki.storageCall
 import cafe.miafetta.tsuki.failureMessage
+import cafe.miafetta.tsuki.providers.SklandArknightsAdapter
+import cafe.miafetta.tsuki.providers.SklandGame
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
@@ -38,6 +40,9 @@ internal class AppState(context: Context, val notifier: UiNotifier = ToastUiNoti
     var error by mutableStateOf("")
     var data by mutableStateOf(RoleData())
     var dataKey by mutableStateOf("")
+    // The last data read for each role in this process, so switching game tabs or roles shows it at once instead of an
+    // empty card until the read returns. Cleared when the accounts change.
+    private val shownData = mutableMapOf<String, RoleData>()
     private var request = 0
     private var refreshingRole = ""
     private var initialLoad: Deferred<Unit>? = null
@@ -70,7 +75,10 @@ internal class AppState(context: Context, val notifier: UiNotifier = ToastUiNoti
                 val json = JSONObject(result.getString(Storage.JSON, "{}"))
                 parseAccounts(json) to parseWidgets(json)
             }
-            if (accounts.map { it.id } != loadedAccounts.map { it.id }) previewCache.evictAll()
+            if (accounts.map { it.id } != loadedAccounts.map { it.id }) {
+                previewCache.evictAll()
+                shownData.clear()
+            }
             accounts = loadedAccounts
             widgets = loadedWidgets
             if (!cafe.miafetta.tsuki.BuildConfig.DEBUG) {
@@ -97,7 +105,7 @@ internal class AppState(context: Context, val notifier: UiNotifier = ToastUiNoti
         val token = ++request
         if (dataKey != role.key) {
             readFailures.clear()
-            data = RoleData()
+            data = shownData[role.key] ?: RoleData()
             dataKey = role.key
         }
         if (refresh) refreshingRole = role.key
@@ -120,6 +128,7 @@ internal class AppState(context: Context, val notifier: UiNotifier = ToastUiNoti
             // Parsing suspended; a newer request or role switch wins.
             if (token != request || dataKey != role.key) return
             data = parsed
+            shownData[role.key] = parsed
             readFailures.clear()
             if (refresh) data.failure?.takeIf { it != RefreshFailure.RATE_LIMIT }?.let {
                 messages.send(context.getString(failureMessage(it.name)))
@@ -167,10 +176,16 @@ private fun parseAccounts(json: JSONObject): List<UiAccount> {
         val roles = account.getJSONArray(Storage.ROLES)
         UiAccount(id, name, (0 until roles.length()).map { ri ->
             val role = roles.getJSONObject(ri)
-            UiRole(id, name, role.getString(Storage.ID), role.getString(Storage.LABEL))
-        })
+            UiRole(id, name, role.getString(Storage.ID), role.getString(Storage.LABEL),
+                role.optString(Storage.PROVIDER_ID, SklandArknightsAdapter.ID),
+                role.optString(Storage.SERVER).takeIf { it.isNotEmpty() })
+        }.filter { it.provider in SHOWN_PROVIDERS })
     }
 }
+
+// Games with an overview and a desktop widget. Roles of other games stay stored on the account but are not listed
+// until their game is added here.
+private val SHOWN_PROVIDERS = setOf(SklandArknightsAdapter.ID, SklandGame.ENDFIELD.providerId)
 
 private fun parseWidgets(json: JSONObject): List<UiWidget> {
     val instances = json.getJSONArray(Storage.WIDGETS)

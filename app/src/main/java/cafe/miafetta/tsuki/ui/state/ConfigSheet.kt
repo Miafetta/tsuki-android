@@ -12,7 +12,9 @@ internal sealed interface ConfigSheet {
         val theme: String
         val diagnostic: Boolean
     }
-    @Serializable data class New(override val theme: String = "LIGHT", override val diagnostic: Boolean = false) : Content
+    // [game] is the Branding game ID of the widget to add; an Edit takes the game from the placed instance's provider.
+    @Serializable data class New(override val theme: String = "LIGHT", override val diagnostic: Boolean = false,
+        val game: String = "arknights") : Content
     @Serializable data class Edit(val widgetId: Int, override val theme: String = "LIGHT",
         override val diagnostic: Boolean = false) : Content
 

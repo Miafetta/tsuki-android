@@ -19,6 +19,7 @@ import top.yukonga.miuix.kmp.nav.gesture.PredictiveBackHandler
 import cafe.miafetta.tsuki.ui.state.AppController
 
 import cafe.miafetta.tsuki.ui.sheets.AppConfigSheet
+import cafe.miafetta.tsuki.ui.theme.Branding
 
 @Composable
 internal fun AppRoot(controller: AppController, activity: Activity, initialPage: Int,
@@ -42,10 +43,11 @@ internal fun AppRoot(controller: AppController, activity: Activity, initialPage:
             if (page == AppPage.ME) addAccount()
             else {
                 state.error = ""
-                configSheet = ConfigSheet.New()
+                configSheet = ConfigSheet.New(game = selectedGame)
             }
         },
         addButtonVisible = !addingAccount && !state.busy,
+        games = Branding.games, selectedGameId = selectedGame, onGameSelect = { selectGame(it) },
         overlays = {
             AppConfigSheet(controller, activity, configuringId, active, onConfigurationClosed)
             AppDialogs(controller, activity, active)

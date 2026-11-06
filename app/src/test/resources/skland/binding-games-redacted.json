@@ -1,0 +1,22 @@
+{
+  "list": [
+    { "appCode": "arknights", "bindingList": [
+      { "uid": "000000001", "nickName": "测试博士", "channelName": "官服" }
+    ] },
+    { "appCode": "endfield", "bindingList": [
+      { "uid": "000000009", "channelMasterId": "1", "channelName": "官服", "isDelete": false, "roles": [
+        { "serverId": "1", "roleId": "000000011", "nickname": "测试管理员", "serverName": "China", "serverType": "domestic",
+          "level": 20, "isBanned": false, "isDefault": true },
+        { "serverId": "2", "roleId": "000000001", "nickname": "测试管理员二", "serverName": "China", "serverType": "domestic",
+          "level": 1, "isBanned": false, "isDefault": false }
+      ] },
+      { "uid": "000000010", "channelName": "", "isDelete": false, "roles": [
+        { "serverId": "3", "roleId": "000000013", "nickname": "无渠道角色", "serverName": "China", "level": 1 }
+      ] },
+      { "uid": "000000012", "channelName": "官服", "isDelete": true, "roles": [
+        { "serverId": "1", "roleId": "000000012", "nickname": "已删除的角色", "serverName": "China", "level": 1 }
+      ] }
+    ] },
+    { "appCode": "unknown-game", "bindingList": [{ "uid": "000000003", "nickName": "其他游戏" }] }
+  ]
+}

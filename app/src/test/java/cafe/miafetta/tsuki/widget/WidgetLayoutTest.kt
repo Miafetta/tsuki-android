@@ -254,7 +254,8 @@ class WidgetLayoutTest : WidgetResourceFixture() {
         val version = manifest.children("application").single().children("meta-data")
             .single { it.attr("name") == "miuiWidgetVersion" }.attr("value").toInt()
         // Bump whenever the widget layout, palette, metadata or default renderer changes, so the launcher drops its cache.
-        assertEquals(52, version)
+        // 53: the Endfield card (2.2.0).
+        assertEquals(53, version)
         assertTrue(version > 1)
     }
 

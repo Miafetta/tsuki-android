@@ -40,6 +40,7 @@ internal object StorageContract {
     const val ID = "id"
     const val NAME = "name"
     const val LABEL = "label"
+    const val SERVER = "server"
     const val CRED = "cred"
     const val STATE = "state"
     const val URL = "url"

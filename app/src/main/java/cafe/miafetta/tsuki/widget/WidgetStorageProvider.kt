@@ -72,6 +72,7 @@ class WidgetStorageProvider : ContentProvider() {
             JSONObject().put(Storage.ID, account.id).put(Storage.NAME, account.name)
                 .put(Storage.ROLES, JSONArray(account.roles.map { role ->
                     JSONObject().put(Storage.ID, role.uid).put(Storage.LABEL, role.label)
+                        .put(Storage.PROVIDER_ID, role.game.providerId).put(Storage.SERVER, role.server)
                 }))
         }))
         data.put(Storage.WIDGETS, JSONArray(StatusWidgetProvider.owned(context).map { id ->
@@ -89,10 +90,11 @@ class WidgetStorageProvider : ContentProvider() {
     }
 
     private fun dashboard(runtime: WidgetRuntime, method: String, extras: Bundle?): Bundle {
-        val account = requireNotNull(extras?.getString(Storage.ACCOUNT_ID))
+        val provider = requireNotNull(extras?.getString(Storage.PROVIDER_ID))
+        val account = requireNotNull(extras.getString(Storage.ACCOUNT_ID))
         val character = requireNotNull(extras.getString(Storage.CHARACTER_ID))
-        if (method == Storage.REFRESH_ROLE) runtime.refreshRole(account, character)
-        val data = runtime.dashboard(account, character)
+        if (method == Storage.REFRESH_ROLE) runtime.refreshRole(provider, account, character)
+        val data = runtime.dashboard(provider, account, character)
         if (method == Storage.REFRESH_ROLE) runtime.prepareAvatar(data.snapshot?.avatarUrl)
         val training = data.snapshot?.training
         runtime.prepareAvatar(training?.avatarUrl ?: training?.traineeId?.let(OfficialAvatars::character))
@@ -108,7 +110,8 @@ class WidgetStorageProvider : ContentProvider() {
         require(source == null || source.length <= 128 * 1024)
         val snapshot = source?.let { SnapshotJson.read(JSONObject(it)) }
         val theme = WidgetTheme.valueOf(requireNotNull(extras?.getString(Storage.THEME)))
-        return Bundle().apply { putParcelable(Storage.BITMAP, runtime.preview(snapshot, theme)) }
+        val feature = extras?.getString(Storage.FEATURE_ID) ?: WidgetRuntime.FEATURE
+        return Bundle().apply { putParcelable(Storage.BITMAP, runtime.preview(snapshot, theme, feature)) }
     }
 
     private fun characters(runtime: WidgetRuntime): Bundle = Bundle().apply {
@@ -123,6 +126,8 @@ class WidgetStorageProvider : ContentProvider() {
     private fun configure(context: Context, runtime: WidgetRuntime, extras: Bundle?): Bundle {
         val id = requireNotNull(extras).getInt(Storage.WIDGET_ID, -1)
         require(id in StatusWidgetProvider.owned(context))
+        // A widget shows one game: its provider decides which feature it may be configured with.
+        require(extras.getString(Storage.FEATURE_ID) == StatusWidgetProvider.feature(context, id))
         val token = extras.getString(Storage.PIN_TOKEN)
         if (token == null) runtime.configure(extras.widgetConfig(id))
         else runtime.configurePin(extras.widgetConfig(id), token)

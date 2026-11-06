@@ -65,7 +65,7 @@ internal fun AppUiVerification.FixtureApp(host: MainActivity, redesignV4: String
                         1 -> widgetPage(host, if (emptyState.value) emptyList()
                             else listOf(UiWidget(1, role.accountId, role.id, role.provider, "LIGHT", snapshot, "", false)),
                             snapshot, catalog.intValue, previews(), role.key, page.intValue == 1,
-                            { catalog.intValue = it }) { widget, chosenTheme ->
+                            { catalog.intValue = it }) { widget, chosenTheme, _ ->
                                 configTheme.value = chosenTheme
                                 dialog.value = if (widget == null) "widget-new" else "widget"
                             }
