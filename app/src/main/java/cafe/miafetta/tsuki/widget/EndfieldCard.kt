@@ -45,7 +45,8 @@ internal object EndfieldCard {
             "${context.getString(row.text)} ${cardAmount(snapshot?.let { cardMetric(it, row.metricLabel) })}"
         }
         // The header shows the platform and game marks like the official card, so the role is named here.
-        views.setContentDescription(android.R.id.background, listOfNotNull(
+        val marks = context.getString(R.string.endfield_brand_platform) + " " + context.getString(R.string.endfield_brand_game)
+        views.setContentDescription(android.R.id.background, listOfNotNull(marks,
             snapshot?.title ?: context.getString(R.string.endfield_unconfigured),
             "理智 ${cardAmount(sanity)}，$pill", rows, snapshot?.notes?.takeIf { it.isNotEmpty() }?.joinToString("，"),
             status.takeIf { it.isNotEmpty() }, failure.takeIf { it.isNotEmpty() }, "数据时间 $time").joinToString("。"))
@@ -69,12 +70,12 @@ internal object EndfieldCard {
     private fun bindPalette(views: RemoteViews) {
         val text = R.color.widget_endfield_text
         val secondary = R.color.widget_endfield_secondary
-        val primary = listOf(R.id.endfield_brand_platform, R.id.endfield_brand_game, R.id.status_sanity, R.id.endfield_sanity_label,
-            R.id.status_sanity_time) + endfieldRows.flatMap { listOf(it.label, it.value) }
+        val primary = listOf(R.id.endfield_sanity_label, R.id.status_sanity_time) + endfieldRows.flatMap { listOf(it.label, it.value) }
         for (viewId in primary) views.setColor(viewId, "setTextColor", text)
+        // The sanity amount is yellow by its text colour too: the HyperOS desktop showed it white with only the span.
+        views.setColor(R.id.status_sanity, "setTextColor", R.color.widget_endfield_yellow)
         for (viewId in listOf(R.id.status_refresh, R.id.endfield_recovery_label)) views.setColor(viewId, "setTextColor", secondary)
         views.setColor(R.id.status_refresh_arrow, "setColorFilter", secondary)
-        views.setColor(R.id.endfield_brand_divider, "setBackgroundColor", secondary)
     }
 
     private fun bindRow(context: Context, views: RemoteViews, row: EndfieldRow, snapshot: WidgetSnapshot?) {
@@ -124,8 +125,7 @@ internal object EndfieldCard {
         val units = TypedValue.COMPLEX_UNIT_DIP
         fun size(resource: Int) = context.resources.getDimension(resource) / context.resources.displayMetrics.density * scale
         // The sizes the layouts declare (widget_endfield_dimens.xml), scaled to this widget size.
-        val sizes = listOf(R.id.endfield_brand_platform to R.dimen.widget_endfield_brand,
-            R.id.endfield_brand_game to R.dimen.widget_endfield_brand, R.id.status_refresh to R.dimen.widget_endfield_brand,
+        val sizes = listOf(R.id.status_refresh to R.dimen.widget_endfield_brand,
             R.id.status_sanity to R.dimen.widget_endfield_amount, R.id.endfield_sanity_label to R.dimen.widget_endfield_sanity_label,
             R.id.endfield_recovery_label to R.dimen.widget_endfield_caption, R.id.status_sanity_time to R.dimen.widget_endfield_pill) +
             endfieldRows.flatMap { listOf(it.label to R.dimen.widget_endfield_row, it.value to R.dimen.widget_endfield_value) }

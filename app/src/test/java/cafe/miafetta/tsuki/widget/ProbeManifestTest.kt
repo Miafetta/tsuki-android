@@ -48,14 +48,17 @@ class ProbeManifestTest : WidgetResourceFixture() {
             "status_widget_native_v24_dark", "status_widget_native_v24_light", "status_widget_native_v25_dark",
             "status_widget_native_v26_dark", "status_widget_native_v22_content",
             "status_widget_native_v25_light", "status_widget_native_v27_dark", "status_widget_native_v28_content",
-            "status_widget_native_v28_dark", "status_widget_native_v28_light")
+            "status_widget_native_v28_dark", "status_widget_native_v28_light") +
+            // HyperOS keeps a placed widget's bitmap for an unchanged drawable ID, so a redrawn bitmap takes a new name.
+            setOf("drawable/widget_endfield_band", "drawable/widget_endfield_band_text")
         val numbers = mutableSetOf<Int>()
         for (line in pins) {
             val entry = Regex("cafe.miafetta.tsuki:(\\w+)/([\\w.]+) = (0x[0-9a-f]+)").matchEntire(line)!!
             val (type, name, hex) = entry.destructured
             val expected = hex.removePrefix("0x").toLong(16).toInt()
             assertTrue("Resource ID assigned twice: $hex", numbers.add(expected))
-            if (type == "layout" && name in retired) continue // Reserve the deleted layout IDs for cached hosts.
+            // Deleted layouts and bitmaps keep their numbers reserved for cached hosts.
+            if (type == "layout" && name in retired || "$type/$name" in retired) continue
             val resourceClass = Class.forName("cafe.miafetta.tsuki.R\$$type")
             assertEquals("$type/$name changed its released ID", expected, resourceClass.getField(name.replace('.', '_')).getInt(null))
         }

@@ -28,9 +28,11 @@
     <color name="widget_progress_light">@color/miuix_widget_primary_light</color>
     <color name="widget_time_light">@color/miuix_widget_summary_light</color>
     <!-- Endfield card, sampled from the official 明日方舟：终末地数据工具 (maintainer's screenshot, 2026-11-06); always dark. The
-         official surface texture is not copied: the card uses its average tone. -->
+         surface is the official average tone under a drawn texture (widget_endfield_texture); the panels darken it to the
+         official #383838 while letting the texture through, and carry a faint rim. -->
     <color name="widget_endfield_surface">#FF444444</color>
-    <color name="widget_endfield_panel">#FF383838</color>
+    <color name="widget_endfield_panel">#2E000000</color>
+    <color name="widget_endfield_panel_rim">#1AFFFFFF</color>
     <color name="widget_endfield_yellow">#FFFAEE1C</color>
     <color name="widget_endfield_text">#FFFFFFFF</color>
     <color name="widget_endfield_secondary">#FF9E9E9E</color>

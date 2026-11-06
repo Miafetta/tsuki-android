@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- View IDs no longer in any widget layout. They stay declared so their pinned numbers (widget-resource-ids.txt) are never
+     reused: a host may still apply cached actions for them, which find no view and are skipped. -->
+<resources>
+    <!-- The Endfield header marks were texts until the header became one image (endfield_brand_mark). -->
+    <item name="endfield_brand_platform" type="id" />
+    <item name="endfield_brand_game" type="id" />
+    <item name="endfield_brand_divider" type="id" />
+</resources>

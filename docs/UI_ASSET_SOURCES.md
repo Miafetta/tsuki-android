@@ -25,7 +25,12 @@
 | `res/drawable-nodpi/widget_endfield_pass.png` | 终末地通行证等级 |
 
 - 方舟的三组 PNG 原始素材来自森空岛的《明日方舟》官方小组件，由 ChatGPT 复刻重绘，分浅色与深色两版。终末地的理智沿用同一个理智图标，森空岛对终末地理智用的是同一图形。
-- 终末地小部件左侧的黄色竖条 `res/drawable-nodpi/widget_endfield_band.png` 参照官方小组件绘制，文字用 Windows 自带的 Bahnschrift（Bold Condensed）排版后栅格化，不包含字体文件；面板、胶囊、圆点、点状装饰与底部三色线是本项目绘制的形状，颜色取自官方小组件截图，官方背景纹理没有复制。
+- 终末地小部件的以下位图参照官方小组件绘制，文字用 Windows 自带字体排版后栅格化，不包含字体文件：
+  - 左侧竖条的顶部小标记 `widget_endfield_band_marks.png` 与底部字标 `widget_endfield_band_word.png`（透明底，分别贴上下边放在带圆角的黄色形状 `drawable/widget_endfield_band_shape.xml` 上）：ENDFIELD 与 INDUSTRIES 用 Bahnschrift，小标记为几何图形和小字。
+  - 顶栏标识 `widget_endfield_brand.png`：森空岛吉祥物取自上表的森空岛图标（去掉底色、换算成灰白），“森空岛”方框字用思源黑体 Bold，“终末地”用 MiSans Heavy；不是官方标志文件。
+  - 刷新图标 `widget_endfield_refresh.png`：圆形底上镂空两段箭头，运行时着色。
+  - 背景纹理 `widget_endfield_texture.png`：程序生成的等高线，右下角是放大的日常活跃度徽记与 MiSans Heavy 的“终末地”，都以很低的不透明度绘制，透过半透明面板显示；官方纹理图片没有复制。
+- 面板、胶囊、圆点、点状装饰与底部三色线是本项目绘制的形状，颜色取自官方小组件截图。
 - 终末地的四个图标是官方图形：取自森空岛 App《明日方舟：终末地》实时数据页的截图，按灰度换算成白色图形加透明度，没有重新绘制；终末地小部件固定深色，只有白色一版。
 - 图形设计归鹰角网络（Hypergryph）所有，不在本项目的 MIT 许可范围内，仅用于在小部件和概览中标识对应的游戏数据。
 
