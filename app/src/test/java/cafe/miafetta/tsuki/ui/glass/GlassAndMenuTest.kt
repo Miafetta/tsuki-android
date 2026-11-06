@@ -6,6 +6,12 @@ import cafe.miafetta.tsuki.ui.components.MenuMotion
 import cafe.miafetta.tsuki.ui.components.MenuOpenMillis
 import cafe.miafetta.tsuki.ui.components.TsukiMenuPosition
 import cafe.miafetta.tsuki.ui.components.menuMotion
+import cafe.miafetta.tsuki.ui.components.FieldMenuCloseMillis
+import cafe.miafetta.tsuki.ui.components.FieldMenuCollapseMillis
+import cafe.miafetta.tsuki.ui.components.FieldMenuOpenMillis
+import cafe.miafetta.tsuki.ui.components.FieldStartWidth
+import cafe.miafetta.tsuki.ui.components.FieldTriggerFadeOutMillis
+import cafe.miafetta.tsuki.ui.components.fieldMenuMotion
 
 import androidx.compose.ui.unit.*
 import org.junit.Assert.*
@@ -97,6 +103,33 @@ class GlassAndMenuTest {
         assertEquals(IntOffset(140 - 24, 580 - 24), at(IntRect(284, 700, 324, 740), LayoutDirection.Rtl))
         assertTrue(above)
         assertEquals(IntOffset(8 - 24, 24 - 24), at(IntRect(-20, -20, 20, 20), LayoutDirection.Ltr))
+    }
+
+    @Test fun fieldMenuGrowsFromAFixedPillAndSettles() {
+        assertEquals(MenuMotion(FieldStartWidth, .2f, .15f), fieldMenuMotion(0f, .2f))
+        assertEquals(MenuMotion(1f, 1f, 0f), fieldMenuMotion(1f, .2f))
+        assertEquals(fieldMenuMotion(0f, .2f), fieldMenuMotion(Float.NaN, .2f))
+        assertEquals(1f, fieldMenuMotion(0f, Float.NaN).height, 0f)
+        val samples = (0..FieldMenuOpenMillis).map { fieldMenuMotion(it / FieldMenuOpenMillis.toFloat(), .17f) }
+        assertTrue(samples.all { it.width in FieldStartWidth..1f && it.height in .17f..1f && it.offset in 0f..1f })
+        assertTrue(samples.zipWithNext().all { (a, b) ->
+            b.width >= a.width && b.height >= a.height && b.height - a.height < .02f && kotlin.math.abs(b.offset - a.offset) < .03f
+        })
+        assertTrue(FieldMenuCollapseMillis < FieldMenuCloseMillis && FieldTriggerFadeOutMillis < FieldMenuOpenMillis)
+    }
+
+    @Test fun fieldMenuReachesPastTheTriggerCentreAndReportsItInPopupCoordinates() {
+        var above = false
+        var anchor = IntRect.Zero
+        val position = TsukiMenuPosition(true, IntRect(8, 24, 8, 40), 24, 14, { anchor = it }) { above = it }
+        val size = IntSize(200 + 48, 100 + 48)
+        val trigger = IntRect(200, 300, 312, 320)
+        assertEquals(IntOffset(112 - 24, 296 - 24), position.calculatePosition(trigger, IntSize(360, 800), LayoutDirection.Ltr, size))
+        assertFalse(above)
+        assertEquals(trigger.translate(-88, -272), anchor)
+        val low = IntRect(200, 700, 312, 720)
+        assertEquals(IntOffset(112 - 24, 724 - 100 - 24), position.calculatePosition(low, IntSize(360, 800), LayoutDirection.Ltr, size))
+        assertTrue(above)
     }
 
     @Test fun compactTextStylesOnlyChangeFontSizes() {

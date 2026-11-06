@@ -12,8 +12,8 @@ android {
         applicationId = "cafe.miafetta.tsuki"
         minSdk = 33
         targetSdk = 37
-        versionCode = 81
-        versionName = "2.1.0"
+        versionCode = 82
+        versionName = "2.1.1"
         manifestPlaceholders["debugToolsEnabled"] = "false"
         testInstrumentationRunner = if (providers.gradleProperty("releaseProbe").isPresent)
             "cafe.miafetta.tsuki.widget.ReleasePerformanceInstrumentation"

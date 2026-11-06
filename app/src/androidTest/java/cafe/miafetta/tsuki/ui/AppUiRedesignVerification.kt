@@ -141,8 +141,11 @@ private fun AppUiVerification.redesignConfigMenus(host: Activity, folder: File) 
     frames(host)
     assertMenu(true)
     val menu = assertMenuInside(host)
-    check(menu.top < anchor.top && kotlin.math.abs(menu.bottom - anchor.bottom) <= 2) {
-        "Bottom menu did not open upward over anchor: $menu / $anchor"
+    // Field menus reach 14dp past the value's centre line and align with its end (the row's 16dp inner margin).
+    val dp = host.resources.displayMetrics.density
+    check(menu.top < anchor.top && kotlin.math.abs(menu.bottom - anchor.centerY() - 14 * dp) <= 2 * dp &&
+        kotlin.math.abs(anchor.right - menu.right - 16 * dp) <= 2 * dp) {
+        "Bottom menu did not open upward over the value: $menu / $anchor"
     }
     capture(folder, "13-palette-menu-light")
     click("深色")

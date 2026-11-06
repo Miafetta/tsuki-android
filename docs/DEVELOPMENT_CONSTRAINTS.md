@@ -49,7 +49,7 @@
 - MiGlass 通过反射调用 `View` 上的公开方法：只用 `View.getMethod` 查找，不 `setAccessible`、不绕过隐藏 API 限制、不申请 root、不写系统设置。能力判断只读 `persist.sys.bionic_material_supported` 与 Secure 中的 `background_blur_enable`／`material_style`。
 - 方法签名与 42 项材质参数来自已验证的源码和 ROM 字段映射，不凭猜测增改。任一初始化或更新步骤失败时，逐项清理原生状态并回退；失败实例不在滚动或重组中重试，View／配置重建后才重新探测。
 - 模糊只用于顶栏背景、顶栏按钮、游戏胶囊和底栏胶囊；卡片、菜单、弹层不模糊，底栏下方遮罩只是颜色渐变，文字不模糊。
-- 不自写 RuntimeShader／RenderEffect 模糊管线。**唯一例外**：菜单内容层在展开／收起转场中的短暂前景模糊（最大 6dp，只在打开 110ms 显现期和关闭 65ms 隐去期，稳定状态必须为 null），不得扩展到其他位置。
+- 不自写 RuntimeShader／RenderEffect 模糊管线。**唯一例外**：菜单内容层在展开／收起转场中的短暂前景模糊（最大 6dp，只在打开显现期（按钮菜单 110ms、下拉字段 50ms）和关闭 65ms 隐去期，稳定状态必须为 null），不得扩展到其他位置。
 - 滚动时只改变透明度、色调和阴影，不改变模糊半径、不重建后端；不对承载背景采样的容器套整体 alpha，用 DstIn 遮罩控制已采样结果。
 - backdrop 只在 HorizontalPager 外的单一容器录制，相邻页不分别注册；只有存在 miuix-blur 消费者时才录制。
 - MiGlass 目前只在 HyperOS 4 实机上验证过，其他 ROM 视为未验证，必须能安全回退。
