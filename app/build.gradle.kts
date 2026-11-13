@@ -12,8 +12,8 @@ android {
         applicationId = "cafe.miafetta.tsuki"
         minSdk = 33
         targetSdk = 37
-        versionCode = 84
-        versionName = "2.2.1"
+        versionCode = 85
+        versionName = "2.2.2"
         manifestPlaceholders["debugToolsEnabled"] = "false"
         testInstrumentationRunner = if (providers.gradleProperty("releaseProbe").isPresent)
             "cafe.miafetta.tsuki.widget.ReleasePerformanceInstrumentation"
@@ -72,7 +72,7 @@ dependencies {
     implementation("top.yukonga.miuix.kmp:miuix-nav:0.9.4")
     implementation("top.yukonga.miuix.kmp:miuix-squircle:0.9.4")
     implementation("top.yukonga.miuix.kmp:miuix-icons:0.9.4")
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.12.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.13.0")
     // Debug previews only. Tooling must match the resolved Compose UI version; upgrade both together after device
     // verification and then drop the two GradleDependency suppressions.
     //noinspection GradleDependency

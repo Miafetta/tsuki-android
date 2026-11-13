@@ -4,7 +4,10 @@ import cafe.miafetta.tsuki.ui.state.AppPage
 import cafe.miafetta.tsuki.ui.theme.Branding
 
 import cafe.miafetta.tsuki.ui.components.GameTabs
+import cafe.miafetta.tsuki.ui.components.LocalPagerSwipeGuard
+import cafe.miafetta.tsuki.ui.components.PagerSwipeGuard
 import cafe.miafetta.tsuki.ui.components.ScrollToTopEffect
+import cafe.miafetta.tsuki.ui.components.pagerSwipeGuard
 import cafe.miafetta.tsuki.ui.components.expandTopBar
 import cafe.miafetta.tsuki.ui.components.TsukiNavDock
 import cafe.miafetta.tsuki.ui.components.bottomBarInset
@@ -203,8 +206,12 @@ private fun AppScaffoldLayout(pager: PagerState, lists: List<LazyListState>, beh
 private fun AppPager(pager: PagerState, lists: List<LazyListState>, behaviors: List<ScrollBehavior>,
     topHeight: Dp, navBottom: Dp, refreshing: Boolean, canRefresh: Boolean, onRefresh: () -> Unit,
     content: LazyListScope.(Int) -> Unit) {
-    HorizontalPager(pager, modifier = Modifier.fillMaxSize().pagerGestureOverride(pager), userScrollEnabled = false,
-        pageNestedScrollConnection = PagerGestureNestedScrollConnection, beyondViewportPageCount = 1) { index ->
+    // The swipe override pages on any sideways drag; the guard lets a page's tab row keep its own (PagerSwipeGuard).
+    val swipeGuard = remember { PagerSwipeGuard() }
+    CompositionLocalProvider(LocalPagerSwipeGuard provides swipeGuard) {
+    HorizontalPager(pager, modifier = Modifier.fillMaxSize().pagerSwipeGuard(swipeGuard).pagerGestureOverride(pager),
+        userScrollEnabled = false, pageNestedScrollConnection = PagerGestureNestedScrollConnection,
+        beyondViewportPageCount = 1) { index ->
         @Composable fun ListContent() {
             LazyColumn(Modifier.fillMaxSize().testTag("page-list:$index")
                 .overScrollVertical().nestedScroll(behaviors[index].nestedScrollConnection),
@@ -222,6 +229,7 @@ private fun AppPager(pager: PagerState, lists: List<LazyListState>, behaviors: L
             refreshTexts = listOf("下拉刷新", "松开刷新", "正在刷新", "刷新成功")) { ListContent() }
         else ListContent()
         }
+    }
     }
 }
 

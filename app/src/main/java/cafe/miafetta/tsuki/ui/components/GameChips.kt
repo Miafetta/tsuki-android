@@ -16,7 +16,6 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 
@@ -35,8 +34,10 @@ internal fun GameChips(games: List<Pair<String, String>>, selectedId: String, on
                 Box(Modifier.height(38.dp).widthIn(min = 86.dp).clip(shape)
                     .selectable(selected, enabled = enabled, role = Role.Tab, onClick = { onSelect(id) })
                     .padding(horizontal = 22.dp).testTag("game-chip:$id"), contentAlignment = Alignment.Center) {
-                    Text(label, style = MiuixTheme.textStyles.body1, fontSize = 16.sp,
-                        fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium,
+                    // 14sp like the system theme store chips. HyperOS draws Medium as heavy as Bold, so the unselected
+                    // label uses Normal, which renders like the system's unselected chip; subtitle's own Bold is overridden.
+                    Text(label, style = MiuixTheme.textStyles.subtitle,
+                        fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal,
                         color = if (selected) selectionColors.second else MiuixTheme.colorScheme.onSurface)
                 }
             }

@@ -10,7 +10,7 @@
 | 平台与账号 | 实例级的账号／角色绑定（`WidgetInstanceConfig`）；森空岛绑定列表按游戏解析（`SklandGame`、`SklandRoles`）；角色缓存、界面角色键与选中角色都带数据源 ID | 账号仓库只存森空岛账号；应用界面只列出 `AppState` 中 `SHOWN_PROVIDERS` 的游戏 |
 | 数据模型 | `WidgetSnapshot`、`WidgetMetric`（含稳定的 `metricId`） | `WidgetTraining`、`core/Dashboard.kt` 中的指标标签与重置规则 |
 | 桌面小部件 | 曝光刷新、后台任务、添加流程（`PinWidgetReceiver`）；Provider 按功能与配色选择（`StatusWidgetProvider.providerClass`、`feature`、`theme`）；`StatusWidgetRenderer` 按实例的功能选择卡片 | 每款游戏自己的 Provider 子类、布局与卡片渲染（方舟：浅色与深色两个 Provider、`status_widget_*` 与 `StatusWidgetRenderer`；终末地：一个固定深色的 Provider、`endfield_widget*` 与 `EndfieldCard`） |
-| 应用界面 | `GameTabs` 的标签 ID 与选择回调、`Branding`、`WidgetPreviewStage` | 概览页的卡片与指标顺序、部件页只列出一款游戏 |
+| 应用界面 | `GameTabs` 的标签 ID 与选择回调、`Branding`、`WidgetPreviewStage`；部件页按游戏列出全部部件 | 各游戏的概览卡片与指标顺序 |
 
 已规划的功能标识（`featureId`）：
 
@@ -45,9 +45,9 @@
 
 - `id`：上一步定义的数据源 ID。
 - `characters`：当前已保存账号下、属于这款游戏的全部角色。
-- `fetch(config, now)`：返回 `WidgetSnapshot`。失败时抛出 `DataSourceFailure`，用 `RefreshFailure` 区分网络、授权失效、限流、数据异常等原因。同一角色在短时间内的重复请求要复用上次的成功结果，参考 `SklandArknightsAdapter` 的 20 秒窗口。
+- `fetch(config, now)`：返回 `WidgetSnapshot`。失败时抛出 `DataSourceFailure`，用 `RefreshFailure` 区分网络、授权失效、限流、数据异常等原因。同一角色在短时间内的重复请求不再发请求，而是按上一次请求的结果应答：成功时复用这次的结果，失败时重放同一失败类型（不返回更早的成功结果），请求仍在进行或被取消时按限流处理。参考森空岛游戏共用的 `SklandRoleAdapter` 的 20 秒窗口。
 
-每个指标都设置 `metricId`（格式为 `<游戏>.<指标>`，例如 `endfield.sanity`），提醒等功能按它识别指标，不按中文标签识别；只有 2.2.0 之前缓存的《明日方舟》快照没有它，由 `core/MetricIds.kt` 按标签补上。
+每个指标都设置 `metricId`（格式为 `<游戏>.<指标>`，例如 `endfield.sanity`），提醒等功能按它识别指标，不按中文标签识别；2.2.0 之前缓存的《明日方舟》快照没有它，由 `core/MetricIds.kt` 按标签补上（标签兜底只对《明日方舟》数据源生效）；2.2.0、2.2.1 写下的终末地部件记录也没有它，读回后保持为空，直到下次刷新。
 
 解析逻辑放在独立的 `*Parser` 中，不依赖 Android API，以便 JVM 测试。脱敏后的接口样本放在 `app/src/test/resources/<平台>/`，样本里不能包含真实的 UID、昵称或凭据。
 
@@ -76,7 +76,7 @@
 
 ### 3.5 桌面小部件
 
-- 新增浅色与深色两个 `AppWidgetProvider` 子类，在 `AndroidManifest.xml` 中声明，运行在 `:widgetProvider` 进程。小米桌面所需的 `meta-data` 照抄现有 Receiver。
+- 每款新游戏新增一个 `AppWidgetProvider` 子类，在 `AndroidManifest.xml` 中声明，运行在 `:widgetProvider` 进程。外观按下文随官方确定，不要求拆成浅色与深色两个部件；已发布的《明日方舟》Provider 保持兼容。小米桌面所需的 `meta-data` 参考现有 Receiver。
 - 把新 Provider 加入 `StatusWidgetProvider` 伴生对象中的 `providers` 列表，并在 `providerClass`、`themes`、`theme` 与 `feature` 中登记。`WidgetRuntime`、`WidgetStorageProvider` 与 `PinWidgetReceiver` 都通过 `owned()` 判断实例是否属于本应用，不在列表中的实例，刷新与配置都会被忽略；`WidgetStorageProvider` 只接受与实例 Provider 同一功能的配置。参考终末地的 `EndfieldWidgetProvider`。
 - 新增 `res/xml/<游戏>_widget_info.xml`、布局与资源，命名不能与 `status_widget_*` 冲突。`previewLayout` 用带中性示例数据的静态预览布局，`initialLayout` 用加载占位布局，参照 `status_widget_preview_*` 与 `status_widget_loading_*`。
 - 在 `strings.xml` 中新增小部件名称，沿用官方小组件的名称。外观照官方：官方固定一种外观就只做一个 Provider（例如终末地固定深色）；官方随系统外观切换，就做一个 Provider，用 `values-night` 资源跟随系统；不再像《明日方舟》那样拆成浅色、深色两个部件。部件页通过 `widgetName` 显示同一个名称，不要另写一份。

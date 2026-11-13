@@ -23,7 +23,7 @@ class EndfieldTest : SklandFixtureTest() {
         assertEquals(listOf("理智", "活跃度", "每周事务", "通行证", "蚀像寻遗"), snapshot.metrics.map { it.label })
         assertEquals(listOf("125/125", "0/100", "0/10", "0/60", "0/200000"), snapshot.metrics.map { it.amount() })
         assertEquals(listOf("endfield.sanity", "endfield.daily_activation", "endfield.weekly_mission", "endfield.pass_level",
-            "endfield.seek_suspicion"), snapshot.metrics.map { it.stableId() })
+            "endfield.seek_suspicion"), snapshot.metrics.map { it.stableId(arknightsSource = false) })
         assertEquals(0L, snapshot.metrics.first().recoveryAt)
         assertEquals(1_793_956_828_000L, snapshot.dataAt)
         assertTrue(snapshot.notes.isEmpty())

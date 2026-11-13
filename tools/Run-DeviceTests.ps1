@@ -28,7 +28,7 @@ Files left by earlier runs stay on the device.
 param(
     [string]$Serial,
     [string[]]$Scenarios = @('render', 'appUi', 'lifecycle', 'read-lifecycle', 'session-restore', 'widget-editor',
-        'widget-navigation', 'top-refresh', 'errors', 'menu', 'dock', 'page-swipe'),
+        'widget-navigation', 'top-refresh', 'errors', 'menu', 'dock', 'widget-tabs', 'page-swipe'),
     [string]$OutputDirectory,
     [switch]$SkipInstall,
     [string]$RestoreRelease,
@@ -63,7 +63,8 @@ $catalog = [ordered]@{
 # process with the login page open, so its instrumentation reports a crash; run web-login-after-kill right after it.
 foreach ($name in @('read-lifecycle', 'session-restore', 'widget-editor', 'widget-editor-save', 'widget-editor-change',
     'widget-navigation', 'top-refresh', 'errors', 'menu', 'secondary-glass', 'dock-tone', 'page-swipe', 'nav-corner',
-    'dock', 'visual', 'probe', 'baseline', 'theme-header', 'web-login', 'web-login-kill', 'web-login-after-kill')) {
+    'dock', 'widget-tabs', 'visual', 'probe', 'baseline', 'theme-header', 'web-login', 'web-login-kill',
+    'web-login-after-kill')) {
     $catalog[$name] = @('redesignV4', $name)
 }
 

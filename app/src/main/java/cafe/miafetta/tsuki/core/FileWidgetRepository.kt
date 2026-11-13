@@ -33,7 +33,8 @@ class FileWidgetRepository(private val directory: File) : WidgetInstanceReposito
                     properties.getProperty("metric.$index.recoveryAt")?.toLong(),
                     MetricTimer.valueOf(properties.getProperty("metric.$index.timer", "FULL")),
                     properties.getProperty("metric.$index.text"),
-                    properties.getProperty("metric.$index.estimated", "false").toBooleanStrict())
+                    properties.getProperty("metric.$index.estimated", "false").toBooleanStrict(),
+                    properties.getProperty("metric.$index.id"))
             }, required("snapshot.fetchedAt").toLong(),
                 (0 until properties.getProperty("snapshot.notes", "0").toInt().also { require(it in 0..12) })
                     .map { required("note.$it") },
@@ -91,6 +92,8 @@ class FileWidgetRepository(private val directory: File) : WidgetInstanceReposito
                     setProperty("metric.$index.timer", metric.timer.name)
                     metric.text?.let { setProperty("metric.$index.text", it) }
                     setProperty("metric.$index.estimated", metric.estimated.toString())
+                    // Optional key added in 2.2.2; records written before it have no metric IDs (see MetricIds.kt).
+                    metric.metricId?.let { setProperty("metric.$index.id", it) }
                 }
             }
         }

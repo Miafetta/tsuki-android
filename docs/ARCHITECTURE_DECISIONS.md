@@ -42,7 +42,7 @@ Tsuki 只有一个 Gradle 模块 `app`。应用界面使用 Jetpack Compose 与 
 - `StorageContract` 集中定义操作名与传输键，`SnapshotJson` 定义快照格式。
 - 概览刷新和账号验证在 Binder 工作线程同步执行，读取角色缓存与实例快照。
 - 桌面更新由 `WidgetRuntime` 渲染缓存，并通过 JobScheduler 调度 `WidgetRefreshJob` 获取数据与头像。广播和主线程不发网络请求。
-- `WidgetUpdateCoordinator` 管理配置、失败缓存、取消与恢复；`DataSourceAdapter` 把接口数据转换成领域快照。同一角色 20 秒内的成功快照可以复用，这不是周期轮询。
+- `WidgetUpdateCoordinator` 管理配置、失败缓存、取消与恢复；`DataSourceAdapter` 把接口数据转换成领域快照。同一角色 20 秒内的重复请求不发新请求，按上一次请求的结果应答：成功快照可以复用，失败重放同一失败类型，请求仍在进行或被取消时按限流处理；这不是周期轮询。
 - 应用内预览与桌面共用同一套原生渲染逻辑，预览以 Bitmap 传回界面；组件进程不加载 Compose，所需图标导出为 VectorDrawable（来源见[素材来源](UI_ASSET_SOURCES.md)）。
 
 ## 4. 模糊材质
@@ -54,14 +54,14 @@ Tsuki 只有一个 Gradle 模块 `app`。应用界面使用 Jetpack Compose 与 
 
 ## 5. 多游戏扩展
 
-`DataSourceAdapter`、`WidgetDefinition`、`providerId`／`featureId` 与实例级的账号／角色绑定为接入更多游戏而保留，目前只实现了《明日方舟》。哪些部分已经通用、接入步骤与检查清单见[添加新游戏支持](ADDING_A_GAME.md)。
+`DataSourceAdapter`、`WidgetDefinition`、`providerId`／`featureId` 与实例级的账号／角色绑定已用于《明日方舟》和《明日方舟：终末地》。两款游戏共用森空岛平台账号，各自解析和展示数据。哪些部分已经通用、接入步骤与检查清单见[添加新游戏支持](ADDING_A_GAME.md)。
 
 ## 6. 数据保护与升级兼容
 
 凭据加密、迟到请求、稳定资源 ID 与小部件元数据的约束统一写在[开发约束](DEVELOPMENT_CONSTRAINTS.md) §1 与 §3。架构上对应的位置：
 
 - 凭据：`providers/AccountRepository.kt`（加密存储）与 `AndroidCredentialKey`（Keystore 密钥）。
-- 请求代数与身份核对：`WidgetUpdateCoordinator` 与 `SklandArknightsAdapter`。
+- 请求代数与身份核对：`WidgetUpdateCoordinator` 与森空岛游戏共用的 `SklandRoleAdapter`。
 - 稳定资源 ID：`app/widget-resource-ids.txt`，由 `app/build.gradle.kts` 的 `--stable-ids` 应用，`ProbeManifestTest` 校验。
 
 ## 7. 测试分工

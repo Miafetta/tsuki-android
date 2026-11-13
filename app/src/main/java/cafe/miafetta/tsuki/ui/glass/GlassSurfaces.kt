@@ -92,15 +92,17 @@ internal fun Modifier.tsukiGlass(surface: GlassSurface, progress: Float = 1f, se
         spotColor = shadowColor.copy(alpha = .08f * (if (surface == GlassSurface.Button) progress else 1f))))
         .drawBehind { drawRoundRect(colors.surfaceContainer, cornerRadius = androidx.compose.ui.geometry.CornerRadius(radius.toPx()),
             alpha = if (surface == GlassSurface.Button) currentProgress else 1f) }
-    val blurRadius = if (surface == GlassSurface.Dock) 28.dp else 20.dp
+    // Dock values follow the HyperOS 4 Phone app dock as measured on 2026-11-13: its blur matches radius 14 (same value as the
+    // MiGlass radius), and the light tint of 65% sits between the large-area (about 69%) and detail (about 62%) see-through.
+    // miuix-blur keeps the native ratio.
+    val blurRadius = if (surface == GlassSurface.Dock) 14.dp else 20.dp
     val saturation = if (surface == GlassSurface.Dock) 1.8f else 1.6f
     val base = if (dark) lerp(colors.surfaceContainer, colors.onSurface, .02f) else colors.surfaceContainer
-    // Native MiGlass darkens a light page slightly; the system dock stays as light as the page (+0 on white, +8 on #F2F2F2).
     val tint = base.copy(alpha = when {
         surface == GlassSurface.Button -> .62f
-        dark -> .48f
-        surface == GlassSurface.Dock && native -> .80f
-        else -> .50f
+        dark -> .17f
+        surface == GlassSurface.Dock && native -> .65f
+        else -> .41f
     })
     val rim = (if (dark) colors.onSurface else colors.surfaceContainer).copy(alpha = if (dark) .10f else .95f)
     val overlay: DrawScope.() -> Unit = {

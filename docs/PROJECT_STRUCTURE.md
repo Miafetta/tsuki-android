@@ -21,7 +21,7 @@
 | `tsuki.ui.state` | `AppState`（ViewModel）、`AppController`、消息、配置面板状态、路由、页面编号与偏好键 | `core`；**不得引用 Compose UI 组件** |
 | `tsuki.ui.theme` | `TsukiAppTheme`、`TsukiTextStyles`、`Branding`（游戏／平台／配色名）与品牌图像 | Miuix |
 | `tsuki.ui.glass` | 玻璃宿主、后端（MiGlass / miuix-blur / 不透明）、表面参数 | Miuix、`ui.theme` |
-| `tsuki.ui.components` | 无状态、可预览的小组件；只接收数据与回调 | `ui.theme`、`ui.glass`、`core` 的模型、`state` 的数据类型 |
+| `tsuki.ui.components` | 无状态、可预览的小组件；只接收数据与回调。共用的手势与动效辅助也放这里，可以带少量状态：`SlotMotion` 由底栏与部件页切换按钮共用；`PagerSwipeGuard` 要同时被切换按钮和 `AppScaffold` 引用，而组件不能引用上层的 `tsuki.ui`，所以放在这一层 | `ui.theme`、`ui.glass`、`core` 的模型、`state` 的数据类型 |
 | `tsuki.ui.pages` | 三个标签页与二级页面（隐私、许可、添加账号、平台选择、网页登录） | `components`、`state` 的数据类型 |
 | `tsuki.ui.sheets` | 配置面板、确认 / 权限弹窗等浮层 | 同上 |
 

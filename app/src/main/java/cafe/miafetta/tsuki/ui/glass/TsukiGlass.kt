@@ -94,7 +94,8 @@ internal fun GlassBackground(surface: GlassSurface, modifier: Modifier, progress
     var native by remember(configuration) { mutableStateOf(false) }
     val enabled = nativeGlassEnabled(glass)
     val radius = when (surface) {
-        GlassSurface.Dock -> 28f
+        // Matches the blur measured on the HyperOS 4 Phone app dock (2026-11-13): sigma about 25 px.
+        GlassSurface.Dock -> 14f
         GlassSurface.Button -> 20f
         GlassSurface.Chip -> if (selected) 20f else 24f
     }

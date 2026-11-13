@@ -19,4 +19,9 @@ private val arknightsMetricIds = mapOf(
     "线索收集" to "arknights.clues",
 )
 
-internal fun WidgetMetric.stableId(): String? = metricId ?: arknightsMetricIds[canonicalMetricLabel(label)]
+// [arknightsSource] says whether the metric comes from an Arknights data source (the Skland adapter or the debug
+// fixture). The caller decides, because core does not know data source IDs (docs/PROJECT_STRUCTURE.md). Without it a
+// metric that has no ID stays unidentified: Endfield widget records written by 2.2.0 and 2.2.1 have none until their
+// next refresh, and their "理智" must not become arknights.sanity.
+internal fun WidgetMetric.stableId(arknightsSource: Boolean): String? =
+    metricId ?: if (arknightsSource) arknightsMetricIds[canonicalMetricLabel(label)] else null

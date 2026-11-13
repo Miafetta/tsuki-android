@@ -14,6 +14,7 @@ import cafe.miafetta.tsuki.ui.components.TsukiDropdownPreference
 import cafe.miafetta.tsuki.ui.components.TsukiMenuContent
 import cafe.miafetta.tsuki.ui.components.TsukiNavDock
 import cafe.miafetta.tsuki.ui.components.TsukiSmallTitle
+import cafe.miafetta.tsuki.ui.components.TsukiTabRow
 import cafe.miafetta.tsuki.ui.state.UiRole
 import cafe.miafetta.tsuki.ui.components.WidgetStage
 import cafe.miafetta.tsuki.ui.theme.Branding
@@ -46,6 +47,12 @@ private val role = UiRole("sample", "森空岛主账号", "100000001", "测试�
 @Composable
 private fun NavDockPreview(@PreviewParameter(ThemeProvider::class) theme: String) {
     TsukiAppTheme(theme) { TsukiNavDock(0, {}) }
+}
+
+@Preview(name = "TabRow", widthDp = 360, showBackground = true)
+@Composable
+private fun TabRowPreview(@PreviewParameter(ThemeProvider::class) theme: String) {
+    TsukiAppTheme(theme) { Box(Modifier.padding(12.dp)) { TsukiTabRow(listOf("已添加 2", "全部小部件"), 0, {}, "catalog") } }
 }
 
 @Preview(name = "GameChips", widthDp = 360, showBackground = true)

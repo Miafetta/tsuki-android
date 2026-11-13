@@ -21,7 +21,10 @@ import cafe.miafetta.tsuki.ui.theme.TsukiAppTheme
 import cafe.miafetta.tsuki.widget.WidgetRenderInstrumentation
 import java.io.File
 
-// HyperOS system docks keep the capsule at least as light as a flat light page and draw their shadow outside it.
+// The dock follows the HyperOS 4 Phone app dock. Like the system dock, the capsule measured no darker than a flat light page on
+// every backend (2026-11-14), so all three keep the same bound. Its shadow stays outside it.
+private const val LIGHT_MAX_DARKER = 3
+
 internal fun dockToneVerification(runner: WidgetRenderInstrumentation, host: MainActivity): String {
     val folder = File(runner.targetContext.getExternalFilesDir(null), "dock-tone").apply { mkdirs() }
     val background = mutableStateOf(Color(0xFFFDFDFD))
@@ -72,7 +75,9 @@ internal fun dockToneVerification(runner: WidgetRenderInstrumentation, host: Mai
             val above = luminance(dock.centerX(), dock.top - 6 * dp)
             shot.recycle()
             rows += "$name/$backend page=$page body=${body - page} above=${above - page} below=${below - page}"
-            if (name != "black" && body < page - 3) problems += "$name/$backend capsule darker than the page by ${page - body}"
+            if (name != "black" && body < page - LIGHT_MAX_DARKER) {
+                problems += "$name/$backend capsule darker than the page by ${page - body}"
+            }
             if (name != "black" && below > page - 2) problems += "$name/$backend lost its outer shadow"
         }
     }

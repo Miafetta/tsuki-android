@@ -29,7 +29,7 @@ private val licenseSections = listOf(
         "Miuix 0.9.4" to "许可证：$Apache。版权所有：compose-miuix-ui contributors。" +
             "提供界面组件、模糊效果与图标；桌面小部件的刷新图标与头像占位图标由其图标导出。",
         "Jetpack Compose 1.12 与 AndroidX" to "许可证：$Apache。版权所有：The Android Open Source Project。提供界面框架与 Android 基础组件。",
-        "Kotlin 2.4 与 kotlinx.serialization 1.12" to "许可证：$Apache。版权所有：JetBrains s.r.o. 及其贡献者。" +
+        "Kotlin 2.4 与 kotlinx.serialization 1.13" to "许可证：$Apache。版权所有：JetBrains s.r.o. 及其贡献者。" +
             "提供语言运行库与 JSON 序列化。")),
     InfoSection("商标与素材", listOf(
         "${Branding.PLATFORM}、${Branding.GAME}与明日方舟：终末地" to "相关名称、图标、小部件指标图标和角色头像归上海鹰角网络" +

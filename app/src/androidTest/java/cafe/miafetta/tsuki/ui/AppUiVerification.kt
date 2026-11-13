@@ -177,6 +177,8 @@ class AppUiVerification(internal val runner: Instrumentation) {
             "PASS: dock real-touch selection, interruption, cancel, geometry, scroll retention; " +
                 "light/dark, blur on/off, font 1/1.3"
         }
+        // Widgets page tab row (C7): real touch, drags, vertical hand-off to the list and no paging; see AppUiTabRowVerification.
+        "widget-tabs" -> verifyWidgetTabs(host)
         "probe" -> {
             glassSurfaceVerification(runner, host, File(targetContext.getExternalFilesDir(null), "redesign-v4").apply { mkdirs() })
             "PASS: stationary glass probe and secondary page captures"

@@ -3,6 +3,7 @@ package cafe.miafetta.tsuki.ui.pages
 import cafe.miafetta.tsuki.ui.components.EmptyCard
 import cafe.miafetta.tsuki.ui.components.PreviewFadeMillis
 import cafe.miafetta.tsuki.ui.components.PreviewTarget
+import cafe.miafetta.tsuki.ui.components.TsukiTabRow
 import cafe.miafetta.tsuki.ui.components.WarmWidgetPreviews
 import cafe.miafetta.tsuki.ui.components.WidgetPreviewStage
 import cafe.miafetta.tsuki.ui.components.WidgetPreviews
@@ -47,10 +48,8 @@ internal fun LazyListScope.widgetPage(activity: Activity, widgets: List<UiWidget
         theme to PreviewTarget(shown, theme == "DARK", id, game)
     }
     item {
-        TabRowWithContour(tabs = listOf("已添加 ${widgets.size}", "全部小部件"),
-            selectedTabIndex = catalog, onTabSelected = onCatalog, cornerRadius = 17.5.dp,
-            colors = TabRowDefaults.tabRowColors(backgroundColor = MiuixTheme.colorScheme.surfaceContainer,
-                selectedBackgroundColor = MiuixTheme.colorScheme.secondaryContainer))
+        // onCatalog only runs once a press or drag is released, so the cards below switch after the commit (C7, C14).
+        TsukiTabRow(listOf("已添加 ${widgets.size}", "全部小部件"), catalog, onCatalog, tag = "catalog")
         if (warm) WarmWidgetPreviews(previews, if (catalog == 0) all.map { it.second } else added)
     }
 

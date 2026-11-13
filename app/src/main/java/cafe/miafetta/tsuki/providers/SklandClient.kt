@@ -43,7 +43,12 @@ internal class SklandHttpsTransport : SklandTransport {
             return SklandResponse(status, body)
         } catch (failure: DataSourceFailure) {
             throw failure
-        } catch (_: java.io.IOException) {
+        } catch (failure: java.io.IOException) {
+            // The platform stack may clear the interrupt flag when a stopped job cuts the request short; SklandRoleAdapter
+            // reads the flag to tell that from a real failure. A timeout is also an InterruptedIOException but is real.
+            if (failure is java.io.InterruptedIOException && failure !is java.net.SocketTimeoutException) {
+                Thread.currentThread().interrupt()
+            }
             throw DataSourceFailure(RefreshFailure.NETWORK)
         } finally { connection.disconnect() }
     }
