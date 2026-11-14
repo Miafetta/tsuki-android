@@ -32,7 +32,7 @@ Tsuki 是一款面向小米 HyperOS 的 Android 桌面小部件应用，在桌�
 
 ## 安装
 
-目前需要从源码构建，步骤见[构建](#构建)。
+从 [Releases](https://github.com/Miafetta/tsuki-android/releases) 下载最新的 `Tsuki-<版本>-release.apk` 安装，发布页附有 APK 与签名证书的 SHA-256。正式版之间直接覆盖安装即可，账号与小部件会保留。也可以从源码构建，步骤见[构建](#构建)；自己构建的版本签名不同，不能覆盖维护者签名的正式版。
 
 ## 使用
 
