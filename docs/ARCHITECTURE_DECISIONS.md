@@ -5,8 +5,8 @@ Tsuki 只有一个 Gradle 模块 `app`。应用界面使用 Jetpack Compose 与 
 ## 1. 依赖
 
 - `miuix-ui`、`miuix-preference`、`miuix-icons`、`miuix-nav`、`miuix-squircle`、`miuix-blur`，版本固定 0.9.4。
-- `kotlinx-serialization-json` 用于快照与缓存的 JSON 格式。
-- Compose `ui-tooling` 只用于 Debug 预览（`src/debug`），Release 不包含。
+- `kotlinx-serialization-json` 只用于界面状态：导航路由（`AppRoute`）与随重建保存的配置面板状态（`ConfigSheet`、`UiSession`）。快照、角色缓存、账号文件与跨进程数据的 JSON 用平台自带的 `org.json`。
+- Compose `ui-tooling` 与 `ui-tooling-preview` 只用于 Debug 预览（`debugImplementation`，`@Preview` 只放 `src/debug`），Release 不包含。版本要与解析到的 Compose UI 一致（目前 1.12.0），所以带 `GradleDependency` 的 lint 豁免，设备验证后两者一同升级并去掉豁免；`ui-tooling` 排除了可选的 Material3 适配。
 
 主题由 `ThemeController`／`MiuixTheme` 提供，支持跟随系统、浅色和深色；`TsukiTextStyles` 只缩小字号，不改变字重和行高。
 

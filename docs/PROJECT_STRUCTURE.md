@@ -32,13 +32,13 @@
 ## 3. 文件与函数
 
 - 一个文件只放一个主要声明（类或一个主 Composable），文件名与之相同；紧密相关的小型私有辅助可放同一文件。不出现 `ConfigSheet.kt` 里同时放 `AppPage`、`UiPreferences` 这类无关对象。
-- 单文件不超过 300 行，单个函数（含 Composable）不超过 80 行；超过时按职责拆分，而不是压缩成长行。`WidgetRenderer.kt` 这类历史大文件在改动时顺带拆分，不单独大改。
+- 单文件不超过 300 行，单个函数（含 Composable）不超过 80 行；超过时按职责拆分，而不是压缩成长行。
 - **行宽不超过 140 列**。不要把多个语句用 `;` 挤在一行，不要把整段 Modifier 链写在一行。
 - 魔法数字：尺寸、时长、透明度等视觉常量集中在所属组件或 `ui.glass` 的常量对象中，并以名称表达用途；页面里不出现裸数字的模糊半径、alpha 和动画时长。
 - 颜色只取 `MiuixTheme.colorScheme`；桌面部件颜色只取资源。
 - 注释使用英文，解释"为什么"，不复述代码；引用文档时写文档路径。
 - 用户可见文案目前仍写在 Kotlin 中（应用内）或 `strings.xml`（桌面小部件）。不在没有专门任务的情况下批量迁移，避免影响稳定资源 ID。
-- **同一内容只写一处**：游戏名、平台名与配色名取自 `ui/theme/GameBranding.kt`；小部件名称与摘要格标签取自 `strings.xml`（桌面列表与静态预览布局也读取它们）；数据源 ID 取自各适配器的 `ID` 常量；应用内的小部件预览只用 `WidgetPreviewStage`；设备测试的辅助方法放在 `DeviceTestSupport.kt`。新增内容前先查找已有的定义。文档同理：约束写在 DEVELOPMENT_CONSTRAINTS，其他文档只链接，不复述。
+- **同一内容只写一处**：游戏名、平台名与配色名取自 `ui/theme/GameBranding.kt`；小部件名称与摘要格标签取自 `strings.xml`（桌面列表与静态预览布局也读取它们）；数据源 ID 取自 `SklandGame` 的 `providerId`（《明日方舟》是 `SklandArknightsAdapter.ID`，调试夹具是 `FakeArknightsAdapter.ID`）；应用内的小部件预览只用 `WidgetPreviewStage`；设备测试的辅助方法放在 `DeviceTestSupport.kt`。新增内容前先查找已有的定义。文档同理：约束写在 DEVELOPMENT_CONSTRAINTS，其他文档只链接，不复述。
 - 不新增格式化 / 静态检查依赖（ktlint、detekt 等）；需要统一格式时用仓库根目录的 `.editorconfig`。
 
 ## 4. 状态与副作用

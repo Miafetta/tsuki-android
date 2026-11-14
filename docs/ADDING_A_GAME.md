@@ -1,16 +1,16 @@
 # 添加新游戏支持
 
-本文说明如何为 Tsuki 接入一款新游戏，例如同在森空岛上的《明日方舟：终末地》，或其他平台上的游戏。开始之前请先阅读[开发约束](DEVELOPMENT_CONSTRAINTS.md)与[架构](ARCHITECTURE_DECISIONS.md)。动手写代码之前，建议先开一个 Issue 说明打算接入的游戏和数据来源。
+本文说明如何为 Tsuki 接入一款新游戏：同在森空岛上的游戏（《明日方舟：终末地》就是这样接入的，可作参照），或其他平台上的游戏。开始之前请先阅读[开发约束](DEVELOPMENT_CONSTRAINTS.md)与[架构](ARCHITECTURE_DECISIONS.md)。动手写代码之前，建议先开一个 Issue 说明打算接入的游戏和数据来源。
 
-## 1. 现状：哪些是通用的，哪些只属于《明日方舟》
+## 1. 现状：哪些是通用的，哪些由每款游戏各自实现
 
-| 层 | 已经通用 | 目前只属于《明日方舟》 |
+| 层 | 已经通用 | 按游戏或平台各自实现 |
 | --- | --- | --- |
-| 数据源 | `DataSourceAdapter` 接口、`WidgetDefinition`、`WidgetUpdateCoordinator` 的配置、失败缓存与恢复 | `SklandArknightsAdapter`、`ArknightsParser` |
+| 数据源 | `DataSourceAdapter` 接口、`WidgetDefinition`、`WidgetUpdateCoordinator` 的配置、失败缓存与恢复；森空岛游戏共用的 `SklandRoleAdapter`（账号查找、20 秒窗口、身份核对与限流退避） | 每款游戏的适配器与解析器：`SklandArknightsAdapter`／`ArknightsParser`、`SklandEndfieldAdapter`／`EndfieldParser` |
 | 平台与账号 | 实例级的账号／角色绑定（`WidgetInstanceConfig`）；森空岛绑定列表按游戏解析（`SklandGame`、`SklandRoles`）；角色缓存、界面角色键与选中角色都带数据源 ID | 账号仓库只存森空岛账号；应用界面只列出 `AppState` 中 `SHOWN_PROVIDERS` 的游戏 |
-| 数据模型 | `WidgetSnapshot`、`WidgetMetric`（含稳定的 `metricId`） | `WidgetTraining`、`core/Dashboard.kt` 中的指标标签与重置规则 |
+| 数据模型 | `WidgetSnapshot`、`WidgetMetric`（含稳定的 `metricId`） | 只属于《明日方舟》的 `WidgetTraining`，以及 `core/Dashboard.kt` 中它的指标标签与重置规则 |
 | 桌面小部件 | 曝光刷新、后台任务、添加流程（`PinWidgetReceiver`）；Provider 按功能与配色选择（`StatusWidgetProvider.providerClass`、`feature`、`theme`）；`StatusWidgetRenderer` 按实例的功能选择卡片 | 每款游戏自己的 Provider 子类、布局与卡片渲染（方舟：浅色与深色两个 Provider、`status_widget_*` 与 `StatusWidgetRenderer`；终末地：一个固定深色的 Provider、`endfield_widget*` 与 `EndfieldCard`） |
-| 应用界面 | `GameTabs` 的标签 ID 与选择回调、`Branding`、`WidgetPreviewStage`；部件页按游戏列出全部部件 | 各游戏的概览卡片与指标顺序 |
+| 应用界面 | `GameTabs` 的标签 ID 与选择回调、`Branding`、`WidgetPreviewStage`；部件页按 `widgetCatalog` 列出所有游戏的部件 | 各游戏的概览卡片与指标顺序（方舟在 `OverviewPage.kt`，终末地在 `EndfieldOverview.kt`） |
 
 已规划的功能标识（`featureId`）：
 
@@ -27,7 +27,7 @@
 新游戏只能**新增**代码和资源，不能改变已发布内容的含义。下面几条约束摘自[开发约束 §1](DEVELOPMENT_CONSTRAINTS.md#1-已安装实例兼容)：
 
 - 已有的 Provider、Activity、Receiver 类名，以及 `widget-resource-ids.txt` 中的资源 ID，保持不变。
-- 不修改《明日方舟》的布局或小部件元数据。`miuiWidgetVersion` 是应用级、所有部件共用的，新增部件时只升不降。
+- 不修改已发布小部件（《明日方舟》与终末地）的布局或元数据。`miuiWidgetVersion` 是应用级、所有部件共用的，新增部件时只升不降。
 - 不改变现有快照与缓存格式的含义。新字段必须可选，旧数据要能照常读取。
 - 应用内自动获取凭据只能像森空岛一样使用官方网页登录；手动获取的方法只写成添加页上的一段说明文字。边界见[开发约束 §3](DEVELOPMENT_CONSTRAINTS.md#3-凭据与账号数据)。
 
@@ -35,7 +35,7 @@
 
 ### 3.1 定义标识
 
-- **数据源 ID**（`providerId`）：例如 `skland.endfield`。在适配器的伴生对象里定义为 `const val ID`，参考 `SklandArknightsAdapter.ID`。其他地方只引用这个常量，不重复书写字符串。
+- **数据源 ID**（`providerId`）：格式为 `<平台>.<游戏>`，例如 `skland.endfield`。森空岛游戏在 `SklandGame` 中登记（终末地是 `SklandGame.ENDFIELD.providerId`；《明日方舟》沿用已安装版本写下的 `SklandArknightsAdapter.ID`，即 `skland`，不能改）；其他平台在适配器的伴生对象里定义 `const val ID`。其他地方只引用这个常量，不重复书写字符串。
 - **功能标识**（`featureId`）：取上表中的规划值，与 `WidgetRuntime.FEATURE` 并列定义。
 - **游戏标签 ID 与显示名**：写入 `ui/theme/GameBranding.kt` 的 `Branding`，界面上的游戏名只从这里取。
 
@@ -57,7 +57,7 @@
   - 在 `SklandGame` 中登记游戏的 `appCode` 与数据源 ID，并在 `SklandRoles` 中解析它的绑定结构。角色 UID 只在同一款游戏内唯一；需要服务器才能确定角色时，把服务器编进角色 ID（参考 `SklandRole.endfieldId`）。加密账号文件中没有游戏字段的旧角色按《明日方舟》读取。
   - `WidgetStorageProvider` 的 `OVERVIEW` 返回的角色已带数据源 ID 与服务器，`CHARACTERS` 按适配器给出数据源 ID，都不需要再改。
   - `RoleDataStore` 与 `UiRole.key` 已带数据源 ID：《明日方舟》沿用已安装版本写下的路径与键，其他游戏的角色缓存按数据源分目录（见[开发约束 §1](DEVELOPMENT_CONSTRAINTS.md#1-已安装实例兼容)）。
-  - 游戏完成概览与小部件后，把数据源加入 `AppState` 的 `SHOWN_PROVIDERS`，以及 `WidgetRuntime` 的 `roleFetchers` 与 `featureFor`。
+  - 游戏完成概览与小部件后，把数据源加入 `AppState` 的 `SHOWN_PROVIDERS`，并在 `WidgetRuntime` 中把适配器加入 `sklandGames`（适配器表、概览刷新用的 `roleFetchers` 和账号变更时的重置都从它得到）、在 `featureFor` 中登记功能标识。
 - **其他平台**：需要以下几部分：
   - 新的网络客户端与账号仓库。凭据继续用 `CredentialCipher` 加密，保存在 `noBackupFilesDir` 中。
   - 新的登录方法，在 `StorageContract` 中定义。
@@ -69,8 +69,8 @@
 在 `widget/WidgetRuntime.kt` 中：
 
 - 在 `WidgetUpdateCoordinator` 的定义表里加入 `featureId → WidgetDefinition(featureId, providerId)`。
-- 把新适配器加入 `adapters` 列表。协调器的适配器表与 `CHARACTERS` 的数据源 ID 都从这里取。
-- 读取与刷新路径中按 `providerId` 判断账号是否存在的分支，要覆盖新的数据源。
+- 把新适配器加入 `adapters` 列表（森空岛游戏加入 `sklandGames` 即可，见 3.3）。协调器的适配器表与 `CHARACTERS` 的数据源 ID 都从这里取。
+- 读取与刷新路径中按 `providerId` 判断账号是否存在的分支，要覆盖新的数据源：森空岛游戏按 `SklandGame.providerIds` 判断，已自动覆盖；其他平台需要补上自己的判断。
 
 协调器的适配器契约测试见 `WidgetCoordinatorTest`，配置与快照的持久化用例见 `WidgetPersistenceTest`。新适配器应当通过同样的用例。
 
@@ -85,7 +85,7 @@
 
 ### 3.6 应用界面
 
-- **游戏标签**：把新游戏加入 `AppScaffold` 的 `games` 列表。只显示已经实现的游戏。
+- **游戏标签**：把新游戏加入 `Branding.games`（`AppRoot` 把它传给 `AppScaffold`），并把它的小部件加入同一文件的 `widgetCatalog`。只显示已经实现的游戏。
 - **概览**：按游戏拆分 `core/Dashboard.kt` 中的指标标签与说明函数。新游戏使用自己的卡片组合，界面规格遵守[界面设计约定](UI_DESIGN_CONVENTIONS.md)。
 - **部件页与配置面板**：全部小部件按游戏列出；配置面板的角色列表只显示所选游戏的角色。预览统一使用 `WidgetPreviewStage`。`AppConfigSheet` 按所选角色的数据源取功能标识（`WidgetRuntime.featureFor`）。
 - **品牌素材**：游戏与平台图标放在 `res/drawable-nodpi/`，在 `AppLogo` 中引用。
@@ -107,7 +107,7 @@
   - `appUi`：概览、部件页、配置面板。
   - 涉及导航或生命周期时，加上 `session-restore`、`page-swipe` 与 `nav-corner`。
   - 涉及账号添加或网页登录时，加上 `web-login`（会打开官方首页，不登录）。
-- **真实桌面**：添加、刷新、编辑、重启后恢复。另外要确认已有的《明日方舟》小部件在升级后不受影响。
+- **真实桌面**：添加、刷新、编辑、重启后恢复。另外要确认已有的《明日方舟》与终末地小部件在升级后不受影响。
 
 没有实际运行的检查一律写“未验证”。
 

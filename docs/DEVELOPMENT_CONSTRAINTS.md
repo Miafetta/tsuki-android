@@ -9,7 +9,7 @@
 - `AndroidManifest.xml` 中的 Activity、Provider、Receiver、Service 以及被 `PendingIntent`／`ComponentName`／`tsuki://` 深链引用的类：不移动、不改名。需要调整职责时，原类保留为薄壳。
 - `app/widget-resource-ids.txt` 与 `--stable-ids`：资源名和编号保持含义，已删除的编号不复用。只有钉入的条目编号固定；未钉资源的编号会随新增资源移动，所以 RemoteViews 布局与动作引用的资源（含被布局引用的 `strings.xml` 条目）都必须钉入。HyperOS 桌面会沿用已放置部件中同一编号的位图（PNG），应用更新后也不重新读取，所以重绘位图时要换新资源名，旧名在 `ProbeManifestTest` 的退役清单中保留编号；XML 形状与颜色不受影响。
 - Provider 元数据：`miuiWidgetVersion=54`（应用级、所有部件共用；小部件布局、外观或元数据变化时只升不降）、4×2 尺寸、《明日方舟》浅色／深色两套主题布局、终末地固定深色一套，以及曝光元数据；资源收缩保持关闭。
-- 桌面部件资源：`res/layout/status_widget*.xml`、`endfield_widget*.xml`、`probe_widget.xml`、`res/drawable*/widget_*`、`res/values*/widget_palette.xml`、`res/values*/widget_placeholder.xml`、`colors.xml`、`miuix_widget_tokens.xml`、`res/xml/*`，以及 `strings.xml` 中被小部件布局引用的 `status_*` 与 `endfield_*` 条目。
+- 桌面部件资源：`res/layout/status_widget*.xml`、`endfield_widget*.xml`、`probe_widget.xml`、`res/drawable*/widget_*` 与 `avatar_placeholder_*`、`res/values*/widget_palette.xml`、`res/values*/widget_placeholder.xml`、`colors.xml`、`miuix_widget_tokens.xml`、`widget_endfield_dimens.xml`、`widget_retired_ids.xml`（已退役的 View ID，只为保留编号）、`styles.xml` 中的 `Widget*` 样式、`res/xml/*`，以及 `strings.xml` 中被小部件布局引用的 `status_*` 与 `endfield_*` 条目。
 - 跨进程协议与存储：`StorageContract`、`StorageCalls`、`SnapshotJson`，以及 `core/` 的实例存储、角色缓存 schema、协调器。
 
 ## 2. 进程边界
@@ -33,7 +33,7 @@
 ## 4. 部件放置
 
 - 标准路径使用显式、非导出、可变、一次性的 `PendingIntent` 接收宿主回填的真实实例 ID；迟到回调不覆盖已配置的实例。
-- HyperOS 添加流程可能不交付成功回调。兜底只用一次性私有暂存：记录本次选择、请求 token、原有 ID 集合、开机计数和开始时间，仅匹配**唯一**新增、未配置、且 Provider 配色一致的实例；出现多个候选时放弃，不猜测账号。暂存最长两分钟，跨重启失效。
+- HyperOS 添加流程可能不交付成功回调。兜底只用一次性私有暂存：记录本次选择、请求 token、原有 ID 集合、开机计数和开始时间，仅匹配**唯一**新增、未配置、且 Provider 的配色与功能（游戏）都一致的实例；出现多个候选时放弃，不猜测账号。暂存最长两分钟，跨重启失效。
 - 添加前检查小米“桌面快捷方式”权限；状态不可读时要求用户明确确认，取消不创建实例。
 
 ## 5. 界面依赖与实现
@@ -70,6 +70,7 @@
   发布前加上 `:app:assembleRelease :app:lintRelease`。`warningsAsErrors` 保持开启，不添加 lint baseline 或全局关闭项。
 - 设备测试只使用生产页面与内存样本，不保存账号或桌面实例；不卸载应用、不清除数据、不修改系统设置（测试临时固定的屏幕方向在结束后恢复原状）。统一入口为 `tools/Run-DeviceTests.ps1`。
   - `web-login`、`web-login-kill`、`web-login-after-kill` 需要单独指定：它们会打开森空岛官方首页（不登录），离开时清除测试设备上 Tsuki 的网页数据。`web-login` 还会临时替换剪贴板，结束后恢复原内容。
+  - `widget-editor-save`、`widget-editor-change` 需要单独指定，并且要求桌面上已有一个配置好的 Tsuki 小部件（没有时记为跳过，测试不创建实例）：前者原样保存该实例的配置，后者修改配色与角色并保存，再逐项改回并核对，中途失败时恢复原配置；改角色会重新拉取该角色的数据。
   - `provider-breakdown` 只读取本机的账号文件和小部件记录并计时，不写入任何数据。
   - `endfield-probe` 需要单独指定，用于补采或更新终末地测试样本：用本机已保存的 Cred，每个账号向森空岛请求一次绑定列表、账号用户 ID 和终末地角色数据，把响应写进应用的外部文件目录，供 `-PullArtifacts` 取回后脱敏成测试样本。它不写入账号、缓存或小部件，不记录 Cred 与会话 token；取回的原始响应含昵称与 UID，只保存在本机。
 - 没有实际执行的设备测试、视觉检查或性能测量一律记为“未验证”。编译与 JVM 测试不能代替真实桌面宿主、模糊观感、GPU 开销和手势手感的检查。

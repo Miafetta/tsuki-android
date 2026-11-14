@@ -36,7 +36,7 @@
 
 ## Miuix 图标（Apache License 2.0）
 
-- 应用内的操作图标全部来自 miuix-icons 0.9.4：Home、All、ContactsCircle、ChevronBackward、Refresh、Ok、Add、Close、More、ArrowRight 与 ArrowUpDown。
+- 应用内的操作图标全部来自 miuix-icons 0.9.4：Home、All、ContactsCircle、ChevronBackward、Refresh、Ok、Add、Close、More、Paste、Show、Hide、ArrowRight 与 ArrowUpDown。
 - 桌面小部件的两个资源由同版本 Miuix 图标的原始路径导出为 VectorDrawable，资源名称和 ID 保持不变：
   - 刷新图标 `widget_refresh.xml`，来自 Refresh。
   - 浅色／深色头像占位图标，来自 ContactsCircle.Regular。

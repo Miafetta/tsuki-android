@@ -19,7 +19,7 @@ Tsuki 是一款面向小米 HyperOS 的 Android 桌面小部件应用，在桌�
 ## 功能
 
 - **桌面小部件**：“明日方舟数据工具”（浅色、深色）和“明日方舟：终末地数据工具”（与官方一样固定为深色），4×2 尺寸；每个小部件独立绑定角色，可单独刷新。小部件名称沿用官方小组件，桌面上的这些小部件由 Tsuki 提供。
-- **概览**：查看理智、无人机、训练室、公开招募、每日／每周任务、基建等全部指标，以及恢复和完成时间。
+- **概览**：查看《明日方舟》的理智、无人机、训练室、公开招募、每日／每周任务、基建等全部指标，以及恢复和完成时间；《明日方舟：终末地》显示理智、活跃度、每周事务、通行证与蚀像寻遗。
 - **多账号与多角色**：添加多个森空岛账号，在概览顶部切换游戏，在概览和小部件中自由切换角色。
 - **HyperOS 风格界面**：基于 [Miuix](https://github.com/compose-miuix-ui/miuix) 构建，支持浅色／深色模式；在 HyperOS 4 上使用系统原生模糊材质，其他设备自动回退。
 - **注重隐私**：没有自己的服务器，不含广告、统计或第三方 SDK；凭据经 Android Keystore 加密，不参与云备份。
@@ -63,14 +63,14 @@ Set-Content -LiteralPath local.properties -Value "sdk.dir=$sdkPath" -Encoding as
 
 每次改动需要通过的构建与检查命令见[开发约束 §8](docs/DEVELOPMENT_CONSTRAINTS.md#8-测试与验收)。
 
-设备测试使用生产页面和内存中的示例数据，不会保存账号或修改桌面小部件。连接设备后可以用 `tools/Run-DeviceTests.ps1` 一键构建、安装并逐项运行，每个场景单独输出日志并汇总结果：
+默认的设备场景使用生产页面和内存中的示例数据，不会保存账号或修改桌面小部件。连接设备后可以用 `tools/Run-DeviceTests.ps1` 一键构建、安装并逐项运行，每个场景单独输出日志并汇总结果：
 
 ```powershell
 .\tools\Run-DeviceTests.ps1 -WhatIf                      # 只打印将执行的命令
 .\tools\Run-DeviceTests.ps1 -Serial <设备> -SkipInstall   # 使用已安装的测试包
 ```
 
-脚本默认使用维护者的签名链（`tools/Sign-Debug.ps1`）；其他开发者请自行安装 Debug 与测试包后使用 `-SkipInstall`。脚本不会卸载应用、清除数据或修改系统设置。网页登录相关的场景（`web-login` 等）不在默认列表中，需要单独指定：它们会联网打开森空岛官方首页（不登录），并清除 Tsuki 自己的网页数据。
+脚本默认使用维护者的签名链（`tools/Sign-Debug.ps1`）；其他开发者请自行安装 Debug 与测试包后使用 `-SkipInstall`。脚本不会卸载应用、清除数据或修改系统设置。网页登录相关的场景（`web-login` 等）不在默认列表中，需要单独指定：它们会联网打开森空岛官方首页（不登录），并清除 Tsuki 自己的网页数据。其他需要单独指定的场景（例如会编辑已放置小部件的 `widget-editor-change`、用已保存的 Cred 发请求的 `endfield-probe`）及其影响见[开发约束 §8](docs/DEVELOPMENT_CONSTRAINTS.md#8-测试与验收)。
 
 ## 项目结构
 
