@@ -5,12 +5,11 @@
 </p>
 
 <p align="center">
-  <strong>Tsuki</strong>
+  <a href="https://github.com/Miafetta/tsuki-android/releases/latest"><img src="https://img.shields.io/github/v/release/Miafetta/tsuki-android?label=Release" alt="Latest release"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License: MIT"></a>
+  <a href="#系统要求"><img src="https://img.shields.io/badge/Android-13%2B-3DDC84?logo=android&logoColor=white" alt="Android 13+"></a>
+  <a href="https://kotlinlang.org/"><img src="https://img.shields.io/badge/Kotlin-2.4-7F52FF?logo=kotlin&logoColor=white" alt="Kotlin 2.4"></a>
 </p>
-
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-![Android 13+](https://img.shields.io/badge/Android-13%2B-3DDC84?logo=android&logoColor=white)
-![Kotlin](https://img.shields.io/badge/Kotlin-2.4-7F52FF?logo=kotlin&logoColor=white)
 
 Tsuki 是一款面向小米 HyperOS 的 Android 桌面小部件应用，在桌面上显示《明日方舟》的理智、任务与基建进度，以及《明日方舟：终末地》的理智、活跃度与通行证进度。数据来自森空岛，账号信息只保存在本机。
 
