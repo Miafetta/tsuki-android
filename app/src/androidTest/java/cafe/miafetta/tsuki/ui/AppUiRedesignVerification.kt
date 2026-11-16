@@ -1,5 +1,6 @@
 package cafe.miafetta.tsuki.ui
 
+import cafe.miafetta.tsuki.ui.components.TopBarContentGap
 import cafe.miafetta.tsuki.ui.theme.TsukiTextStyles
 
 import android.app.Activity
@@ -9,6 +10,7 @@ import androidx.compose.ui.semantics.*
 import androidx.compose.ui.text.TextLayoutResult
 import cafe.miafetta.tsuki.core.buildingLabels
 import cafe.miafetta.tsuki.core.realtimeLabels
+import top.yukonga.miuix.kmp.basic.TopAppBarDefaults
 import java.io.File
 
 // Captures the redesign reference states and checks every menu against the safe window; returns its case count.
@@ -221,6 +223,8 @@ private fun AppUiVerification.redesignEmptyPages(host: Activity, folder: File) {
     scrollToStart(host, 0)
 }
 
+// Miuix's (transparent) large title line box, the chip and the role card, from their semantics bounds. Below the title the
+// bar keeps LargeTitleBottomPadding (4dp), the content starts TopBarContentGap lower, and the chip sits 4dp into its slot.
 internal fun AppUiVerification.verifyOverviewSpacing(host: Activity) = runOnMainSync {
     val nodes = composeNodes(host)
     val chip = nodes.single { it.config.getOrNull(SemanticsProperties.TestTag) == "game-chip:arknights" }.boundsInRoot
@@ -231,7 +235,8 @@ internal fun AppUiVerification.verifyOverviewSpacing(host: Activity) = runOnMain
         layouts.any { it.layoutInput.text.text == "概览" && it.layoutInput.style.fontSize == TsukiTextStyles.title1.fontSize }
     }.boundsInRoot
     val density = host.resources.displayMetrics.widthPixels / 360f
-    check(kotlin.math.abs(chip.top - title.bottom - 8 * density) <= 2) { "Title/chip gap: ${chip.top - title.bottom}" }
+    val titleToChip = TopAppBarDefaults.LargeTitleBottomPadding.value + TopBarContentGap.value + 4
+    check(kotlin.math.abs(chip.top - title.bottom - titleToChip * density) <= 2) { "Title/chip gap: ${chip.top - title.bottom}" }
     check(kotlin.math.abs(card.top - chip.bottom - 20 * density) <= 2) { "Chip/card gap: ${card.top - chip.bottom}" }
 }
 

@@ -7,7 +7,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.platform.LocalView
-import androidx.compose.ui.unit.dp
 import top.yukonga.miuix.kmp.blur.*
 import top.yukonga.miuix.kmp.anim.folmeSpring
 
@@ -31,13 +30,7 @@ internal fun animateGlassVisibility(visible: Boolean): State<Float> = animateFlo
     folmeSpring(damping = 1f, response = if (visible) .3f else .15f), label = "glass")
 
 internal fun glassFullStrengthFraction(totalHeight: Float, fullStrengthHeight: Float): Float =
-    if (totalHeight > 0f) (fullStrengthHeight / totalHeight).coerceIn(0f, 1f) else 0f
-
-internal val TopGlassFade = 16.dp
-internal val TopGlassFadeInset = 32.dp
-internal val GameChipSlot = 52.dp
-internal val GameChipGlassFade = 46.dp
-internal val GameHeaderFade = 60.dp
+    if (totalHeight > 0f && fullStrengthHeight.isFinite()) (fullStrengthHeight / totalHeight).coerceIn(0f, 1f) else 0f
 
 internal data class GlassContext(val backdrop: LayerBackdrop, val available: Boolean, val active: Boolean, val enabled: Boolean,
     val disabled: String? = null,

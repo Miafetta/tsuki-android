@@ -7,13 +7,14 @@ import androidx.core.view.WindowCompat
 import androidx.compose.ui.unit.sp
 import top.yukonga.miuix.kmp.theme.*
 
-// Sizes measured against HyperOS 4 system app captures on the same device: the large title (title1)
-// and section titles (subtitle) keep Miuix defaults
-// the collapsed title matches the system at 18 sp.
+// Sizes measured against HyperOS 4 system app captures on the same device. The top bar titles follow the Settings app
+// (2026-11-15): its large title is about 30 sp (title1, Miuix 32) and its collapsed title about 17 sp (title3). Section
+// titles (subtitle) keep the Miuix default.
 internal val TsukiTextStyles = defaultTextStyles().let { defaults ->
     defaultTextStyles(
+        title1 = defaults.title1.copy(fontSize = 30.sp),
         title2 = defaults.title2.copy(fontSize = 22.sp),
-        title3 = defaults.title3.copy(fontSize = 18.sp),
+        title3 = defaults.title3.copy(fontSize = 17.sp),
         title4 = defaults.title4.copy(fontSize = 17.sp),
         headline1 = defaults.headline1.copy(fontSize = 16.sp),
         headline2 = defaults.headline2.copy(fontSize = 15.sp),

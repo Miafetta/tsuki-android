@@ -10,14 +10,15 @@ import cafe.miafetta.tsuki.ui.components.ScrollToTopEffect
 import cafe.miafetta.tsuki.ui.components.pagerSwipeGuard
 import cafe.miafetta.tsuki.ui.components.expandTopBar
 import cafe.miafetta.tsuki.ui.components.TsukiNavDock
+import cafe.miafetta.tsuki.ui.components.TsukiTopBar
 import cafe.miafetta.tsuki.ui.components.bottomBarInset
+import cafe.miafetta.tsuki.ui.components.topBarContentTop
 import cafe.miafetta.tsuki.ui.components.topBarInset
 import cafe.miafetta.tsuki.ui.glass.BottomWash
 import cafe.miafetta.tsuki.ui.glass.GameHeaderFade
 import cafe.miafetta.tsuki.ui.glass.GameChipSlot
 import cafe.miafetta.tsuki.ui.glass.GlassIconButton
 import cafe.miafetta.tsuki.ui.glass.TopGlassFade
-import cafe.miafetta.tsuki.ui.glass.TopGlassFadeInset
 import cafe.miafetta.tsuki.ui.glass.TsukiGlass
 import cafe.miafetta.tsuki.ui.glass.TsukiGlassHost
 import cafe.miafetta.tsuki.ui.glass.animateGlassVisibility
@@ -37,7 +38,6 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -167,24 +167,26 @@ private fun AppScaffoldLayout(pager: PagerState, lists: List<LazyListState>, beh
     } }
     val progress by animateGlassVisibility(visible)
     val overviewList = lists[0]
-    val chipTop by remember(overviewList, density, topHeight, collapsed) { derivedStateOf {
+    // The chips ride on the overview's first item (their slot, TopBarContentGap below the bar) and stop below the
+    // collapsed bar.
+    val contentTop = topBarContentTop(topHeight)
+    val chipTop by remember(overviewList, density, contentTop, collapsed) { derivedStateOf {
         if (overviewList.firstVisibleItemIndex > 0) collapsed else
-            (topHeight - with(density) { overviewList.firstVisibleItemScrollOffset.toDp() }).coerceAtLeast(collapsed)
+            (contentTop - with(density) { overviewList.firstVisibleItemScrollOffset.toDp() }).coerceAtLeast(collapsed)
     } }
     Box(modifier.fillMaxSize().background(MiuixTheme.colorScheme.surface), contentAlignment = Alignment.TopCenter) {
         Scaffold(modifier = Modifier.windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal))
             .widthIn(max = 600.dp).fillMaxSize()) { padding ->
             Box(Modifier.fillMaxSize()) {
                 Box(Modifier.fillMaxSize().tsukiBackdrop().consumeWindowInsets(padding)) {
-                AppPager(pager, lists, behaviors, topHeight, navBottom, refreshing, canRefresh, onRefresh, content)
+                AppPager(pager, lists, behaviors, contentTop, navBottom, refreshing, canRefresh, onRefresh, content)
                 }
                 TsukiGlass({ glassScrollProgress(activeBehavior.state.collapsedFraction, activeList.firstVisibleItemIndex) },
-                    collapsed - if (active == AppPage.OVERVIEW) 0.dp else TopGlassFadeInset, Modifier.fillMaxWidth()
+                    status, Modifier.fillMaxWidth()
                         .height(collapsed + if (active == AppPage.OVERVIEW) GameHeaderFade else TopGlassFade),
                     gameHeader = active == AppPage.OVERVIEW)
-                TopAppBar(title = listOf("概览", "部件", "我的")[active], color = Color.Transparent,
+                TsukiTopBar(title = listOf("概览", "部件", "我的")[active], scrollBehavior = behaviors[active],
                     modifier = Modifier.onSizeChanged { topHeight = with(density) { it.height.toDp() } },
-                        scrollBehavior = behaviors[active],
                     actions = {
                         AppTopAction(active, showRefresh, addButtonVisible, canRefresh, progress, refreshFromTop) {
                             if (!pager.isScrollInProgress && active == currentPage) onAdd()
@@ -202,9 +204,11 @@ private fun AppScaffoldLayout(pager: PagerState, lists: List<LazyListState>, beh
     }
 }
 
+// [contentTop] is where every page's first item starts (topBarContentTop): the overview's chip slot, the Widgets tab row and
+// the Me page's first section title, all at the same height.
 @Composable
 private fun AppPager(pager: PagerState, lists: List<LazyListState>, behaviors: List<ScrollBehavior>,
-    topHeight: Dp, navBottom: Dp, refreshing: Boolean, canRefresh: Boolean, onRefresh: () -> Unit,
+    contentTop: Dp, navBottom: Dp, refreshing: Boolean, canRefresh: Boolean, onRefresh: () -> Unit,
     content: LazyListScope.(Int) -> Unit) {
     // The swipe override pages on any sideways drag; the guard lets a page's tab row keep its own (PagerSwipeGuard).
     val swipeGuard = remember { PagerSwipeGuard() }
@@ -216,8 +220,7 @@ private fun AppPager(pager: PagerState, lists: List<LazyListState>, behaviors: L
             LazyColumn(Modifier.fillMaxSize().testTag("page-list:$index")
                 .overScrollVertical().nestedScroll(behaviors[index].nestedScrollConnection),
                 state = lists[index], overscrollEffect = null,
-                contentPadding = PaddingValues(start = 12.dp, end = 12.dp,
-                    top = topHeight + (if (index == AppPage.OVERVIEW) 0.dp else 8.dp), bottom = navBottom + 100.dp),
+                contentPadding = PaddingValues(start = 12.dp, end = 12.dp, top = contentTop, bottom = navBottom + 100.dp),
                 verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 if (index == AppPage.OVERVIEW) item("game-chips-slot") { Spacer(Modifier.height(GameChipSlot)) }
                 content(index)
@@ -225,7 +228,7 @@ private fun AppPager(pager: PagerState, lists: List<LazyListState>, behaviors: L
         }
         Box(Modifier.fillMaxSize().background(MiuixTheme.colorScheme.surface)) {
         if (index == AppPage.OVERVIEW) PullToRefresh(isRefreshing = refreshing, onRefresh = { if (canRefresh) onRefresh() },
-            topAppBarScrollBehavior = behaviors[0], contentPadding = PaddingValues(top = topHeight + GameChipSlot),
+            topAppBarScrollBehavior = behaviors[0], contentPadding = PaddingValues(top = contentTop + GameChipSlot),
             refreshTexts = listOf("下拉刷新", "松开刷新", "正在刷新", "刷新成功")) { ListContent() }
         else ListContent()
         }

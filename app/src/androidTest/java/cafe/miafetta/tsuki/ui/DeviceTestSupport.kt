@@ -1,7 +1,9 @@
 package cafe.miafetta.tsuki.ui
 
 import android.app.Activity
+import android.app.Instrumentation
 import android.app.UiAutomation
+import android.os.SystemClock
 import android.view.View
 import android.view.ViewGroup
 import androidx.compose.ui.platform.ViewRootForTest
@@ -52,6 +54,21 @@ internal fun View.miGlassViews(): List<MiGlassView> = when (this) {
     is MiGlassView -> listOf(this)
     is ViewGroup -> (0 until childCount).flatMap { getChildAt(it).miGlassViews() }
     else -> emptyList()
+}
+
+// A screenshot shows Tsuki only while its window has focus: a pulled-down notification shade or a system dialog takes it.
+// Reads the focus on the main thread every 200ms for up to 10s. Only for captures without Tsuki's own popups or dialogs.
+internal fun Instrumentation.awaitWindowFocus(host: Activity) {
+    val deadline = SystemClock.uptimeMillis() + 10_000
+    while (true) {
+        var focused = false
+        runOnMainSync { focused = host.hasWindowFocus() }
+        if (focused) return
+        check(SystemClock.uptimeMillis() < deadline) {
+            "Tsuki lost window focus (a system panel or dialog is over it); screenshot not taken"
+        }
+        Thread.sleep(200)
+    }
 }
 
 internal fun UiAutomation.shell(command: String) {

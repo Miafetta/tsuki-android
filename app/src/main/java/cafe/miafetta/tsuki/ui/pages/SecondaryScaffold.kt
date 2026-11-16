@@ -1,12 +1,14 @@
 package cafe.miafetta.tsuki.ui.pages
 
+import cafe.miafetta.tsuki.ui.components.BackButtonPadding
 import cafe.miafetta.tsuki.ui.components.ScrollToTopEffect
+import cafe.miafetta.tsuki.ui.components.TsukiTopBar
 import cafe.miafetta.tsuki.ui.components.bottomBarInset
 import cafe.miafetta.tsuki.ui.components.expandTopBar
+import cafe.miafetta.tsuki.ui.components.topBarContentTop
 import cafe.miafetta.tsuki.ui.components.topBarInset
 import cafe.miafetta.tsuki.ui.glass.GlassIconButton
 import cafe.miafetta.tsuki.ui.glass.TopGlassFade
-import cafe.miafetta.tsuki.ui.glass.TopGlassFadeInset
 import cafe.miafetta.tsuki.ui.glass.TsukiGlass
 import cafe.miafetta.tsuki.ui.glass.TsukiGlassHost
 import cafe.miafetta.tsuki.ui.glass.animateGlassVisibility
@@ -21,7 +23,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
@@ -41,7 +42,8 @@ import top.yukonga.miuix.kmp.utils.overScrollVertical
 // scrollable = false is the compact variant (UI_DESIGN_CONVENTIONS C13) for content that scrolls itself, such as a
 // WebView: a SmallTopAppBar above a fixed-height body, without top glass or backdrop recording.
 // backEnabled only reflects real busy states. During the slide-in the button keeps its normal look: NavDisplay blocks
-// input then, and a click is ignored until the page is active.
+// input then, and a click is ignored until the page is active. The back button sits BackButtonPadding from the start in
+// both variants, where the system puts its own (TopBarSpacing); the actions keep Miuix's padding.
 @Composable
 internal fun SecondaryScaffold(title: String, blurEnabled: Boolean, active: Boolean, onBack: () -> Unit,
     modifier: Modifier = Modifier, backEnabled: Boolean = true, contentPadding: PaddingValues = PaddingValues(),
@@ -90,29 +92,32 @@ private fun ScrollingBody(body: SecondaryBody) {
         scroll.animateScrollTo(0)
         expandTopBar(behavior)
     }
-    // Only the content consumes the Scaffold insets; the TopAppBar still pads itself like AppScaffold's.
+    // Only the content consumes the Scaffold insets; the TopAppBar still pads itself like AppScaffold's. The first content
+    // starts TopBarContentGap below the bar, as on the main pages.
     Box(Modifier.fillMaxSize()) {
         Column(Modifier.fillMaxSize().consumeWindowInsets(body.padding).tsukiBackdrop()
             .background(MiuixTheme.colorScheme.surface)
             .overScrollVertical().nestedScroll(behavior.nestedScrollConnection)
             .verticalScroll(scroll, overscrollEffect = null)
-            .padding(top = topHeight, bottom = bottom + 16.dp).padding(body.contentPadding),
+            .padding(top = topBarContentTop(topHeight), bottom = bottom + 16.dp).padding(body.contentPadding),
             verticalArrangement = Arrangement.spacedBy(body.spacing), content = body.content)
-        TsukiGlass({ glassScrollProgress(behavior.state.collapsedFraction) }, collapsed - TopGlassFadeInset,
+        TsukiGlass({ glassScrollProgress(behavior.state.collapsedFraction) }, top,
             Modifier.fillMaxWidth().height(collapsed + TopGlassFade))
-        TopAppBar(body.title, color = Color.Transparent, scrollBehavior = behavior,
+        TsukiTopBar(body.title, behavior,
             modifier = Modifier.onSizeChanged { topHeight = with(density) { it.height.toDp() } },
+            navigationIconPadding = BackButtonPadding,
             navigationIcon = { BackButton(body, progress) }, actions = { body.actions(this, progress) })
     }
 }
 
 // The body fills the space between the bar and the navigation bar; nothing scrolls under the bar. As in
-// ScrollingBody only the content consumes the Scaffold insets: the bar pads itself for the status bar.
+// ScrollingBody only the content consumes the Scaffold insets: the bar pads itself for the status bar. Without a large
+// title there is no TopBarContentGap: the content (a WebView) starts right below the small bar (C13).
 @Composable
 private fun FixedBody(body: SecondaryBody) {
     val bottom = bottomBarInset()
     Column(Modifier.fillMaxSize()) {
-        SmallTopAppBar(body.title, color = MiuixTheme.colorScheme.surface,
+        SmallTopAppBar(body.title, color = MiuixTheme.colorScheme.surface, navigationIconPadding = BackButtonPadding,
             navigationIcon = { BackButton(body, 0f) }, actions = { body.actions(this, 0f) })
         Column(Modifier.weight(1f).fillMaxWidth().consumeWindowInsets(body.padding).padding(bottom = bottom)
             .padding(body.contentPadding), verticalArrangement = Arrangement.spacedBy(body.spacing), content = body.content)

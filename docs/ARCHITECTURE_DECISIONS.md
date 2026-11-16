@@ -25,8 +25,8 @@ Tsuki 只有一个 Gradle 模块 `app`。应用界面使用 Jetpack Compose 与 
 
 - `TsukiApp` 负责主题、导航和页面组装。
 - `AppController` 持有当前页面、所选角色、配置面板、刷新以及添加到桌面的权限流程。
-- `AppScaffold` 组合 `TopAppBar`、游戏标签、`PullToRefresh`、`TsukiNavDock` 与底部渐变遮罩，每个标签页独立滚动。页面可以通过底栏或横向滑动切换；无论哪种方式，都以 Pager 最终停留的页同步底栏与当前页，顶栏按钮只在两者一致时响应。
-- 二级页面共用 `SecondaryScaffold`，顶栏使用与主页面相同的玻璃路径，标题同时作为无障碍窗格标题。数据与隐私、开源许可再共用 `InfoPage` 的文档式版式。
+- `AppScaffold` 组合 `TsukiTopBar`、游戏标签、`PullToRefresh`、`TsukiNavDock` 与底部渐变遮罩，每个标签页独立滚动。页面可以通过底栏或横向滑动切换；无论哪种方式，都以 Pager 最终停留的页同步底栏与当前页，顶栏按钮只在两者一致时响应。
+- 二级页面共用 `SecondaryScaffold`，顶栏使用与主页面相同的 `TsukiTopBar` 与玻璃路径，标题同时作为无障碍窗格标题。数据与隐私、开源许可再共用 `InfoPage` 的文档式版式。
 - `components` 中的组件只接收数据、回调和图像，不直接读取存储。
 - 一次性提示由 `UiMessages` 在 STARTED 之后消费，`UiNotifier` 以系统 Toast 显示。
 - 小部件预览只有一个入口 `WidgetPreviewStage`：概览空状态、部件页与配置面板共用同一渲染源、位图缓存与外观。配置面板的预览快照通过 `AppState.previewSnapshot` 只读获取。

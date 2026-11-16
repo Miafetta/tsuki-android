@@ -9,9 +9,11 @@ import androidx.compose.ui.semantics.getOrNull
 import cafe.miafetta.tsuki.MainActivity
 import cafe.miafetta.tsuki.ui.glass.MiGlassCapability
 import cafe.miafetta.tsuki.widget.WidgetRenderInstrumentation
+import top.yukonga.miuix.kmp.blur.isRuntimeShaderSupported
 import java.io.File
 
-// Navigates the real app through semantics actions only and compares the top glass backend of main and secondary pages.
+// Navigates the real app through semantics actions only and compares the top glass backend of main and secondary pages:
+// the same on every page, and native where MiGlass is supported with blur on (then miuix-blur, then opaque).
 internal class SecondaryGlassVerification(private val runner: WidgetRenderInstrumentation, private val host: MainActivity) {
     private val folder = File(runner.targetContext.getExternalFilesDir(null), "secondary-glass").apply { mkdirs() }
 
@@ -39,21 +41,33 @@ internal class SecondaryGlassVerification(private val runner: WidgetRenderInstru
             runner.uiAutomation.shell("input keyevent BACK")
             runner.settleUi()
         }
-        if (MiGlassCapability.supported) check(results.all { it.substringAfter('=') == "native" }) {
-            "Top glass is not native on every page: $results"
+        // Read only: the app's blur switch (the "blur" UI preference) decides whether a blurred backend is expected at all.
+        val blur = runner.targetContext.getSharedPreferences("ui", 0).getBoolean("blur", true)
+        val expected = when {
+            blur && MiGlassCapability.supported -> "native"
+            blur && isRuntimeShaderSupported() -> "miuix-blur"
+            else -> "opaque"
         }
+        check(results.map { it.substringAfter('=') }.distinct().size == 1) { "Top glass differs between pages: $results" }
+        check(results.all { it.substringAfter('=') == expected }) { "Top glass is not $expected on every page: $results" }
         return "PASS: top glass backend ${results.joinToString()}"
     }
 
+    // A shown full-width native view is the native top glass ("native-hidden" while invisible); otherwise the backend the
+    // page's TsukiGlass reports through its Debug test tag. The root page stays composed under a secondary page and reports
+    // "inactive" there.
     private fun topGlass(name: String): String {
         var state = ""
         runner.runOnMainSync {
             val decor = host.window.decorView
-            val top = decor.miGlassViews().filter { it.isShown && it.width >= decor.width - 2 }
+            val native = decor.miGlassViews().filter { it.isShown && it.width >= decor.width - 2 }
+            val backends = host.semanticsNodes().mapNotNull { it.config.getOrNull(SemanticsProperties.TestTag) }
+                .filter { it.startsWith("top-glass:") }.map { it.substringAfter(':') }.filter { it != "inactive" }
             state = when {
-                top.any { it.visibility == View.VISIBLE && it.alpha > 0f } -> "native"
-                top.isNotEmpty() -> "native-hidden"
-                else -> "no-native"
+                native.any { it.visibility == View.VISIBLE && it.alpha > 0f } -> "native"
+                native.isNotEmpty() -> "native-hidden"
+                backends.size == 1 -> backends.single()
+                else -> "unknown$backends"
             }
         }
         runner.uiAutomation.takeScreenshot()?.let { bitmap ->

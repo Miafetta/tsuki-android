@@ -1,14 +1,18 @@
 package cafe.miafetta.tsuki.ui.components
 
+import cafe.miafetta.tsuki.ui.glass.ChipShadowAnchor
 import cafe.miafetta.tsuki.ui.glass.GlassBackground
 import cafe.miafetta.tsuki.ui.glass.GlassSurface
+import cafe.miafetta.tsuki.ui.glass.chipRowShadow
 import cafe.miafetta.tsuki.ui.glass.chipSelectionColors
+import cafe.miafetta.tsuki.ui.glass.chipShadowAnchor
 
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.selection.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -22,14 +26,17 @@ import top.yukonga.miuix.kmp.theme.MiuixTheme
 @Composable
 internal fun GameChips(games: List<Pair<String, String>>, selectedId: String, onSelect: (String) -> Unit,
     modifier: Modifier = Modifier, enabled: Boolean = true, progress: () -> Float = { 0f }) {
-    Row(modifier.fillMaxWidth().horizontalScroll(rememberScrollState()).selectableGroup()
-        .padding(start = 12.dp, end = 12.dp, top = 4.dp, bottom = 10.dp).testTag("game-tabs"),
+    // The row draws the selected chip's shadow itself, outside the scroll container's clipping overscroll layer
+    // (chipRowShadow); the chips tell it where they are.
+    val shadowAnchor = remember { ChipShadowAnchor() }
+    Row(modifier.fillMaxWidth().chipRowShadow(shadowAnchor, selectedId).horizontalScroll(rememberScrollState())
+        .selectableGroup().padding(start = 12.dp, end = 12.dp, top = 4.dp, bottom = 10.dp).testTag("game-tabs"),
             horizontalArrangement = Arrangement.spacedBy(12.dp)) {
         games.forEach { (id, label) ->
             val selected = selectedId == id
             val shape = RoundedCornerShape(50)
             val selectionColors = chipSelectionColors()
-            Box {
+            Box(Modifier.chipShadowAnchor(shadowAnchor, id)) {
                 GlassBackground(GlassSurface.Chip, Modifier.matchParentSize(), progress(), selected)
                 Box(Modifier.height(38.dp).widthIn(min = 86.dp).clip(shape)
                     .selectable(selected, enabled = enabled, role = Role.Tab, onClick = { onSelect(id) })

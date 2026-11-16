@@ -70,15 +70,26 @@ class GlassAndMenuTest {
         assertFalse(glassVisible(Float.NaN))
     }
 
-    @Test fun glassFadeStartsAtTheCollapsedBarAndEndsFourDpBelowTheChips() {
-        val collapsed = 92f
-        assertEquals(collapsed / (collapsed + 46f), glassFullStrengthFraction(collapsed + GameChipGlassFade.value, collapsed), .0001f)
-        val topFraction = glassFullStrengthFraction(collapsed + TopGlassFade.value, collapsed - TopGlassFadeInset.value)
-        assertEquals((collapsed - 32f) / (collapsed + 16f), topFraction, .0001f)
-        assertEquals(46f, 4f + 38f + 4f, 0f)
+    @Test fun topGlassClearsEightDpBelowTheChipsOrTheActionRow() {
+        // GameChips: 4dp padding, a 38dp chip, 10dp padding in a 52dp slot below the action row.
         assertEquals(52.dp, GameChipSlot)
+        assertEquals(4.dp + 38.dp, GameChipBottom)
+        assertEquals(GameChipSlot, GameChipBottom + 10.dp)
+        assertEquals(8.dp, TopGlassFade)
+        assertEquals(GameChipBottom + 8.dp, GameHeaderFade)
+        assertEquals(50.dp, GameHeaderFade)
+    }
+
+    @Test fun glassFractionsStayInsideTheGlass() {
+        val collapsed = 92f
+        assertEquals(collapsed / (collapsed + 50f), glassFullStrengthFraction(collapsed + GameHeaderFade.value, collapsed), .0001f)
         assertEquals(0f, glassFullStrengthFraction(0f, collapsed), 0f)
+        assertEquals(0f, glassFullStrengthFraction(-10f, collapsed), 0f)
         assertEquals(1f, glassFullStrengthFraction(20f, collapsed), 0f)
+        assertEquals(0f, glassFullStrengthFraction(100f, -5f), 0f)
+        assertEquals(0f, glassFullStrengthFraction(Float.NaN, collapsed), 0f)
+        assertEquals(0f, glassFullStrengthFraction(100f, Float.NaN), 0f)
+        assertEquals(0f, glassFullStrengthFraction(100f, Float.POSITIVE_INFINITY), 0f)
     }
 
     @Test fun popupOverlapsAnchorAndClampsAllWindowEdges() {
@@ -136,8 +147,8 @@ class GlassAndMenuTest {
         val defaults = defaultTextStyles()
         val compact = TsukiTextStyles
         val styles = listOf(
-            Triple(defaults.title1, compact.title1, 32), Triple(defaults.title2, compact.title2, 22),
-            Triple(defaults.title3, compact.title3, 18), Triple(defaults.title4, compact.title4, 17),
+            Triple(defaults.title1, compact.title1, 30), Triple(defaults.title2, compact.title2, 22),
+            Triple(defaults.title3, compact.title3, 17), Triple(defaults.title4, compact.title4, 17),
             Triple(defaults.headline1, compact.headline1, 16), Triple(defaults.headline2, compact.headline2, 15),
             Triple(defaults.main, compact.main, 16), Triple(defaults.button, compact.button, 16),
             Triple(defaults.paragraph, compact.paragraph, 16), Triple(defaults.body1, compact.body1, 15),

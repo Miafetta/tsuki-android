@@ -33,9 +33,10 @@ internal fun InfoPage(title: String, onBack: () -> Unit, blurEnabled: Boolean, h
     }
 }
 
+// The page's first content: it starts where SecondaryScaffold puts every page's first content (topBarContentTop).
 @Composable
 private fun InfoHeader(heading: String, meta: String, intro: String) {
-    Card(Modifier.fillMaxWidth().padding(top = 8.dp)) {
+    Card(Modifier.fillMaxWidth()) {
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
             Text(heading, style = MiuixTheme.textStyles.title4, fontWeight = FontWeight.Bold)
             Text(meta, style = MiuixTheme.textStyles.footnote1, color = MiuixTheme.colorScheme.onSurfaceVariantSummary)

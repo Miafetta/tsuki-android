@@ -1,5 +1,7 @@
 package cafe.miafetta.tsuki.ui.components
 
+import cafe.miafetta.tsuki.ui.glass.drawEdgeLight
+
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -10,6 +12,10 @@ import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawWithCache
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.AwaitPointerEventScope
 import androidx.compose.ui.input.pointer.PointerEventPass
@@ -29,6 +35,9 @@ import androidx.compose.ui.unit.dp
 import kotlin.math.roundToInt
 import top.yukonga.miuix.kmp.basic.TabRowDefaults
 import top.yukonga.miuix.kmp.basic.Text
+import top.yukonga.miuix.kmp.squircle.SquircleDefaults
+import top.yukonga.miuix.kmp.squircle.addSquircleRect
+import top.yukonga.miuix.kmp.squircle.isSquircleEnabled
 import top.yukonga.miuix.kmp.squircle.squircleBackground
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 
@@ -63,6 +72,7 @@ internal fun TsukiTabRow(tabs: List<String>, selected: Int, onSelect: (Int) -> U
                 awaitEachGesture { trackTabs(tracking, current, guard, feedGuard = shared == null) { select(it) } }
             }
             .squircleBackground(MiuixTheme.colorScheme.surfaceContainer, TabRadius + TabContour)
+            .contourEdgeLight()
             .padding(TabContour)) {
             TabIndicator(motion, layout, tabWidth, tag)
             Row(Modifier.fillMaxSize(), Arrangement.spacedBy(TabGap), Alignment.CenterVertically) {
@@ -80,6 +90,33 @@ internal fun TsukiTabRow(tabs: List<String>, selected: Int, onSelect: (Int) -> U
 private val TabContour = 5.dp
 private val TabGap = 5.dp
 private val TabRadius = 17.5.dp
+
+// The row's system counterpart, the SIM switcher in the HyperOS 4 Phone app (recorded 2026-11-14), lights the inside of its
+// frame like the dock does, but not its selected segment: a uniform additive rim 23 levels brighter, 2 px wide.
+private const val TabEdgeLightAlpha = .09f
+private val TabEdgeLightWidth = .6.dp
+
+// The frame's edge light, drawn above the frame and below the indicator whether or not glass is available. It follows the
+// frame's outline, inset by half its width as squircleBorder insets its stroke. squircleBackground's shader turns a corner
+// into a plain circular arc once radius x extension reaches half the shorter side, so this capsule-high frame is a stadium
+// even with squircles on, and the rounded-rectangle form of addSquircleRect matches it; the squircle form applies below that.
+@Composable
+private fun Modifier.contourEdgeLight(): Modifier {
+    val squircle = isSquircleEnabled()
+    return drawWithCache {
+        val width = TabEdgeLightWidth.toPx()
+        val radius = (TabRadius + TabContour).toPx()
+        val stadium = radius * SquircleDefaults.Extension >= size.minDimension / 2f
+        val path = Path()
+        if (size.width > width && size.height > width) {
+            path.addSquircleRect(size.width - width, size.height - width, radius - width / 2f,
+                squircleEnabled = squircle && !stadium)
+            path.translate(Offset(width / 2f, width / 2f))
+        }
+        val stroke = Stroke(width)
+        onDrawBehind { drawEdgeLight(path, stroke, TabEdgeLightAlpha) }
+    }
+}
 
 // Finger x in the row (contour included) to a fractional tab: tab i is centred at contour + tab / 2 + i * (tab + gap).
 internal fun tabPointerPosition(x: Float, contour: Float, tab: Float, gap: Float, last: Float): Float =

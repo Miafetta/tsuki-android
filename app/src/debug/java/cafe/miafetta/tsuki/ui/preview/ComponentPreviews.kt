@@ -15,11 +15,13 @@ import cafe.miafetta.tsuki.ui.components.TsukiMenuContent
 import cafe.miafetta.tsuki.ui.components.TsukiNavDock
 import cafe.miafetta.tsuki.ui.components.TsukiSmallTitle
 import cafe.miafetta.tsuki.ui.components.TsukiTabRow
+import cafe.miafetta.tsuki.ui.components.TsukiTopBar
 import cafe.miafetta.tsuki.ui.state.UiRole
 import cafe.miafetta.tsuki.ui.components.WidgetStage
 import cafe.miafetta.tsuki.ui.theme.Branding
 import cafe.miafetta.tsuki.ui.theme.widgetThemes
 import cafe.miafetta.tsuki.ui.glass.BottomWash
+import cafe.miafetta.tsuki.ui.glass.GameHeaderFade
 import cafe.miafetta.tsuki.ui.glass.TsukiGlass
 import cafe.miafetta.tsuki.ui.pages.AccountCard
 
@@ -43,10 +45,18 @@ private class ThemeProvider : PreviewParameterProvider<String> {
 
 private val role = UiRole("sample", "森空岛主账号", "100000001", "测试博士 · 官服")
 
+// Expanded and at rest; the drawn titles carry no blur there.
+@Preview(name = "TopBar", widthDp = 360, showBackground = true)
+@Composable
+private fun TopBarPreview(@PreviewParameter(ThemeProvider::class) theme: String) {
+    TsukiAppTheme(theme) { TsukiTopBar("概览", MiuixScrollBehavior()) }
+}
+
+// Padded so the frame does not cut the dock's outer shadow (36.5dp out).
 @Preview(name = "NavDock", widthDp = 360, showBackground = true)
 @Composable
 private fun NavDockPreview(@PreviewParameter(ThemeProvider::class) theme: String) {
-    TsukiAppTheme(theme) { TsukiNavDock(0, {}) }
+    TsukiAppTheme(theme) { Box(Modifier.padding(vertical = 40.dp)) { TsukiNavDock(0, {}) } }
 }
 
 @Preview(name = "TabRow", widthDp = 360, showBackground = true)
@@ -55,10 +65,13 @@ private fun TabRowPreview(@PreviewParameter(ThemeProvider::class) theme: String)
     TsukiAppTheme(theme) { Box(Modifier.padding(12.dp)) { TsukiTabRow(listOf("已添加 2", "全部小部件"), 0, {}, "catalog") } }
 }
 
+// Padded so the frame does not cut the selected chip's shadow (15dp out, past the row's own 4dp and 10dp).
 @Preview(name = "GameChips", widthDp = 360, showBackground = true)
 @Composable
 private fun GameChipsPreview(@PreviewParameter(ThemeProvider::class) theme: String) {
-    TsukiAppTheme(theme) { GameChips(listOf(Branding.GAME_ID to Branding.GAME), Branding.GAME_ID, {}) }
+    TsukiAppTheme(theme) {
+        Box(Modifier.padding(vertical = 12.dp)) { GameChips(listOf(Branding.GAME_ID to Branding.GAME), Branding.GAME_ID, {}) }
+    }
 }
 
 @Preview(name = "ProgressRing", widthDp = 360, showBackground = true)
@@ -134,7 +147,11 @@ private fun DropdownPreferencePreview(@PreviewParameter(ThemeProvider::class) th
 @Preview(name = "TsukiGlass", widthDp = 360, showBackground = true)
 @Composable
 private fun TsukiGlassPreview(@PreviewParameter(ThemeProvider::class) theme: String) {
-    TsukiAppTheme(theme) { TsukiGlass({ 1f }, 114.dp, Modifier.fillMaxWidth().height(160.dp)) }
+    // No glass host in a preview, so this is the opaque fallback of the home page header.
+    TsukiAppTheme(theme) {
+        TsukiGlass({ 1f }, 24.dp, Modifier.fillMaxWidth().height(24.dp + TopAppBarDefaults.CollapsedHeight + GameHeaderFade),
+            gameHeader = true)
+    }
 }
 
 @Preview(name = "BottomWash", widthDp = 360, showBackground = true)
