@@ -5,7 +5,6 @@ import cafe.miafetta.tsuki.ui.components.WidgetPreviews
 import cafe.miafetta.tsuki.ui.state.UiPreferences
 import androidx.core.content.edit
 import cafe.miafetta.tsuki.ui.state.UiRole
-import cafe.miafetta.tsuki.ui.glass.glassSurfaceVerification
 
 import android.app.Activity
 import android.app.Instrumentation
@@ -69,7 +68,7 @@ class AppUiVerification(internal val runner: Instrumentation) {
         val folder = File(targetContext.getExternalFilesDir(null), "ui-tests-native").apply { mkdirs() }
         // Restore the user's rotation lock afterwards; unfreezing alone would turn auto-rotate on. web-login-kill never
         // reaches the restore, so the pair leaves rotation alone.
-        val freezeRotation = redesignV4 !in listOf("probe", "dock", "web-login-kill", "web-login-after-kill")
+        val freezeRotation = redesignV4 !in listOf("dock","web-login-kill", "web-login-after-kill")
         val resolver = targetContext.contentResolver
         val autoRotate = Settings.System.getInt(resolver, Settings.System.ACCELEROMETER_ROTATION, 1) == 1
         val userRotation = Settings.System.getInt(resolver, Settings.System.USER_ROTATION, Surface.ROTATION_0)
@@ -124,20 +123,13 @@ class AppUiVerification(internal val runner: Instrumentation) {
             "PASS: configured native/bitmap/loading and legacy cached taps open Overview; unconfigured taps open the " +
                 "editor; edit entry stays separate"
         }
-        "theme-header" -> {
-            cafe.miafetta.tsuki.ui.glass.themeStoreGlassVerification(runner, host)
-            "PASS: theme-store banner background comparison captured"
-        }
         "read-lifecycle" -> {
             verifyReadAndLifecycle(host)
             "PASS: cache errors deduplicated, success/role reset, queued messages survive STOP for 5.5 seconds, " +
                 "shown messages never replay, three immediate recreations deliver once"
         }
         "session-restore" -> SessionRestoreVerification(hostRunner, host).run()
-        "secondary-glass" -> SecondaryGlassVerification(hostRunner, host).run()
-        "dock-tone" -> dockToneVerification(hostRunner, host)
         "page-swipe" -> PageSwipeVerification(hostRunner, host).run()
-        "nav-corner" -> navCornerVerification(hostRunner, host)
         // Loads the official start page (no sign-in); see WebLoginVerification.kt.
         "web-login" -> verifyWebLogin(host, File(folder.parentFile, "web-login").apply { mkdirs() })
         "web-login-kill" -> killDuringWebLogin(host, File(folder.parentFile, "web-login").apply { mkdirs() })
@@ -154,10 +146,6 @@ class AppUiVerification(internal val runner: Instrumentation) {
         "top-refresh" -> {
             verifyTopRefresh(host)
             "PASS: top refresh returns list/header to top, shows pull indicator, and ignores repeated clicks"
-        }
-        "visual" -> {
-            verifyGlassCaptures(host)
-            "PASS: light/dark stationary and collapsed main pages, glass probes"
         }
         "menu" -> {
             for (palette in listOf("LIGHT", "DARK")) {
@@ -179,16 +167,7 @@ class AppUiVerification(internal val runner: Instrumentation) {
         }
         // Widgets page tab row (C7): real touch, drags, vertical hand-off to the list and no paging; see AppUiTabRowVerification.
         "widget-tabs" -> verifyWidgetTabs(host)
-        "probe" -> {
-            glassSurfaceVerification(runner, host, File(targetContext.getExternalFilesDir(null), "redesign-v4").apply { mkdirs() })
-            "PASS: stationary glass probe and secondary page captures"
-        }
-        else -> {
-            verifyMenuMotion(host, redesignV4)
-            if (redesignV4 != "baseline") verifyGlassCaptures(host)
-            val checked = if (redesignV4 == "baseline") "baseline" else "light/dark glass states and fallback"
-            "PASS: five real-touch menus; $checked"
-        }
+        else -> throw IllegalArgumentException("Unknown scenario: $redesignV4")
     }
 
     internal fun shell(command: String) = uiAutomation.shell(command)

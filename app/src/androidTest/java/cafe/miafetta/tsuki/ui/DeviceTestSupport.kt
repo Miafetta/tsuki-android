@@ -12,7 +12,6 @@ import androidx.compose.ui.semantics.SemanticsNode
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.semantics.getAllSemanticsNodes
 import androidx.compose.ui.semantics.getOrNull
-import cafe.miafetta.tsuki.ui.glass.MiGlassView
 import cafe.miafetta.tsuki.widget.WidgetRenderInstrumentation
 
 // Helpers shared by the device scenarios. Semantics reads and actions must run on the main thread.
@@ -49,12 +48,6 @@ internal fun Activity.selectedNavTab(): Int = semanticsNodes().firstOrNull { nod
     node.config.getOrNull(SemanticsProperties.TestTag)?.startsWith("nav-tab:") == true &&
         node.config.getOrNull(SemanticsProperties.Selected) == true
 }?.config?.getOrNull(SemanticsProperties.TestTag)?.substringAfter(':')?.toInt() ?: -1
-
-internal fun View.miGlassViews(): List<MiGlassView> = when (this) {
-    is MiGlassView -> listOf(this)
-    is ViewGroup -> (0 until childCount).flatMap { getChildAt(it).miGlassViews() }
-    else -> emptyList()
-}
 
 // A screenshot shows Tsuki only while its window has focus: a pulled-down notification shade or a system dialog takes it.
 // Reads the focus on the main thread every 200ms for up to 10s. Only for captures without Tsuki's own popups or dialogs.

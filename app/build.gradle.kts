@@ -15,9 +15,7 @@ android {
         versionCode = 86
         versionName = "2.2.3"
         manifestPlaceholders["debugToolsEnabled"] = "false"
-        testInstrumentationRunner = if (providers.gradleProperty("releaseProbe").isPresent)
-            "cafe.miafetta.tsuki.widget.ReleasePerformanceInstrumentation"
-        else "cafe.miafetta.tsuki.widget.WidgetRenderInstrumentation"
+        testInstrumentationRunner = "cafe.miafetta.tsuki.widget.WidgetRenderInstrumentation"
     }
 
     buildFeatures {

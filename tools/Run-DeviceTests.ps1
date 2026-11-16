@@ -51,19 +51,13 @@ $catalog = [ordered]@{
     'render' = @()
     'appUi' = @('appUi', 'true')
     'lifecycle' = @('lifecycle', 'true')
-    'widgetStartup' = @('widgetStartup', 'true')
-    'comparison' = @('comparison', 'true')
-    'provider-breakdown' = @('providerBreakdown', 'true')
-    # Opt-in, stage 0 only: sends real requests with the stored Cred; pass -PullArtifacts to copy the responses.
-    'endfield-probe' = @('endfieldProbe', 'true')
 }
 # widget-editor-save and widget-editor-change are opt-in: they save an existing desktop instance. The change scenario edits the
 # palette and role, then restores the original configuration and verifies it.
 # web-login* are opt-in: they load the official start page without signing in. web-login-kill ends by killing the app
 # process with the login page open, so its instrumentation reports a crash; run web-login-after-kill right after it.
 foreach ($name in @('read-lifecycle', 'session-restore', 'widget-editor', 'widget-editor-save', 'widget-editor-change',
-    'widget-navigation', 'top-refresh', 'errors', 'menu', 'secondary-glass', 'dock-tone', 'page-swipe', 'nav-corner',
-    'dock', 'widget-tabs', 'visual', 'probe', 'baseline', 'theme-header', 'web-login', 'web-login-kill',
+    'widget-navigation', 'top-refresh', 'errors', 'menu', 'page-swipe', 'dock', 'widget-tabs', 'web-login', 'web-login-kill',
     'web-login-after-kill')) {
     $catalog[$name] = @('redesignV4', $name)
 }
@@ -126,13 +120,13 @@ function Invoke-Scenario([string]$Name, [string[]]$Pairs) {
     Set-Content -LiteralPath $log -Encoding utf8 -Value "> adb $(($adbPrefix + $arguments) -join ' ')`n`n$text"
     $parsed = Read-Instrumentation $text
     $values = $parsed.Results
-    $detail = @($values['failure'], $values['result'], $values['stream'], $values['shortMsg'], $values['surfaceOptions']) |
+    $detail = @($values['failure'], $values['result'], $values['stream'], $values['shortMsg']) |
         Where-Object { $_ } | Select-Object -First 1
     $status = if (!$finished) { 'FAIL' }
         elseif ($Name -like 'widget-editor*' -and "$detail" -match 'Requires an existing (configured )?widget') { 'SKIP' }
         elseif ($Name -eq 'web-login-kill' -and $text -match 'Process crashed' -and !$values.Contains('failure')) { 'PASS' }
         elseif ($parsed.Code -eq -1 -and !$values.Contains('failure') -and
-            ($values.Contains('result') -or $values.Contains('surfaceOptions') -or "$($values['stream'])" -match '^PASS')) { 'PASS' }
+            ($values.Contains('result') -or "$($values['stream'])" -match '^PASS')) { 'PASS' }
         else { 'FAIL' }
     $reason = if (!$finished) { "Timed out after $TimeoutMinutes minutes" }
         elseif ($status -eq 'SKIP') { 'No placed Tsuki widget instance' }

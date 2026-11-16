@@ -103,9 +103,9 @@
 
 - **JVM**：解析器、限流与失败映射、新快照字段的读写兼容；`ProbeManifestTest` 中的稳定资源 ID 与小部件元数据检查。
 - **设备**（`tools/Run-DeviceTests.ps1`）：
-  - `render` 与 `comparison`：新小部件的原生渲染与位图对照。
+  - `render`：新小部件的原生渲染。
   - `appUi`：概览、部件页、配置面板。
-  - 涉及导航或生命周期时，加上 `session-restore`、`page-swipe` 与 `nav-corner`。
+  - 涉及导航或生命周期时，加上 `session-restore` 与 `page-swipe`。
   - 涉及账号添加或网页登录时，加上 `web-login`（会打开官方首页，不登录）。
 - **真实桌面**：添加、刷新、编辑、重启后恢复。另外要确认已有的《明日方舟》与终末地小部件在升级后不受影响。
 

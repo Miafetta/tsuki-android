@@ -60,7 +60,7 @@ Set-Content -LiteralPath local.properties -Value "sdk.dir=$sdkPath" -Encoding as
 
 ## 测试
 
-每次改动需要通过的构建与检查命令见[开发约束 §8](docs/DEVELOPMENT_CONSTRAINTS.md#8-测试与验收)。
+不同改动范围需要通过的构建与检查命令见[开发约束 §8](docs/DEVELOPMENT_CONSTRAINTS.md#8-测试与验收)。
 
 默认的设备场景使用生产页面和内存中的示例数据，不会保存账号或修改桌面小部件。连接设备后可以用 `tools/Run-DeviceTests.ps1` 一键构建、安装并逐项运行，每个场景单独输出日志并汇总结果：
 
@@ -69,7 +69,7 @@ Set-Content -LiteralPath local.properties -Value "sdk.dir=$sdkPath" -Encoding as
 .\tools\Run-DeviceTests.ps1 -Serial <设备> -SkipInstall   # 使用已安装的测试包
 ```
 
-脚本默认使用维护者的签名链（`tools/Sign-Debug.ps1`）；其他开发者请自行安装 Debug 与测试包后使用 `-SkipInstall`。脚本不会卸载应用、清除数据或修改系统设置。网页登录相关的场景（`web-login` 等）不在默认列表中，需要单独指定：它们会联网打开森空岛官方首页（不登录），并清除 Tsuki 自己的网页数据。其他需要单独指定的场景（例如会编辑已放置小部件的 `widget-editor-change`、用已保存的 Cred 发请求的 `endfield-probe`）及其影响见[开发约束 §8](docs/DEVELOPMENT_CONSTRAINTS.md#8-测试与验收)。
+脚本默认使用维护者的签名链（`tools/Sign-Debug.ps1`）；其他开发者请自行安装 Debug 与测试包后使用 `-SkipInstall`。脚本不会卸载应用、清除数据或修改系统设置。网页登录相关的场景（`web-login` 等）不在默认列表中，需要单独指定：它们会联网打开森空岛官方首页（不登录），并清除 Tsuki 自己的网页数据。其他需要单独指定的场景（会保存或编辑已放置小部件的 `widget-editor-save`、`widget-editor-change`）及其影响见[开发约束 §8](docs/DEVELOPMENT_CONSTRAINTS.md#8-测试与验收)。
 
 ## 项目结构
 

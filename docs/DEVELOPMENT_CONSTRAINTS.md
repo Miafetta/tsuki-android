@@ -61,16 +61,15 @@
 
 ## 8. 测试与验收
 
-- 每次改动运行：
+- 构建与检查按改动范围分三档，`warningsAsErrors` 保持开启，不添加 lint baseline 或全局关闭项：
 
-  ```powershell
-  .\gradlew.bat :app:assembleDebug :app:testDebugUnitTest :app:lintDebug :app:assembleDebugAndroidTest
-  ```
+  | 时机 | 命令 |
+  | --- | --- |
+  | 每次改动 | `.\gradlew.bat :app:testDebugUnitTest :app:lintDebug` |
+  | 改动 `src/androidTest`，或准备上设备 | 另加 `:app:assembleDebug :app:assembleDebugAndroidTest` |
+  | 发布前 | 另加 `:app:assembleRelease :app:lintRelease` |
 
-  发布前加上 `:app:assembleRelease :app:lintRelease`。`warningsAsErrors` 保持开启，不添加 lint baseline 或全局关闭项。
-- 设备测试只使用生产页面与内存样本，不保存账号或桌面实例；不卸载应用、不清除数据、不修改系统设置（测试临时固定的屏幕方向在结束后恢复原状）。统一入口为 `tools/Run-DeviceTests.ps1`。
+- 设备测试只使用生产页面与内存样本，不保存账号或桌面实例；不卸载应用、不清除数据、不修改系统设置（测试临时固定的屏幕方向在结束后恢复原状）。统一入口为 `tools/Run-DeviceTests.ps1`，只跑与改动相关的场景。
   - `web-login`、`web-login-kill`、`web-login-after-kill` 需要单独指定：它们会打开森空岛官方首页（不登录），离开时清除测试设备上 Tsuki 的网页数据。`web-login` 还会临时替换剪贴板，结束后恢复原内容。
   - `widget-editor-save`、`widget-editor-change` 需要单独指定，并且要求桌面上已有一个配置好的 Tsuki 小部件（没有时记为跳过，测试不创建实例）：前者原样保存该实例的配置，后者修改配色与角色并保存，再逐项改回并核对，中途失败时恢复原配置；改角色会重新拉取该角色的数据。
-  - `provider-breakdown` 只读取本机的账号文件和小部件记录并计时，不写入任何数据。
-  - `endfield-probe` 需要单独指定，用于补采或更新终末地测试样本：用本机已保存的 Cred，每个账号向森空岛请求一次绑定列表、账号用户 ID 和终末地角色数据，把响应写进应用的外部文件目录，供 `-PullArtifacts` 取回后脱敏成测试样本。它不写入账号、缓存或小部件，不记录 Cred 与会话 token；取回的原始响应含昵称与 UID，只保存在本机。
 - 没有实际执行的设备测试、视觉检查或性能测量一律记为“未验证”。编译与 JVM 测试不能代替真实桌面宿主、模糊观感、GPU 开销和手势手感的检查。

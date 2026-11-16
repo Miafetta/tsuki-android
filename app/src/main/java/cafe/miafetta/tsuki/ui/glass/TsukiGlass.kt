@@ -11,7 +11,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.Dp
@@ -31,7 +30,6 @@ private val OpaqueGameRowInset = 8.dp
 @Composable
 internal fun TsukiGlass(progress: () -> Float, statusBar: Dp, modifier: Modifier = Modifier, gameHeader: Boolean = false) {
     val glass = LocalGlass.current
-    if (glass?.disabled == "topbar") return
     val configuration = LocalConfiguration.current
     var native by remember(configuration) { mutableStateOf(false) }
     val enabled = nativeGlassEnabled(glass)
@@ -50,9 +48,7 @@ internal fun TsukiGlass(progress: () -> Float, statusBar: Dp, modifier: Modifier
         glass != null && glass.available -> Modifier.progressiveTop(glass, heightPx, statusBar) { currentProgress() }
         else -> Modifier.opaqueTop(heightPx, statusBar, gameHeader) { currentProgress() }
     }
-    // Debug builds name the backend for the device tests (SecondaryGlassVerification); Release adds no semantics here.
-    val tag = if (BuildConfig.DEBUG) Modifier.testTag("top-glass:$backend") else Modifier
-    Box(modifier.onSizeChanged { heightPx = it.height }.then(tag)) {
+    Box(modifier.onSizeChanged { heightPx = it.height }) {
         if (enabled) key(configuration) {
             val mask = rememberNativeTopMask(heightPx, statusBar, gameHeader)
             NativeTopGlass(mask, currentProgress, nativeVisible, NativeTopGlassRadius) { native = it }
@@ -123,7 +119,6 @@ internal fun BottomWash(modifier: Modifier = Modifier) {
 @Composable
 internal fun GlassBackground(surface: GlassSurface, modifier: Modifier, progress: Float = 1f, selected: Boolean = false) {
     val glass = LocalGlass.current
-    if (glass?.disabled == surface.name.lowercase()) return
     val configuration = LocalConfiguration.current
     var native by remember(configuration) { mutableStateOf(false) }
     val enabled = nativeGlassEnabled(glass)

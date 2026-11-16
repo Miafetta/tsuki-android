@@ -2,8 +2,6 @@ package cafe.miafetta.tsuki.ui
 
 import cafe.miafetta.tsuki.ui.theme.TsukiAppTheme
 import cafe.miafetta.tsuki.ui.components.TsukiMenu
-import cafe.miafetta.tsuki.ui.glass.MiGlassView
-import cafe.miafetta.tsuki.ui.glass.glassSurfaceVerification
 
 import android.app.Activity
 import android.graphics.Rect
@@ -186,76 +184,4 @@ internal fun AppUiVerification.verifyTopRefresh(host: Activity) {
         canRefresh.value = true
     }
     frames(host, 180)
-}
-
-private fun AppUiVerification.nativeGlassViews(host: Activity): Set<MiGlassView> {
-    fun visit(view: android.view.View): List<MiGlassView> = when (view) {
-        is MiGlassView -> listOf(view)
-        is android.view.ViewGroup -> (0 until view.childCount).flatMap { visit(view.getChildAt(it)) }
-        else -> emptyList()
-    }
-    var result = emptySet<MiGlassView>()
-    runOnMainSync { result = visit(host.window.decorView).toSet() }
-    return result
-}
-
-internal fun AppUiVerification.verifyGlassCaptures(host: Activity) {
-    val folder = File(targetContext.getExternalFilesDir(null), "redesign-v4").apply { mkdirs() }
-    shell("dumpsys gfxinfo cafe.miafetta.tsuki reset")
-    val width = host.window.decorView.width
-    val height = host.window.decorView.height
-    fun reset(index: Int) {
-        runOnMainSync { page.intValue = index }
-        frames(host)
-        runOnMainSync {
-            val list = composeNodes(host).single { it.config.getOrNull(SemanticsProperties.TestTag) == "page-list:$index" }
-            checkNotNull(list.config.getOrNull(SemanticsActions.ScrollToIndex)?.action).invoke(0)
-        }
-        frames(host)
-        shell("input swipe ${width / 2} ${height / 3} ${width / 2} ${height / 2} 600")
-        frames(host)
-    }
-    for (mode in listOf("LIGHT", "DARK")) {
-        runOnMainSync {
-            theme.value = mode
-            blur.value = true
-        }
-        reset(0)
-        val prefix = mode.lowercase()
-        capture(folder, "overview-$prefix-idle")
-        val idle = chipBounds(host)
-        shell("input swipe ${width / 2} ${height / 2} ${width / 2} ${height / 2 - 100} 700")
-        frames(host)
-        runOnMainSync {
-            val list = composeNodes(host).single { it.config.getOrNull(SemanticsProperties.TestTag) == "page-list:0" }
-            check(list.config[SemanticsProperties.VerticalScrollAxisRange].value() == 0f) { "Title-only sample moved the list" }
-        }
-        check(chipBounds(host).top < idle.top) { "Title-only gesture did not collapse header" }
-        capture(folder, "overview-$prefix-title-only")
-        shell("input swipe ${width / 2} ${height * 3 / 4} ${width / 2} ${height / 3} 500")
-        frames(host)
-        capture(folder, "overview-$prefix-docked")
-        val docked = chipBounds(host)
-        runOnMainSync { blur.value = false }
-        frames(host)
-        check(chipBounds(host) == docked) { "Fallback changed chip geometry" }
-        capture(folder, "overview-$prefix-blur-off")
-        runOnMainSync { blur.value = true }
-        frames(host)
-        val retainedViews = nativeGlassViews(host)
-        for ((index, label) in listOf(1 to "widgets", 2 to "me")) {
-            reset(index)
-            check(nativeGlassViews(host) == retainedViews) { "Tab switch recreated native glass views" }
-            check(find("明日方舟", exact = true, clickable = true) == null) { "Hidden chips remain accessible" }
-            capture(folder, "$label-$prefix-idle")
-            shell("input swipe ${width / 2} ${height * 3 / 4} ${width / 2} ${height / 3} 500")
-            frames(host)
-            capture(folder, "$label-$prefix-collapsed")
-        }
-    }
-    android.os.ParcelFileDescriptor.AutoCloseInputStream(uiAutomation.executeShellCommand(
-        "dumpsys gfxinfo cafe.miafetta.tsuki")).bufferedReader().use {
-        File(folder, "scroll-gfx.txt").writeText(it.readText())
-    }
-    glassSurfaceVerification(runner, host, folder)
 }

@@ -20,7 +20,7 @@
 ## 提交 Pull Request
 
 - 每个 PR 只做一件事，并在描述中说明改了什么、为什么改，以及如何验证。
-- 提交前确保[开发约束 §8](docs/DEVELOPMENT_CONSTRAINTS.md#8-测试与验收)中的构建与检查命令全部通过。
+- 提交前确保[开发约束 §8](docs/DEVELOPMENT_CONSTRAINTS.md#8-测试与验收)中对应档位的构建与检查命令全部通过。
 - 改动界面或桌面小部件时，请附上浅色和深色模式的截图；能在设备上运行 `tools/Run-DeviceTests.ps1` 中相关场景的，请写明结果。没有实际运行的检查，请明确写“未验证”。
 - 会影响已安装小部件的改动（[开发约束 §1](docs/DEVELOPMENT_CONSTRAINTS.md#1-已安装实例兼容)所列内容）需要先在 Issue 中讨论。
 - 新增依赖需要先讨论；项目不引入 Material3 或其他 UI 库。
