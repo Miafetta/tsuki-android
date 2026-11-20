@@ -187,7 +187,8 @@ internal fun AppUiVerification.verifyErrorMessages(host: MainActivity, folder: F
     check(fixture.data === beforeData && fixture.dataKey == beforeKey) { "Preview changed overview data" }
     click("添加")
     frames(host)
-    click("关闭")
+    // Add opens the new-widget sheet, whose head has 返回.
+    click("返回")
     frames(host)
     click("概览")
     frames(host)

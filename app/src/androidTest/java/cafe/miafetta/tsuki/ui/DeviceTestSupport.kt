@@ -7,6 +7,7 @@ import android.os.SystemClock
 import android.view.View
 import android.view.ViewGroup
 import androidx.compose.ui.platform.ViewRootForTest
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.semantics.SemanticsNode
 import androidx.compose.ui.semantics.SemanticsProperties
@@ -35,6 +36,39 @@ internal fun Activity.clickSemantics(match: (SemanticsNode) -> Boolean): Boolean
     val action = target?.config?.getOrNull(SemanticsActions.OnClick)?.action ?: return false
     action.invoke()
     return true
+}
+
+internal val SemanticsNode.tag: String? get() = config.getOrNull(SemanticsProperties.TestTag)
+
+// The node's own text, or null for a node without one.
+internal val SemanticsNode.text: String? get() = config.getOrNull(SemanticsProperties.Text)?.joinToString("") { it.text }
+
+internal fun SemanticsNode.descendants(): List<SemanticsNode> = children.flatMap { listOf(it) + it.descendants() }
+
+// The texts of this node and of every node under it.
+internal fun SemanticsNode.texts(): List<String> = (listOf(this) + descendants()).mapNotNull { it.text }
+
+// The nodes under this one that have one of [roles] and sit inside no other node of those roles: one per settings row,
+// since a switch row holds a Switch of the same role.
+internal fun SemanticsNode.outermost(roles: Set<Role>): List<SemanticsNode> = children.flatMap { child ->
+    if (child.config.getOrNull(SemanticsProperties.Role) in roles) listOf(child) else child.outermost(roles)
+}
+
+// One step towards showing the first node that [match]es: true once it lies inside its nearest scrolling ancestor;
+// otherwise scrolls that ancestor by a third of its height, or [container] while a lazy list has not composed the node
+// yet, and returns false. Let frames pass between steps.
+internal fun Activity.revealStep(container: (SemanticsNode) -> Boolean, match: (SemanticsNode) -> Boolean): Boolean {
+    val nodes = semanticsNodes()
+    val target = nodes.firstOrNull(match)
+    val scrolling = { node: SemanticsNode -> node.config.getOrNull(SemanticsActions.ScrollBy) != null }
+    val list = target?.let { generateSequence(it.parent) { node -> node.parent }.firstOrNull(scrolling) }
+        ?: nodes.firstOrNull { container(it) && scrolling(it) } ?: error("No scrolling container for the node")
+    val area = list.boundsInRoot
+    val bounds = target?.boundsInRoot
+    if (bounds != null && bounds.top >= area.top && bounds.bottom <= area.bottom) return true
+    val step = if (bounds != null && bounds.top < area.top) -area.height / 3 else area.height / 3
+    checkNotNull(list.config.getOrNull(SemanticsActions.ScrollBy)?.action).invoke(0f, step)
+    return false
 }
 
 // Content descriptions and texts currently on screen, for failure messages.

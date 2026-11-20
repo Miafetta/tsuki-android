@@ -16,16 +16,18 @@ import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.concurrent.thread
 import androidx.compose.ui.unit.dp
 import cafe.miafetta.tsuki.R
+import cafe.miafetta.tsuki.providers.SklandGame
 import top.yukonga.miuix.kmp.basic.*
 import top.yukonga.miuix.kmp.squircle.squircleClip
 
 // Display names shared by every page; the desktop widget labels live in strings.xml because the launcher reads them.
+// Game names come from SklandGame, which reminder notifications in the widget process share.
 internal object Branding {
     const val GAME_ID = "arknights"
-    const val GAME = "明日方舟"
+    val GAME = SklandGame.ARKNIGHTS.displayName
     const val ENDFIELD_ID = "endfield"
     // Short name for tabs and summaries; the widget names in strings.xml use the full title.
-    const val ENDFIELD = "终末地"
+    val ENDFIELD = SklandGame.ENDFIELD.displayName
     const val PLATFORM = "森空岛"
     // Game tabs in display order: game ID to name.
     val games = listOf(GAME_ID to GAME, ENDFIELD_ID to ENDFIELD)
@@ -36,13 +38,19 @@ internal object Branding {
 // Widget palettes in display order: stored value to label.
 internal val widgetThemes = listOf("LIGHT" to "浅色", "DARK" to "深色")
 
-// The same name the launcher's widget list shows, for example "明日方舟数据工具 浅色". The Endfield card has one palette.
+// The same name the launcher's widget list shows: the label of the widget's provider in strings.xml, so a label change
+// renames the widget in both places. Both Arknights palettes are "明日方舟数据工具", like the official widget; the light and
+// the dark provider keep their own label resources (pinned IDs) with that one name, and the pages read the light one.
 @Composable
-internal fun widgetName(dark: Boolean, game: String = Branding.GAME_ID): String = stringResource(when {
-    game == Branding.ENDFIELD_ID -> R.string.endfield_widget_name
-    dark -> R.string.status_widget_dark_name
-    else -> R.string.status_widget_name
-})
+internal fun widgetName(game: String = Branding.GAME_ID): String = stringResource(widgetNameRes(game))
+
+internal fun widgetNameRes(game: String): Int =
+    if (game == Branding.ENDFIELD_ID) R.string.endfield_widget_name else R.string.status_widget_name
+
+// The description the launcher's widget list shows for the same widget; both Arknights palettes share one.
+@Composable
+internal fun widgetDescription(game: String = Branding.GAME_ID): String =
+    stringResource(if (game == Branding.ENDFIELD_ID) R.string.endfield_description else R.string.status_description)
 
 // Every widget in catalog order: game ID, stored palette. Only Arknights offers a light and a dark card.
 internal val widgetCatalog = listOf(Branding.GAME_ID to "LIGHT", Branding.GAME_ID to "DARK", Branding.ENDFIELD_ID to "DARK")

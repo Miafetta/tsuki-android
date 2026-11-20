@@ -10,6 +10,9 @@ internal object StorageContract {
     const val LOGIN = "login"
     // Re-verifies one account with its stored Cred (blank Cred in "更新 Cred"); no operation returns a Cred.
     const val REVERIFY = "reverify"
+    // Reads the Skland account nickname for a Cred being added and returns it as NAME; it saves nothing, and a failure
+    // never blocks adding the account.
+    const val PLATFORM_NAME = "platformName"
     const val LOGOUT = "logout"
     const val RESET_ACCOUNTS = "resetAccounts"
     const val CONFIGURE = "configure"
@@ -17,6 +20,12 @@ internal object StorageContract {
     const val CLEAR_PIN = "clearPin"
     const val PIN_TOKEN = "pinToken"
     const val PIN_CANCEL_BEFORE = "pinCancelBefore"
+    // Reminder rules (widget/WidgetRuntimeReminders.kt). Reading returns the master switch and every rule as JSON, without
+    // trigger records; each write returns the same as reading afterwards.
+    const val REMINDERS = "reminders"
+    const val SAVE_REMINDER = "saveReminder"
+    const val DELETE_REMINDER = "deleteReminder"
+    const val SET_REMINDERS_ENABLED = "setRemindersEnabled"
 
     const val ACCOUNT_ID = "accountId"
     const val CHARACTER_ID = "characterId"
@@ -47,4 +56,9 @@ internal object StorageContract {
     const val BYTES = "bytes"
     const val BITMAP = "bitmap"
     const val CONFIG = "config"
+    const val METRIC_ID = "metricId"
+    const val MODE = "mode"
+    const val THRESHOLD = "threshold"
+    const val ENABLED = "enabled"
+    const val RULES = "rules"
 }

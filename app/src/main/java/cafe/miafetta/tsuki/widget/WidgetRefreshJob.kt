@@ -16,7 +16,7 @@ class WidgetRefreshJob : JobService() {
     private val active = mutableMapOf<Int, JobParameters>()
 
     override fun onStartJob(params: JobParameters): Boolean {
-        val id = params.extras.getInt("widgetId", -1)
+        val id = params.extras.getInt(RefreshJobs.WIDGET_ID, -1)
         if (id != params.jobId || id !in StatusWidgetProvider.owned(this)) return false
         imagePhase.remove(id)
         active[id] = params
@@ -64,7 +64,9 @@ class WidgetRefreshJob : JobService() {
         val runtime = WidgetRuntime.get(this)
         val waiting = runCatching { runtime.read(params.jobId)?.state == cafe.miafetta.tsuki.core.RefreshState.LOADING }
             .getOrDefault(false)
+        // Otherwise the result stands; a rate limit gets its one retry (RefreshJobs).
         if (repeat || waiting) runtime.update(params.jobId, true)
+        else RefreshJobs.retry(runtime, params.jobId, params.extras.getBoolean(RefreshJobs.RETRY))
     }
 
     override fun onDestroy() {

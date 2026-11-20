@@ -37,6 +37,10 @@ internal class AppState(context: Context, val notifier: UiNotifier = ToastUiNoti
     var finishedLoads by mutableIntStateOf(0)
     val messages = UiMessages()
     private val readFailures = ReadFailureMessages(messages)
+    // The reminder settings page; its limits come from the same cached snapshot read as the catalog previews.
+    val reminders = ReminderSettings(getApplication<Application>(), ReminderCalls(call), messages, viewModelScope) {
+        previewSnapshot(it)
+    }
     var error by mutableStateOf("")
     var data by mutableStateOf(RoleData())
     var dataKey by mutableStateOf("")
@@ -143,6 +147,16 @@ internal class AppState(context: Context, val notifier: UiNotifier = ToastUiNoti
         try { result.getString(Storage.SNAPSHOT)?.let { SnapshotJson.read(JSONObject(it)) } }
         catch (_: org.json.JSONException) { null }
         catch (_: IllegalArgumentException) { null }
+    }
+
+    // The Skland nickname for a Cred in the account editor, or null when it cannot be read. It is only a suggestion for
+    // the optional name, so a failure is not reported and does not touch busy: adding the account stays available.
+    suspend fun platformName(cred: String): String? {
+        val extras = Bundle().apply { putString(Storage.CRED, cred) }
+        return try {
+            val result = withContext(Dispatchers.IO) { call(Storage.PLATFORM_NAME, extras) }
+            if (result.getBoolean(Storage.ERROR)) null else result.getString(Storage.NAME)?.takeIf { it.isNotBlank() }
+        } finally { extras.clear() }
     }
 
     suspend fun action(method: String, extras: Bundle, inlineError: Boolean = false): Boolean {

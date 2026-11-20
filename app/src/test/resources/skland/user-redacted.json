@@ -1,0 +1,30 @@
+{
+ "user": {
+  "id": "1000001",
+  "nickname": "测试博士#0001",
+  "profile": "测试简介",
+  "avatarCode": 0,
+  "avatar": "https://example.invalid/skland/avatar.png",
+  "backgroundCode": 0,
+  "isCreator": false,
+  "status": 0,
+  "operationStatus": 0,
+  "identity": 0,
+  "kind": 1,
+  "latestIpLocation": "测试地区",
+  "moderatorStatus": 0,
+  "moderatorChangeTime": 0,
+  "gender": 0,
+  "hgId": "000000000",
+  "creatorIdentifiers": [],
+  "scoreInfoList": [],
+  "showId": "000000"
+ },
+ "userRts": { "liked": "0", "collect": "0", "comment": "0", "follow": "0", "fans": "0", "black": "0", "pub": "0" },
+ "relation": {},
+ "userSanctionList": [],
+ "moderator": { "isModerator": false },
+ "userInfoApply": { "nickname": "测试申请昵称", "profile": "" },
+ "teenager": { "userId": "1000001", "status": 1, "allow": true, "popup": false, "popupRestReminder": false },
+ "teenagerMeta": { "duration": 2400, "start": "06:00", "end": "22:00", "restReminderInterval": 1200, "age": 16 }
+}

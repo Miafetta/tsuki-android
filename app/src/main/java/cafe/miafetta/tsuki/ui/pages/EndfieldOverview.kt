@@ -10,6 +10,7 @@ import cafe.miafetta.tsuki.core.dashboardMetric
 import cafe.miafetta.tsuki.core.recoveryClock
 import cafe.miafetta.tsuki.ui.components.MetricCard
 import cafe.miafetta.tsuki.ui.components.MetricRow
+import cafe.miafetta.tsuki.ui.components.PageListSpacing
 import cafe.miafetta.tsuki.ui.components.TsukiSmallTitle
 import top.yukonga.miuix.kmp.basic.Card
 
@@ -20,7 +21,7 @@ private val defaultRows = listOf("活跃度", "每周事务", "通行证", "蚀�
 internal fun LazyListScope.endfieldOverview(snapshot: WidgetSnapshot?, now: Long) {
     val sanity = dashboardMetric(snapshot, "理智")
     fadeItem("endfield-realtime") { Column {
-        TsukiSmallTitle("实时数据", Modifier.testTag("section-title:realtime"))
+        TsukiSmallTitle("实时数据", Modifier.testTag("section-title:realtime"), spacingAbove = PageListSpacing)
         // Skland draws Endfield sanity with the same brain icon as Arknights, so the card keeps its default icon.
         MetricCard("理智", sanity, dashboardDetail(snapshot, "理智", now) ?: "未知", recoveryClock(sanity?.recoveryAt, now))
     } }

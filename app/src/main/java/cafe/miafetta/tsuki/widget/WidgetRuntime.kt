@@ -1,19 +1,17 @@
 package cafe.miafetta.tsuki.widget
 
 import android.app.Application
-import android.app.job.JobInfo
 import android.app.job.JobScheduler
 import android.appwidget.AppWidgetManager
-import android.content.ComponentName
 import android.content.Context
 import android.graphics.Bitmap
-import android.os.PersistableBundle
 import android.os.SystemClock
 import android.provider.Settings
 import cafe.miafetta.tsuki.core.DataSourceFailure
 import cafe.miafetta.tsuki.core.FileWidgetRepository
 import cafe.miafetta.tsuki.core.RefreshFailure
 import cafe.miafetta.tsuki.core.RefreshState
+import cafe.miafetta.tsuki.core.ReminderStore
 import cafe.miafetta.tsuki.core.RoleData
 import cafe.miafetta.tsuki.core.RoleDataStore
 import cafe.miafetta.tsuki.core.WidgetDefinition
@@ -23,6 +21,7 @@ import cafe.miafetta.tsuki.core.WidgetRecord
 import cafe.miafetta.tsuki.core.WidgetSnapshot
 import cafe.miafetta.tsuki.core.WidgetTheme
 import cafe.miafetta.tsuki.core.WidgetUpdateCoordinator
+import cafe.miafetta.tsuki.providers.ARKNIGHTS_SOURCE_IDS
 import cafe.miafetta.tsuki.providers.AccountRepository
 import cafe.miafetta.tsuki.providers.AndroidCredentialKey
 import cafe.miafetta.tsuki.providers.AvatarCache
@@ -45,18 +44,24 @@ internal class WidgetRuntime private constructor(internal val application: Appli
     internal val client = SklandClient(SklandHttpsTransport())
     private val fake = FakeArknightsAdapter()
     internal val roleData = RoleDataStore(File(application.noBackupFilesDir, "roles"), SklandArknightsAdapter.ID)
+    internal val reminders = ReminderStore(File(application.noBackupFilesDir, "reminders/v1.json"))
+    internal val reminderServices = ReminderServices(application)
+    // Every new snapshot also calibrates the role's reminders (WidgetRuntimeReminderChecks.kt).
     internal val skland = SklandArknightsAdapter(accounts, client, onSnapshot = { account, role, snapshot ->
         roleData.write(SklandArknightsAdapter.ID, account, role, RoleData(snapshot))
+        calibrateReminders(SklandArknightsAdapter.ID, account, role, snapshot)
     })
     internal val endfield = SklandEndfieldAdapter(accounts, client, onSnapshot = { account, role, snapshot ->
         roleData.write(SklandGame.ENDFIELD.providerId, account, role, RoleData(snapshot))
+        calibrateReminders(SklandGame.ENDFIELD.providerId, account, role, snapshot)
     })
     // Every Skland game; account changes reset all of them.
     internal val sklandGames = listOf(skland, endfield)
     private val adapters = listOf(fake) + sklandGames
-    private val roleFetchers = sklandGames.associate { it.id to it::fetchRole }
+    internal val roleFetchers = sklandGames.associate { it.id to it::fetchRole }
+    // The Arknights widget also serves the other Arknights data sources (the debug fixture).
     internal val coordinator = WidgetUpdateCoordinator(repository, mapOf(
-        FEATURE to WidgetDefinition(FEATURE, skland.id, setOf(fake.id)),
+        FEATURE to WidgetDefinition(FEATURE, skland.id, ARKNIGHTS_SOURCE_IDS - skland.id),
         ENDFIELD_FEATURE to WidgetDefinition(ENDFIELD_FEATURE, endfield.id),
     ), adapters.associateBy { it.id })
     private val avatars = AvatarCache(File(application.cacheDir, "official-avatars"))
@@ -122,19 +127,16 @@ internal class WidgetRuntime private constructor(internal val application: Appli
         }
     }
 
-    // Real requests run only in WidgetRefreshJob; an already pending job is reused unless the refresh is forced.
+    // Real requests run only in WidgetRefreshJob; an already pending job is reused unless the refresh is forced. That
+    // includes the one retry after a rate limit (RefreshJobs): while it waits, exposures only redraw, since the role is
+    // rate limited anyway, and a forced refresh replaces it.
     private fun scheduleRefresh(id: Int, record: WidgetRecord, force: Boolean) {
         if (!force && scheduler.getPendingJob(id) != null && !WidgetRefreshJob.downloadingAvatars(id)) {
             render(id, record)
             return
         }
         render(id, coordinator.queued(id))
-        val job = JobInfo.Builder(id, ComponentName(application, WidgetRefreshJob::class.java))
-            .setExtras(PersistableBundle().apply { putInt("widgetId", id) })
-            .setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY)
-            .setEstimatedNetworkBytes(256 * 1024, 1024)
-            .build()
-        if (scheduler.schedule(job) != JobScheduler.RESULT_SUCCESS) {
+        if (scheduler.schedule(RefreshJobs.info(application, id)) != JobScheduler.RESULT_SUCCESS) {
             repository.write(record.copy(state = RefreshState.ERROR, failure = RefreshFailure.NETWORK))
             render(id, repository.read(id))
         }

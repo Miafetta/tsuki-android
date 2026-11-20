@@ -16,6 +16,9 @@ fun canonicalMetricLabel(label: String) = when (label) {
     else -> label
 }
 
+// PAUSED is only read back from snapshots stored by earlier versions: a specialisation cannot pause, so it shows as
+// unknown. [remainingSecs] was written for PAUSED alone; it is no longer written or shown, and stays only so that those
+// snapshots and widget records still read and write back unchanged.
 data class WidgetTraining(val state: TrainingState = TrainingState.UNKNOWN, val traineeId: String? = null,
     val name: String? = null, val skill: Int? = null, val endsAt: Long? = null, val avatarUrl: String? = null,
     val remainingSecs: Long? = null) {
@@ -31,21 +34,17 @@ data class WidgetTraining(val state: TrainingState = TrainingState.UNKNOWN, val 
     fun status(now: Long) = when {
         completedByTime(now) -> "预计完成"
         else -> when (state) {
-            TrainingState.UNKNOWN -> "未知"
+            TrainingState.UNKNOWN, TrainingState.PAUSED -> "未知"
             TrainingState.IDLE -> "空闲中"
             TrainingState.TRAINING -> "训练中"
-            TrainingState.PAUSED -> "暂停"
             TrainingState.COMPLETE -> "已完成"
         }
     }
     fun time(now: Long): String {
         if (state == TrainingState.IDLE || state == TrainingState.COMPLETE || completedByTime(now)) return "0时0分"
-        val minutes = if (state == TrainingState.PAUSED) {
-            remainingSecs?.let { (it + 59) / 60 } ?: return "时间未知"
-        } else {
-            endsAt?.let { ((it - now).coerceAtLeast(0) + 59999) / 60000 } ?: return "时间未知"
-        }
-        return "${minutes / 60}时${minutes % 60}分" + if (state == TrainingState.PAUSED) "（同步）" else ""
+        if (state == TrainingState.PAUSED) return "时间未知"
+        val minutes = endsAt?.let { ((it - now).coerceAtLeast(0) + 59999) / 60000 } ?: return "时间未知"
+        return "${minutes / 60}时${minutes % 60}分"
     }
 
 }

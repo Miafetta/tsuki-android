@@ -2,7 +2,9 @@ package cafe.miafetta.tsuki.ui.preview
 
 import cafe.miafetta.tsuki.ui.theme.TsukiAppTheme
 import cafe.miafetta.tsuki.ui.state.UiAccount
+import cafe.miafetta.tsuki.ui.components.AccountRow
 import cafe.miafetta.tsuki.ui.components.EmptyGuide
+import cafe.miafetta.tsuki.ui.components.LabeledSlider
 import cafe.miafetta.tsuki.ui.components.GameChips
 import cafe.miafetta.tsuki.ui.components.MetricCard
 import cafe.miafetta.tsuki.ui.components.MetricRow
@@ -164,6 +166,19 @@ private fun BottomWashPreview(@PreviewParameter(ThemeProvider::class) theme: Str
 @Composable
 private fun AccountCardPreview(@PreviewParameter(ThemeProvider::class) theme: String) {
     TsukiAppTheme(theme) { AccountCard(UiAccount("sample", "森空岛主账号", listOf(role)), emptyList(), false, {}, {}) }
+}
+
+@Preview(name = "AccountRow", widthDp = 360, showBackground = true)
+@Composable
+private fun AccountRowPreview(@PreviewParameter(ThemeProvider::class) theme: String) {
+    TsukiAppTheme(theme) { Card { AccountRow(UiAccount("sample", "森空岛主账号", listOf(role)), "已开启 2 项提醒", onClick = {}) } }
+}
+
+// The threshold slider of the reminder pages: the value being chosen on the left, the end of the track on the right.
+@Preview(name = "LabeledSlider", widthDp = 360, showBackground = true)
+@Composable
+private fun LabeledSliderPreview(@PreviewParameter(ThemeProvider::class) theme: String) {
+    TsukiAppTheme(theme) { Card { LabeledSlider(80f, {}, "80%", "100%", valueRange = 1f..100f, steps = 98) } }
 }
 
 @Preview(name = "SmallTitle", widthDp = 360, showBackground = true)

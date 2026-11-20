@@ -9,6 +9,8 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import cafe.miafetta.tsuki.ui.TsukiApp
+import cafe.miafetta.tsuki.ui.glass.TransitionGlass
+import cafe.miafetta.tsuki.ui.state.roleKey
 import cafe.miafetta.tsuki.widget.StatusWidgetProvider
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.Dispatchers
@@ -20,9 +22,16 @@ class MainActivity : ComponentActivity() {
     private var lastStoppedAt = android.os.SystemClock.elapsedRealtime()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // Debug comparison only (diagnostics=true): the glass turning off during page transitions, as before 2.3.0.
+        if (BuildConfig.DEBUG && intent.getBooleanExtra("diagnostics", false)) {
+            TransitionGlass.keep = intent.getStringExtra("transitionGlass") != "inactive"
+        }
         val overviewId = widgetOverviewId(intent)
-        val fromWidget = overviewId != null
-        // Recents relaunches with the widget intent; only a real tap may replace the role the user chose since.
+        // A reminder notification names its role directly; the overview switches to it like a widget tap would.
+        val reminderRoleKey = ReminderLaunch.role(intent)?.let { roleKey(it.providerId, it.accountId, it.characterId) }
+        val fromWidget = overviewId != null || reminderRoleKey != null
+        // Recents relaunches with the widget or notification intent; only a real tap may replace the role the user
+        // chose since.
         val replayed = intent.flags and Intent.FLAG_ACTIVITY_LAUNCHED_FROM_HISTORY != 0
         val id = if (fromWidget) -1 else widgetConfigId(intent)
         if (!fromWidget && intent.hasExtra(AppWidgetManager.EXTRA_APPWIDGET_ID) && id !in StatusWidgetProvider.owned(this)) {
@@ -35,7 +44,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setTsukiContent { TsukiApp(this, initialPage = if (editingWidget.value == null) 0 else 1,
             resumeTick = resumeTick.intValue, configuringId = editingWidget.value,
-            overviewWidgetId = overviewId.takeUnless { replayed },
+            overviewWidgetId = overviewId.takeUnless { replayed }, overviewRoleKey = reminderRoleKey.takeUnless { replayed },
             onConfigured = { setResult(RESULT_OK, Intent().putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, editingWidget.value ?: -1)) },
             onConfigurationClosed = {
                 editingWidget.value = null
@@ -51,6 +60,11 @@ class MainActivity : ComponentActivity() {
         if (isWidgetOverviewIntent(intent)) {
             // The replacement instance starts without saved state, so the tapped widget's role is applied again.
             startActivity(Intent(this, MainActivity::class.java).setData(intent.data).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP))
+            return
+        }
+        ReminderLaunch.role(intent)?.let {
+            // The same for a reminder notification: a fresh instance applies its role.
+            startActivity(ReminderLaunch.intent(this, it).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP))
             return
         }
         val id = widgetConfigId(intent)

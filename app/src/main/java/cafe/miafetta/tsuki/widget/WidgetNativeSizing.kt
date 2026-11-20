@@ -2,6 +2,7 @@ package cafe.miafetta.tsuki.widget
 
 import android.content.Context
 import android.util.TypedValue
+import android.view.Gravity
 import android.view.ViewGroup
 import android.widget.RemoteViews
 import cafe.miafetta.tsuki.R
@@ -26,6 +27,10 @@ internal fun sizeNativeContent(views: RemoteViews, context: Context, scale: Floa
     sizeCardFrame(sizer, R.id.status_native_content, R.id.status_native_training_avatar)
     for (id in listOf(R.id.status_title, R.id.status_data_time)) sizer.margin(id, RemoteViews.MARGIN_START, CardSizer.TITLE_GAP)
     views.setInt(R.id.status_data_time, "setMinWidth", sizer.px(CardSizer.DATA_TIME_WIDTH))
+    // The minimum width keeps the title from shifting as the digits change; the time sits at its end, next to the
+    // refresh button, instead of trailing the title with the spare width after it. Set here rather than in the layout,
+    // which installed launchers cache.
+    views.setInt(R.id.status_data_time, "setGravity", Gravity.END or Gravity.CENTER_VERTICAL)
     for (id in summaryCellIds + summaryExtraCellIds + listOf(R.id.status_jade_cell, R.id.status_tower_cell)) {
         sizer.height(id, CardSizer.ROW)
     }

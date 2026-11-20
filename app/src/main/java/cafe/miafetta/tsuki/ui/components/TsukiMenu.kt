@@ -20,6 +20,7 @@ import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.asComposeRenderEffect
 import androidx.compose.ui.graphics.shadow.Shadow
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.layout.onSizeChanged
@@ -82,6 +83,38 @@ internal fun TsukiFieldMenu(show: Boolean, items: List<DropdownItem>, onDismiss:
         Box(Modifier.graphicsLayer { this.alpha = alpha.value }) { label() }
         TsukiMenuImpl(show, items, onDismiss, rightAligned, -1, -1, MenuTrigger(label) { covered = it })
     }
+}
+
+/**
+ * An icon button that opens a [TsukiMenu], for every icon-triggered menu. While the menu is open the button keeps no
+ * press indication of its own, and the icon fades out as the menu opens over it and back in once the menu has gone,
+ * with the timing of a dropdown field's value text (TsukiFieldMenu), so both kinds of trigger behave alike.
+ */
+@Composable
+internal fun TsukiIconMenu(icon: ImageVector, contentDescription: String, items: List<DropdownItem>,
+    modifier: Modifier = Modifier, enabled: Boolean = true, rightAligned: Boolean = true, destructiveIndex: Int = -1,
+    dividerBefore: Int = -1) {
+    var open by remember { mutableStateOf(false) }
+    val show = open && enabled
+    val alpha by menuTriggerAlpha(show)
+    Box(modifier) {
+        CompositionLocalProvider(LocalIndication provides (if (open) MiuixIndication(Color.Transparent) else LocalIndication.current)) {
+            IconButton(onClick = { open = true }, Modifier.graphicsLayer { this.alpha = alpha }, enabled = enabled) {
+                Icon(icon, contentDescription)
+            }
+        }
+        TsukiMenu(show, items, { open = false }, rightAligned, destructiveIndex, dividerBefore)
+    }
+}
+
+@Composable
+private fun menuTriggerAlpha(show: Boolean): State<Float> {
+    val alpha = remember { Animatable(1f) }
+    LaunchedEffect(show) {
+        if (show) alpha.animateTo(0f, tween(FieldTriggerFadeOutMillis, easing = LinearEasing))
+        else alpha.animateTo(1f, tween(FieldTriggerFadeInMillis, MenuCloseMillis, LinearEasing))
+    }
+    return alpha.asState()
 }
 
 private class MenuFrame(val progress: Float, val fade: Float, val content: Float, val closing: Boolean)
@@ -235,7 +268,7 @@ internal fun TsukiDropdownPreference(title: String, items: List<String>, selecte
         if (hold.value > 0f) drawRect(holdColor, alpha = hold.value)
     }) {
         CompositionLocalProvider(LocalIndication provides (if (expanded) MiuixIndication(Color.Transparent) else LocalIndication.current)) {
-        BasicComponent(title = title, enabled = enabled, role = Role.DropdownList,
+        BasicComponent(title = title, insideMargin = LocalRowMargin.current, enabled = enabled, role = Role.DropdownList,
             onClick = { expanded = true }, endActions = {
                 TsukiFieldMenu(show, items.mapIndexed { index, text ->
                     DropdownItem(text, selected = index == selectedIndex, onClick = { onSelectedIndexChange(index) })

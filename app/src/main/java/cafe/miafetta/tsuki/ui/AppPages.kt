@@ -63,6 +63,7 @@ private fun LazyListScope.appMe(controller: AppController, activity: Activity, b
                 "将删除${target}的 Cred 及 ${account.roles.size} 个角色的缓存，并解除 $count 个小部件的绑定。桌面上的这些小部件会显示为未配置，可以手动移除。",
                 Storage.LOGOUT, Bundle().apply { putString(Storage.ACCOUNT_ID, account.id) })
         }, onPrivacy = { nav.push(AppRoute.Privacy) }, onLicenses = { nav.push(AppRoute.Licenses) },
+        onReminders = { nav.push(AppRoute.Reminders) },
         onSimulation = {
             state.error = ""
             configSheet = ConfigSheet.New(diagnostic = true)

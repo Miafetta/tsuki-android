@@ -26,9 +26,14 @@ import top.yukonga.miuix.kmp.icon.extended.*
 import top.yukonga.miuix.kmp.preference.*
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.nav.gesture.PredictiveBackHandler
+import kotlinx.coroutines.delay
 
-private const val NAME_LIMIT = 40
-private val CredPattern = Regex("[!-~]{10,4096}")
+private const val NAME_LIMIT = AccountDraft.NAME_LIMIT
+private val CredPattern = AccountDraft.CRED_PATTERN
+// The form's spacing, which its section titles count in above them.
+private val FormSpacing = 8.dp
+// Typing restarts the wait, so the nickname is read only for a Cred left unchanged this long.
+private const val NAME_LOOKUP_DELAY_MILLIS = 800L
 // How to obtain a Cred by hand; the key and page follow SklandWebLogin, which reads the same entry.
 private val CredHint = "推荐使用上方的网页登录。也可以在电脑浏览器登录${Branding.PLATFORM}网页版（www.skland.com），" +
     "按 F12 打开开发者工具，在“应用（Application）→ 本地存储（Local Storage）”中复制 SK_OAUTH_CRED_KEY 的值。" +
@@ -39,8 +44,16 @@ private val CredHint = "推荐使用上方的网页登录。也可以在电脑�
 internal fun AccountEditor(activity: Activity, busy: Boolean, error: String,
     onDismiss: () -> Unit, onSave: (String, String) -> Unit, show: Boolean = true, pageProgress: Float = 1f,
     draft: AccountDraft = rememberAccountDraft(), blurEnabled: Boolean = true, onPlatform: () -> Unit = {},
-    onWebLogin: () -> Unit = {}, onMessage: (String) -> Unit = {}) {
+    onWebLogin: () -> Unit = {}, onMessage: (String) -> Unit = {}, lookupName: suspend (String) -> String? = { null }) {
     val keyboard = LocalSoftwareKeyboardController.current
+    // A Cred from the web login, the clipboard or the keyboard offers the Skland nickname while the name is blank. The
+    // read runs in :widgetProvider; when it fails the name simply stays blank and adding is not affected.
+    LaunchedEffect(draft.cred, show) {
+        val cred = draft.nameLookupCred()
+        if (!show || cred == null) return@LaunchedEffect
+        delay(NAME_LOOKUP_DELAY_MILLIS)
+        draft.offerName(cred, lookupName(cred))
+    }
     val focus = LocalFocusManager.current
     val imeVisible = WindowInsets.isImeVisible
     // Callbacks are created before the navigation entry becomes interactive, so actions check ready. Controls only look
@@ -88,7 +101,7 @@ internal fun AccountEditor(activity: Activity, busy: Boolean, error: String,
     PredictiveBackHandler(enabled = show && (busy || imeVisible), onProgress = { events -> events.collect {} },
         onCommit = { if (!busy) keyboard?.hide() }, onCancel = {})
     SecondaryScaffold("添加账号", blurEnabled, show && pageProgress >= .999f, ::dismiss, backEnabled = enabled,
-        modifier = Modifier.imePadding().testTag("account-editor-page"), spacing = 8.dp, actions = { progress ->
+        modifier = Modifier.imePadding().testTag("account-editor-page"), spacing = FormSpacing, actions = { progress ->
             GlassIconButton(onClick = ::save, enabled = enabled, progress = progress) { Icon(MiuixIcons.Ok, "保存") }
         }) {
         AccountForm(draft, enabled, error, ::save, onPlatform = { leave(onPlatform) },
@@ -113,7 +126,7 @@ private fun AccountForm(draft: AccountDraft, enabled: Boolean, error: String,
         }
     }
     Column(Modifier.padding(horizontal = 12.dp)) {
-        TsukiSmallTitle("账号信息")
+        TsukiSmallTitle("账号信息", spacingAbove = FormSpacing)
         TextField(draft.name, { draft.name = it.take(NAME_LIMIT) }, colors = fieldColors(), label = "账号名称（可选）",
             singleLine = true, enabled = enabled)
     }
@@ -132,7 +145,7 @@ private fun CredField(draft: AccountDraft, enabled: Boolean, onWebLogin: () -> U
     var visible by rememberSaveable { mutableStateOf(false) }
     val updating = draft.accountId != null
     Column(Modifier.padding(horizontal = 12.dp)) {
-        TsukiSmallTitle("授权信息")
+        TsukiSmallTitle("授权信息", spacingAbove = FormSpacing)
         Card(Modifier.padding(bottom = 8.dp)) {
             ArrowPreference(title = "在${Branding.PLATFORM}网页登录", enabled = enabled, onClick = onWebLogin,
                 modifier = Modifier.testTag("account-web-login"))

@@ -76,6 +76,7 @@ internal fun AppUiVerification.verifyWidgetTabs(host: MainActivity): String {
     }
     try {
         tabRowRest(touch, host, folder)
+        widgetEntryLayout(touch, host)
         tabRowTaps(touch, host)
         tabRowPress(touch, host, folder)
         tabRowDrags(touch, host, folder)
@@ -83,7 +84,8 @@ internal fun AppUiVerification.verifyWidgetTabs(host: MainActivity): String {
         tabRowVertical(touch, host)
         tabRowOutsideChanges(touch, host)
     } finally { File(folder, "events.txt").writeText(touch.trace.toString()) }
-    val result = "PASS: rest geometry and Tab semantics; real taps; press preview without switching cards; system cancel; " +
+    val result = "PASS: rest geometry and Tab semantics; first preview 24dp below the row, a press sinks the preview alone; " +
+        "real taps; press preview without switching cards; system cancel; " +
         "drag between tabs, outside the row and back, committed on release; sideways drags past the row keep the page; " +
         "vertical drag drops the preview and scrolls the page; accessibility clicks; empty-state switch animates."
     File(folder, "result.txt").writeText(result)
@@ -140,7 +142,7 @@ private fun AppUiVerification.tabRowTaps(touch: TabRowTouch, host: MainActivity)
     }
 }
 
-// Card tags below the row: "widget-preview:widget:…" for 已添加, "widget-preview:catalog:…" for 全部小部件.
+// Entry tags below the row: "widget-preview:widget:…" for 已添加, "widget-preview:catalog:…" for 全部小部件.
 private fun AppUiVerification.cards(host: MainActivity): List<String> {
     var tags = emptyList<String>()
     runOnMainSync {

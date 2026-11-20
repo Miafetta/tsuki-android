@@ -7,10 +7,18 @@ import cafe.miafetta.tsuki.providers.SklandGame
 import cafe.miafetta.tsuki.providers.matchingAccountForLogin
 import java.util.UUID
 
-// Account changes and their effect on bound widgets. Every change bumps accountGeneration under the runtime lock.
+// Account changes and their effect on bound widgets and reminders (WidgetRuntimeReminders.kt). Every change bumps
+// accountGeneration under the runtime lock.
+
+// The Skland nickname the editor offers as the name of an account it is adding (StorageContract.PLATFORM_NAME), blank
+// when the profile has none. Nothing is saved: the name is stored only if the user then adds the account with it.
+internal fun WidgetRuntime.platformName(cred: String): String {
+    SklandClient.validateCred(cred)
+    return client.nickname(cred).orEmpty()
+}
 
 internal fun WidgetRuntime.login(name: String, cred: String) {
-    require(name.length <= 40)
+    require(name.length <= SklandClient.NAME_LIMIT)
     SklandClient.validateCred(cred)
     val generation = synchronized(this) { accountGeneration }
     val roles = client.roles(cred)
@@ -37,6 +45,7 @@ internal fun WidgetRuntime.login(name: String, cred: String) {
                     update(id, true)
                 }
             }
+            retainReminders(existing.id, roles)
         }
     }
     previousCred?.let(client::forget)
@@ -58,6 +67,7 @@ internal fun WidgetRuntime.logout(accountId: String) {
         sklandGames.forEach { it.forget(accountId) }
         roleData.clear(accountId)
         clearAccountWidgets(accountId)
+        forgetReminders(accountId)
     }
     if (cred != null) client.forget(cred)
 }
@@ -70,6 +80,7 @@ internal fun WidgetRuntime.resetAccounts() {
         sklandGames.forEach { it.forget() }
         roleData.clear()
         AndroidCredentialKey.delete()
+        clearReminders()
     }
     client.clear()
 }

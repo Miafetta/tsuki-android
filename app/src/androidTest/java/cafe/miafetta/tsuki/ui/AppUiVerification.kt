@@ -130,6 +130,8 @@ class AppUiVerification(internal val runner: Instrumentation) {
         }
         "session-restore" -> SessionRestoreVerification(hostRunner, host).run()
         "page-swipe" -> PageSwipeVerification(hostRunner, host).run()
+        // Read-only: in-memory AppState, every reminder write refused; see RemindersVerification.kt.
+        "reminders" -> RemindersVerification(hostRunner, host).run()
         // Loads the official start page (no sign-in); see WebLoginVerification.kt.
         "web-login" -> verifyWebLogin(host, File(folder.parentFile, "web-login").apply { mkdirs() })
         "web-login-kill" -> killDuringWebLogin(host, File(folder.parentFile, "web-login").apply { mkdirs() })

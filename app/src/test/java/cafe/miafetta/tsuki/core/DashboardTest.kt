@@ -147,6 +147,19 @@ class DashboardTest {
         }
     }
 
+    @Test fun pausedTrainingReadBackFromAnEarlierVersionShowsAsUnknown() {
+        val snapshot = ArknightsParser.snapshot(fixture(), "000000001", 1700000000000)
+        // A specialisation cannot pause; earlier versions stored PAUSED with its remaining seconds and no end time.
+        val paused = snapshot.copy(training = WidgetTraining(TrainingState.PAUSED, "char_test_trainee", "测试干员", 2,
+            remainingSecs = 3600))
+        val read = SnapshotJson.read(SnapshotJson.write(paused))
+        assertEquals(paused, read)
+        val now = snapshot.fetchedAt + 600_000
+        assertEquals("未知", read.training.status(now))
+        assertEquals("时间未知", read.training.time(now))
+        assertEquals("专精时间未知", dashboardDetail(read, "训练室", now))
+    }
+
     @Test fun roleCacheRoundTripFailureIsolationAndClear() {
         val folder = Files.createTempDirectory("tsuki-role-test").toFile()
         try {

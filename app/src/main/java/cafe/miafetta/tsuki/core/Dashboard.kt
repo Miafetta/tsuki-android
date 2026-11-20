@@ -23,9 +23,9 @@ internal fun dashboardDetail(snapshot: WidgetSnapshot?, label: String, now: Long
     if (label == "公招刷新") return dashboardMetric(snapshot, label)?.let {
         if (it.value > 0) "可进行公开招募标签刷新" else it.recoveryAt?.let { at -> "${durationWords(at - now)}后可刷新" }
     }
+    // PAUSED, read back from snapshots of earlier versions, has no end time and falls through to the unknown wording.
     if (label == "训练室") return snapshot.training.let {
         when {
-            it.state == TrainingState.PAUSED -> "专精暂停，剩余${it.time(now)}"
             it.state == TrainingState.COMPLETE || it.completedByTime(now) -> "干员已完成专精"
             it.endsAt != null -> "${durationWords(it.endsAt - now)}后完成专精"
             it.state == TrainingState.IDLE -> "暂无专精训练"

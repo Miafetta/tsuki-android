@@ -13,20 +13,21 @@
 
 | 包 | 职责 | 可依赖 |
 | --- | --- | --- |
-| `tsuki`（根） | Activity 入口与跨进程调用约定（`StorageContract`、`StorageCalls`） | 全部 |
-| `tsuki.core` | 与 Android UI 无关的模型、存储、协调、纯计算 | 标准库、Android 基础 API |
+| `tsuki`（根） | Activity 入口与跨进程调用约定（`StorageContract`、`StorageCalls`），打开概览的 Intent 约定（`WidgetLaunch.kt`、`ReminderLaunch`） | 全部 |
+| `tsuki.core` | 与 Android UI 无关的模型、存储、协调、纯计算；提醒的持久化（`ReminderStore`）、快照到观测的映射（`ReminderObservations`）与调度计算（`ReminderPlanner`、`ReminderChecks`） | 标准库、Android 基础 API |
+| `tsuki.core.reminder` | 提醒的规则、触发记录与判定输入的类型，各指标的能力登记（`ReminderCapabilities`），纯函数判定器与下一次检查时间；纯 Kotlin，不含持久化、调度与界面 | 标准库、`core` 的模型；不引用 `android.*`、`org.json`、`providers`、`widget`、`ui` |
 | `tsuki.providers` | 数据源适配、网络、凭据、头像缓存 | `core` |
-| `tsuki.widget` | RemoteViews 渲染、Provider、后台刷新（`:widgetProvider` 进程，**不得引用 Compose 或 `ui`**） | `core`、`providers` |
+| `tsuki.widget` | RemoteViews 渲染、Provider、后台刷新与提醒的任务和通知（`ReminderJob`、`ReminderNotifier`）（`:widgetProvider` 进程，**不得引用 Compose 或 `ui`**） | `core`、`providers` |
 | `tsuki.ui` | 应用入口组合：`TsukiApp`、`AppScaffold` | `ui.*`、`core` |
-| `tsuki.ui.state` | `AppState`（ViewModel）、`AppController`、消息、配置面板状态、路由、页面编号与偏好键 | `core`；**不得引用 Compose UI 组件** |
-| `tsuki.ui.theme` | `TsukiAppTheme`、`TsukiTextStyles`、`Branding`（游戏／平台／配色名）与品牌图像 | Miuix |
+| `tsuki.ui.state` | `AppState`（ViewModel）、`AppController`、消息、配置面板状态、路由、页面编号与偏好键；提醒设置页的状态与跨进程调用（`ReminderSettings`、`ReminderCalls`） | `core`；**不得引用 Compose UI 组件** |
+| `tsuki.ui.theme` | `TsukiAppTheme`、`TsukiTextStyles`、`Branding`（游戏／平台／配色名）与品牌图像 | Miuix、`SklandGame`（游戏名） |
 | `tsuki.ui.glass` | 玻璃宿主、后端（MiGlass / miuix-blur / 不透明）、表面参数 | Miuix、`ui.theme` |
 | `tsuki.ui.components` | 无状态、可预览的小组件；只接收数据与回调。共用的手势与动效辅助也放这里，可以带少量状态：`SlotMotion` 由底栏与部件页切换按钮共用；`PagerSwipeGuard` 要同时被切换按钮和 `AppScaffold` 引用，而组件不能引用上层的 `tsuki.ui`，所以放在这一层 | `ui.theme`、`ui.glass`、`core` 的模型、`state` 的数据类型 |
-| `tsuki.ui.pages` | 三个标签页与二级页面（隐私、许可、添加账号、平台选择、网页登录） | `components`、`state` 的数据类型 |
+| `tsuki.ui.pages` | 三个标签页与二级页面（隐私、许可、添加账号、平台选择、网页登录、通知提醒及其账号页） | `components`、`state` 的数据类型 |
 | `tsuki.ui.sheets` | 配置面板、确认 / 权限弹窗等浮层 | 同上 |
 
 - 依赖只能沿表格向上或同层，`components` 不得引用 `pages`、`sheets`、`state.AppState`。
-- 主进程中的 `ui.*` 引用 `widget`／`providers` 只限：数据源与功能标识常量（适配器的 `ID`、`SklandGame`、`WidgetRuntime.FEATURE`、`ENDFIELD_FEATURE` 与 `featureFor`）、Provider 类及其按实例判断配色与功能的伴生函数（`StatusWidgetProvider`、`OpaqueWidgetProvider`、`EndfieldWidgetProvider`、`XiaomiProbeProvider`）、添加流程入口（`PinWidgetReceiver.request`、`DesktopShortcutPermission`、`WidgetStorageProvider.URI`），以及与桌面共用的无状态头像函数（`OfficialAvatars`、`WidgetBitmaps.kt`，只在 `ui.state` 中调用），和网页登录的常量与纯函数（`SklandWebLogin`，只在 `WebLoginPage` 中调用，不含网络客户端）。`WidgetRuntime` 实例、仓库与网络客户端属于 `:widgetProvider` 进程，只经由 `StorageContract` 调用。
+- 主进程中的 `ui.*` 引用 `widget`／`providers` 只限：数据源与功能标识常量（适配器的 `ID`、`SklandGame` 及其游戏名 `displayName`、方舟数据源判定 `ARKNIGHTS_SOURCE_IDS`／`isArknightsSource`、`WidgetRuntime.FEATURE`、`ENDFIELD_FEATURE` 与 `featureFor`）、Provider 类及其按实例判断配色与功能的伴生函数（`StatusWidgetProvider`、`OpaqueWidgetProvider`、`EndfieldWidgetProvider`、`XiaomiProbeProvider`）、添加流程入口（`PinWidgetReceiver.request`、`DesktopShortcutPermission`、`WidgetStorageProvider.URI`），以及与桌面共用的无状态头像函数（`OfficialAvatars`、`WidgetBitmaps.kt`，只在 `ui.state` 中调用），和网页登录的常量与纯函数（`SklandWebLogin`，只在 `WebLoginPage` 中调用，不含网络客户端），以及提醒通知的渠道 ID（`ReminderNotifications.channelId`，只在 `ui.state` 中用来读取渠道状态和打开渠道设置）。`WidgetRuntime` 实例、仓库与网络客户端属于 `:widgetProvider` 进程，只经由 `StorageContract` 调用。
 - Debug 专用代码（预览、诊断开关、测试夹具）放 `src/debug` 或 `src/androidTest`，不得进入 `src/main` 的 Release 路径；确需在 main 中判断时只用 `BuildConfig.DEBUG`。
 
 ## 3. 文件与函数
@@ -38,7 +39,7 @@
 - 颜色只取 `MiuixTheme.colorScheme`；桌面部件颜色只取资源。
 - 注释使用英文，解释"为什么"，不复述代码；引用文档时写文档路径。
 - 用户可见文案目前仍写在 Kotlin 中（应用内）或 `strings.xml`（桌面小部件）。不在没有专门任务的情况下批量迁移，避免影响稳定资源 ID。
-- **同一内容只写一处**：游戏名、平台名与配色名取自 `ui/theme/GameBranding.kt`；小部件名称与摘要格标签取自 `strings.xml`（桌面列表与静态预览布局也读取它们）；数据源 ID 取自 `SklandGame` 的 `providerId`（《明日方舟》是 `SklandArknightsAdapter.ID`，调试夹具是 `FakeArknightsAdapter.ID`）；应用内的小部件预览只用 `WidgetPreviewStage`；设备测试的辅助方法放在 `DeviceTestSupport.kt`。新增内容前先查找已有的定义。文档同理：约束写在 DEVELOPMENT_CONSTRAINTS，其他文档只链接，不复述。
+- **同一内容只写一处**：游戏名取自 `SklandGame` 的 `displayName`（界面经 `Branding` 引用，提醒通知直接使用），平台名与配色名取自 `ui/theme/GameBranding.kt`；小部件名称、描述与摘要格标签取自 `strings.xml`（桌面列表与静态预览布局也读取它们，应用内经 `widgetName`、`widgetDescription`）；数据源 ID 取自 `SklandGame` 的 `providerId`（《明日方舟》是 `SklandArknightsAdapter.ID`，调试夹具是 `FakeArknightsAdapter.ID`）；应用内的小部件预览只经 `WidgetPreviewImage` 绘制（部件页与部件面板用 `ScaledWidgetPreview`，概览空状态用 `WidgetPreviewStage`），部件页条目只用 `WidgetGalleryItem`（一个标签的条目放在 `WidgetGallery` 里），部件面板只用 `WidgetSheet`；账号的一行（“我的”与通知提醒）只用 `AccountRow`，账号显示的名称只取 `accountTitle`；分组标题只用 `TsukiSmallTitle`，按所在列表的间距传参，不在页面里补间距；设备测试的辅助方法放在 `DeviceTestSupport.kt`。新增内容前先查找已有的定义。文档同理：约束写在 DEVELOPMENT_CONSTRAINTS，其他文档只链接，不复述。
 - 不新增格式化 / 静态检查依赖（ktlint、detekt 等）；需要统一格式时用仓库根目录的 `.editorconfig`。
 
 ## 4. 状态与副作用

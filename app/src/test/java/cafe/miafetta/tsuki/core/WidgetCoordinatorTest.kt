@@ -152,6 +152,7 @@ class WidgetCoordinatorTest : WidgetFrameworkFixture() {
     @Test fun characterChangeAndLogoutClearBothAvatarIdentitiesIncludingFailedFirstRefresh() {
         val repository = repository()
         val coordinator = coordinator(repository)
+        // PAUSED with its remaining seconds, as a snapshot of an earlier version reads back.
         val original = adapter.fetch(config(), 1000).copy(avatarUrl = "official-account-avatar",
             training = WidgetTraining(TrainingState.PAUSED, "char_test_trainee", "测试干员", 1,
                 avatarUrl = "official-trainee-avatar", remainingSecs = 900))

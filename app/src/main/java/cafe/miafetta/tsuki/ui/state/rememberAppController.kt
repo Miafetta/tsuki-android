@@ -11,7 +11,7 @@ import top.yukonga.miuix.kmp.nav.core.*
 
 @Composable
 internal fun rememberAppController(activity: Activity, initialPage: Int, resumeTick: Int, configuringId: Int?,
-    overviewWidgetId: Int?, onConfigured: () -> Unit): AppController {
+    overviewWidgetId: Int?, overviewRoleKey: String?, onConfigured: () -> Unit): AppController {
     // The first overview read starts here, before the rest of the screen composes; it is idempotent per ViewModel and
     // the first reload joins it (AppState.load).
     val state = remember(activity) {
@@ -30,6 +30,6 @@ internal fun rememberAppController(activity: Activity, initialPage: Int, resumeT
     }
     val controller = remember(state, nav, draft, session) { AppController(state, prefs, nav, draft, session, activity) }
     ControllerNavigationEffects(controller, activity, configuringId, onConfigured)
-    ControllerDataEffects(controller, activity, resumeTick, overviewWidgetId)
+    ControllerDataEffects(controller, activity, resumeTick, overviewWidgetId, overviewRoleKey)
     return controller
 }

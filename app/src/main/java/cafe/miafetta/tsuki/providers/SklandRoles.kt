@@ -3,11 +3,11 @@ package cafe.miafetta.tsuki.providers
 import org.json.JSONArray
 import org.json.JSONObject
 
-// Games bound to a Skland account. The binding list names them by appCode; Tsuki names them by data source ID.
-internal enum class SklandGame(val appCode: String, val providerId: String) {
+// Games bound to a Skland account: appCode in the binding list, data source ID in Tsuki, displayName on every screen.
+internal enum class SklandGame(val appCode: String, val providerId: String, val displayName: String) {
     // Installed widgets and role caches store "skland" for Arknights, so its ID can never change.
-    ARKNIGHTS("arknights", SklandArknightsAdapter.ID),
-    ENDFIELD("endfield", "skland.endfield");
+    ARKNIGHTS("arknights", SklandArknightsAdapter.ID, "明日方舟"),
+    ENDFIELD("endfield", "skland.endfield", "终末地");
 
     companion object {
         fun fromAppCode(code: String) = entries.firstOrNull { it.appCode == code }

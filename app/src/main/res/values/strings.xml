@@ -12,7 +12,7 @@
     <string name="event_manual">手动刷新</string>
     <string name="event_options">尺寸或选项变化</string>
     <string name="refresh">点此刷新</string>
-    <string name="status_widget_name">明日方舟数据工具 浅色</string>
+    <string name="status_widget_name">明日方舟数据工具</string>
     <string name="status_description">查看明日方舟的理智、任务与基建进度</string>
     <string name="status_unconfigured">点击配置明日方舟</string>
     <string name="status_storage_error">无法读取小部件设置，请重试</string>
@@ -23,7 +23,7 @@
     <string name="error_data">数据不完整</string>
     <string name="error_network">网络连接失败</string>
     <string name="error_server">服务器异常</string>
-    <string name="status_widget_dark_name">明日方舟数据工具 深色</string>
+    <string name="status_widget_dark_name">明日方舟数据工具</string>
     <string name="status_loading">正在加载明日方舟数据</string>
     <!-- Summary cell labels, shared by the renderer and the picker preview. -->
     <string name="status_label_recruit">公开招募</string>

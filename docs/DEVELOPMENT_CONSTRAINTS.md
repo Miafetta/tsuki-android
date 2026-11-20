@@ -6,16 +6,23 @@
 
 桌面宿主（尤其是小米桌面）会跨版本缓存布局、资源 ID 和 Provider 组件名。以下内容改动后无法靠应用升级修正，只有在真实桌面上完成升级、刷新和恢复验证后才能调整：
 
-- `AndroidManifest.xml` 中的 Activity、Provider、Receiver、Service 以及被 `PendingIntent`／`ComponentName`／`tsuki://` 深链引用的类：不移动、不改名。需要调整职责时，原类保留为薄壳。
+- `AndroidManifest.xml` 中的 Activity、Provider、Receiver、Service 以及被 `PendingIntent`／`ComponentName`／`tsuki://` 深链引用的类：不移动、不改名。需要调整职责时，原类保留为薄壳。提醒任务 `ReminderJob` 是持久任务，系统在重启和应用更新后按组件名恢复它，所以同样适用。
+- 已发出的通知里的 `PendingIntent` 会跨应用更新保留：`ReminderLaunch` 的 extras 键与 `MainActivity` 对它们的解析保持兼容。提醒的通知渠道 ID（`ReminderNotifications.channelId`）发布后不改，用户对声音与振动的设置按渠道 ID 保存。
 - `app/widget-resource-ids.txt` 与 `--stable-ids`：资源名和编号保持含义，已删除的编号不复用。只有钉入的条目编号固定；未钉资源的编号会随新增资源移动，所以 RemoteViews 布局与动作引用的资源（含被布局引用的 `strings.xml` 条目）都必须钉入。HyperOS 桌面会沿用已放置部件中同一编号的位图（PNG），应用更新后也不重新读取，所以重绘位图时要换新资源名，旧名在 `ProbeManifestTest` 的退役清单中保留编号；XML 形状与颜色不受影响。
 - Provider 元数据：`miuiWidgetVersion=54`（应用级、所有部件共用；小部件布局、外观或元数据变化时只升不降）、4×2 尺寸、《明日方舟》浅色／深色两套主题布局、终末地固定深色一套，以及曝光元数据；资源收缩保持关闭。
 - 桌面部件资源：`res/layout/status_widget*.xml`、`endfield_widget*.xml`、`probe_widget.xml`、`res/drawable*/widget_*` 与 `avatar_placeholder_*`、`res/values*/widget_palette.xml`、`res/values*/widget_placeholder.xml`、`colors.xml`、`miuix_widget_tokens.xml`、`widget_endfield_dimens.xml`、`widget_retired_ids.xml`（已退役的 View ID，只为保留编号）、`styles.xml` 中的 `Widget*` 样式、`res/xml/*`，以及 `strings.xml` 中被小部件布局引用的 `status_*` 与 `endfield_*` 条目。
-- 跨进程协议与存储：`StorageContract`、`StorageCalls`、`SnapshotJson`，以及 `core/` 的实例存储、角色缓存 schema、协调器。
+- 跨进程协议与存储：`StorageContract`（包括提醒操作 `REMINDERS`、`SAVE_REMINDER`、`DELETE_REMINDER`、`SET_REMINDERS_ENABLED`）、`StorageCalls`、`SnapshotJson`，以及 `core/` 的实例存储、角色缓存 schema、协调器和提醒文件（`ReminderStore` 写在 `noBackupFilesDir` 的 `reminders/v1.json`，格式由 `ReminderJson` 定义）。
 
 ## 2. 进程边界
 
 - 桌面 Provider、私有 `WidgetStorageProvider` 与 `WidgetRefreshJob` 运行在 `:widgetProvider`；`widget` 包不得引用 Compose 或 `ui` 包。
-- 广播和主线程不发网络请求；真实请求只由后台任务执行。不添加定时轮询或自动签到；20 秒曝光间隔，以及同一角色 20 秒内按上一次请求的结果应答（复用成功快照、重放失败）不是轮询。
+- 广播和主线程不发网络请求；真实请求只由后台任务执行。不自动签到。20 秒曝光间隔，以及同一角色 20 秒内按上一次请求的结果应答（复用成功快照、重放失败）不是轮询。刷新结果为限流并带有重试时间时，可以在该时间到点后为这个部件补刷一次；只补一次、不循环，也不是轮询。
+- 定时的后台请求只有两种：用户开启的提醒，以及上一条所说的限流后补刷一次；除此之外不添加定时轮询。提醒调度的边界：
+  - 提醒默认全部关闭；只为用户开启了提醒的角色调度。
+  - 只用 JobScheduler，提醒的 `JobService` 运行在 `:widgetProvider`；jobId 使用负数区间，与 `WidgetRefreshJob` 以 appWidgetId 作 jobId 的正数空间分开。不用前台服务，不申请精确闹钟，不申请忽略电池优化。
+  - 提醒任务为同一角色发起的两次请求至少间隔 30 分钟。
+  - 为提醒新增的权限只有 `POST_NOTIFICATIONS`（用户开启提醒时请求）与 `RECEIVE_BOOT_COMPLETED`（重启后恢复已安排的任务）。
+  - 系统的自启动与省电策略由用户自行设置；Tsuki 只说明并提供系统设置入口，不修改系统设置。
 - 私有 Provider 核对调用方 UID，配置写入另外校验实例确实归属本应用。
 
 ## 3. 凭据与账号数据
@@ -28,7 +35,8 @@
 - Tsuki 不读取、不保存账号密码、验证码和通行证 token；原生界面不提供账号、密码或验证码输入；不绕过人机验证。官方网站对手机只提供下载页，所以网页登录请求电脑版页面：User-Agent 改为同一 Chrome 主版本的桌面写法，等同浏览器的“桌面版网站”开关；除此之外不改动、不伪造设备指纹或其他设备信息。电脑版页面把 viewport 锁成手机宽度、禁止缩放，固定顶栏里的登录按钮在手机上看不到，所以只改写官方页面的 viewport 标签（宽度 1200，允许缩放），每次加载缩小一次以适应屏幕宽度；页面其他内容一律不改。
 - 电脑版在弹窗中登录，页面不一定跳转，因此登录页打开期间每秒在本机读取一次当前官方页面存储中的 Cred 键，取得后停止。这是本地读取，不发请求，不属于 §2 所说的轮询。
 - 网页登录的 WebView 只在主进程使用：不添加 JavaScript 接口；主框架导航只放行 `SklandWebLogin` 白名单中的 https 域名，其他一律拦截，不转交外部应用；禁用文件与内容访问、多窗口、地理位置和混合内容，不处理下载，`isSaveEnabled = false`。
-- 手动填写 Cred 的表单永久保留，作为兜底；它只接受 Cred 值，不解析 Cookie 或其他格式。输入框带“粘贴”和“显示／隐藏”按钮：只在用户点击粘贴时读取一次剪贴板，默认隐藏内容。账号名称是可选的别名，按填写的原样保存，可以为空；为空时界面以平台名称称呼该账号（例如“森空岛账号”），不从某个游戏的角色推断账号名称。
+- 手动填写 Cred 的表单永久保留，作为兜底；它只接受 Cred 值，不解析 Cookie 或其他格式。输入框带“粘贴”和“显示／隐藏”按钮：只在用户点击粘贴时读取一次剪贴板，默认隐藏内容。账号名称是可选的别名，按填写的原样保存，可以为空；为空时界面以平台名称称呼该账号（例如“森空岛账号”），不从某个游戏的角色推断账号名称。编辑页取得 Cred（网页登录、粘贴或输入）后，如果名称框为空，`StorageContract.PLATFORM_NAME` 在 `:widgetProvider` 中读取一次森空岛账号资料（`/api/v1/user`），只取 `data.user.nickname` 填入名称框，由用户修改或清空；用户已填的名称不覆盖，读取失败时名称留空，不阻断添加。资料的其他字段不保存、不传回界面进程，昵称只在用户保存账号后作为名称存入本机。
+- `SklandClient` 只请求 `SklandClient.PATHS` 中的路径：`/api/v1/auth/refresh`、`/api/v1/game/player/binding`、`/api/v1/game/player/info`、`/api/v1/user`（只取昵称）、`/api/v1/user/teenager`（只取用户 ID，保存在内存中）与 `/web/v1/game/endfield/card/detail`；新增路径要同步隐私说明。
 
 ## 4. 部件放置
 
@@ -71,5 +79,6 @@
 
 - 设备测试只使用生产页面与内存样本，不保存账号或桌面实例；不卸载应用、不清除数据、不修改系统设置（测试临时固定的屏幕方向在结束后恢复原状）。统一入口为 `tools/Run-DeviceTests.ps1`，只跑与改动相关的场景。
   - `web-login`、`web-login-kill`、`web-login-after-kill` 需要单独指定：它们会打开森空岛官方首页（不登录），离开时清除测试设备上 Tsuki 的网页数据。`web-login` 还会临时替换剪贴板，结束后恢复原内容。
+  - `reminders` 在默认列表中：它在内存样本上打开“我的”→“通知提醒”，核对账号行与排在最后的“后台运行”，进入账号页核对每个角色的指标行（下拉都显示“关闭”、开关全关、没有滑块），再用内存中一条已开启的规则重新进入，核对它的下拉值与紧接在下面的阈值滑块（下方是当前值与终点，没有“阈值”标题和步进按钮），每次都逐级返回两层；所有提醒写操作都被拒绝，不保存规则、不改总开关、不申请通知权限、不发通知。
   - `widget-editor-save`、`widget-editor-change` 需要单独指定，并且要求桌面上已有一个配置好的 Tsuki 小部件（没有时记为跳过，测试不创建实例）：前者原样保存该实例的配置，后者修改配色与角色并保存，再逐项改回并核对，中途失败时恢复原配置；改角色会重新拉取该角色的数据。
 - 没有实际执行的设备测试、视觉检查或性能测量一律记为“未验证”。编译与 JVM 测试不能代替真实桌面宿主、模糊观感、GPU 开销和手势手感的检查。

@@ -19,6 +19,7 @@ import top.yukonga.miuix.kmp.nav.gesture.PredictiveBackHandler
 import cafe.miafetta.tsuki.ui.state.AppController
 
 import cafe.miafetta.tsuki.ui.sheets.AppConfigSheet
+import cafe.miafetta.tsuki.ui.glass.TransitionGlass
 import cafe.miafetta.tsuki.ui.theme.Branding
 
 @Composable
@@ -26,13 +27,15 @@ internal fun AppRoot(controller: AppController, activity: Activity, initialPage:
     configuringId: Int?, onConfigurationClosed: () -> Unit) = with(controller) {
     val transition = LocalNavTransitionScope.current
     val active = transition.relativeDepth == 0f && !transition.isRunning
+    val glassActive = TransitionGlass.active(transition.isRunning, transition.relativeDepth)
     PredictiveBackHandler(enabled = page != AppPage.OVERVIEW && nav.backStack.last() == AppRoute.Root &&
         configSheet is ConfigSheet.Closed &&
         confirmation == null && !permissionDialog, onProgress = { events -> events.collect {} },
         onCommit = { if (initialPage != AppPage.OVERVIEW) activity.finish() else page = AppPage.OVERVIEW }, onCancel = {})
     AppScaffold(page, modifier = Modifier.semantics { if (!active) hideFromAccessibility() },
         canRefresh = selected != null && !state.refreshing && !state.busy, showRefresh = selected != null,
-        blurEnabled = blur, glassActive = active, onRefresh = { controller.refresh() }, refreshing = state.refreshing,
+        blurEnabled = blur, active = active, glassActive = glassActive, onRefresh = { controller.refresh() },
+        refreshing = state.refreshing,
         scrollToAppearance = initialPage == AppPage.APPEARANCE,
         appearanceIndex = if (state.loaded) 1 + state.accounts.size.coerceAtLeast(1) else null,
         onNavigate = {

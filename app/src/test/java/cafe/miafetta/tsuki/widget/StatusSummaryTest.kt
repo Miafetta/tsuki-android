@@ -102,12 +102,12 @@ class StatusSummaryTest : WidgetResourceFixture() {
         assertEquals(224, materialTintAlpha(WidgetTheme.DARK))
     }
 
-    @Test fun compactTimersPreserveUnknownPausedAndCompletedMeanings() {
+    @Test fun compactTimersPreserveUnknownAndCompletedMeanings() {
         assertEquals("18h41m", recoveryTimer(WidgetMetric("理智", 23, 210, now + 1121 * 60000), now))
         assertEquals("0h0m", recoveryTimer(WidgetMetric("无人机", 250, 250, now - 1), now))
         assertEquals("时间未知", recoveryTimer(null, now))
         assertEquals("时间未知", recoveryTimer(WidgetMetric("理智", 23, 210), now))
-        assertEquals("2h1m（同步）", compactTimer("2时1分（同步）"))
+        assertEquals("2h1m", compactTimer("2时1分"))
         assertEquals("时间未知", compactTimer("时间未知"))
     }
 

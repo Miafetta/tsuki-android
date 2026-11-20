@@ -58,8 +58,8 @@ internal fun ControllerNavigationEffects(controller: AppController, activity: Ac
 
 @Composable
 internal fun ControllerDataEffects(controller: AppController, activity: Activity, resumeTick: Int,
-    overviewWidgetId: Int?) = with(controller) {
-    val awaitingOverview = overviewTargetPending(controller, overviewWidgetId)
+    overviewWidgetId: Int?, overviewRoleKey: String?) = with(controller) {
+    val awaitingOverview = overviewTargetPending(controller, overviewWidgetId, overviewRoleKey)
     var loadedResume by remember { mutableStateOf<Int?>(null) }
     // Once per activity: the first overview read has finished and the frame showing it is drawn. This is what
     // `am start -W` and the system report as "Fully drawn".
@@ -119,17 +119,22 @@ internal fun ControllerDataEffects(controller: AppController, activity: Activity
 // by rotation or a page switch does not count, otherwise the tap would be spent on empty lists. The pending id is
 // saved, so neither recomposition nor recreation overrides a later manual switch; a new tap recreates MainActivity with
 // fresh saved state and applies again. An unknown, unbound or removed binding, or a failed read, keeps the selection.
+// A reminder notification's tap names the role key itself ([overviewRoleKey]); a role no longer listed keeps the
+// selection the same way.
 @Composable
-private fun overviewTargetPending(controller: AppController, overviewWidgetId: Int?): Boolean = with(controller) {
-    var target by rememberSaveable(overviewWidgetId) { mutableStateOf(overviewWidgetId) }
-    LaunchedEffect(target, state.finishedLoads) {
-        val id = target
-        if (id == null || state.finishedLoads == 0) return@LaunchedEffect
-        widgetRoleKey(state.widgets, state.roles, id)?.let { key ->
-            state.roles.firstOrNull { it.key == key }?.let(::selectRole)
-            page = AppPage.OVERVIEW
+private fun overviewTargetPending(controller: AppController, overviewWidgetId: Int?, overviewRoleKey: String?): Boolean =
+    with(controller) {
+        var target by rememberSaveable(overviewWidgetId) { mutableStateOf(overviewWidgetId) }
+        var roleTarget by rememberSaveable(overviewRoleKey) { mutableStateOf(overviewRoleKey) }
+        LaunchedEffect(target, roleTarget, state.finishedLoads) {
+            if ((target == null && roleTarget == null) || state.finishedLoads == 0) return@LaunchedEffect
+            val key = target?.let { widgetRoleKey(state.widgets, state.roles, it) } ?: roleTarget
+            if (key != null) {
+                state.roles.firstOrNull { it.key == key }?.let(::selectRole)
+                page = AppPage.OVERVIEW
+            }
+            target = null
+            roleTarget = null
         }
-        target = null
+        target != null || roleTarget != null
     }
-    target != null
-}

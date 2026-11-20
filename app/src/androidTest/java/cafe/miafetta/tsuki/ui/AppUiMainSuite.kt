@@ -87,10 +87,13 @@ private fun AppUiVerification.verifyWidgetConfig(host: MainActivity, folder: Fil
         configTheme.value = "DARK"
     }
     frames(host)
+    // The new-widget sheet's main button.
+    val add = "添加到桌面"
     check(find("深色", exact = true) != null)
-    check(find("保存", exact = true, clickable = true)?.isEnabled == true)
+    check(find(add, exact = true, clickable = true)?.isEnabled == true)
     val navBottom = host.window.decorView.rootWindowInsets.getInsets(android.view.WindowInsets.Type.navigationBars()).bottom
-    checkDialogAction(host, "保存", host.window.decorView.height - navBottom)
+    checkDialogAction(host, add, host.window.decorView.height - navBottom)
+    verifySheetRows(host)
     capture(folder, "config-${palette.lowercase()}")
     for ((menu, choice) in listOf("配色" to "浅色", "配色" to "深色", "角色" to "第二角色")) {
         click(menu)
@@ -102,8 +105,8 @@ private fun AppUiVerification.verifyWidgetConfig(host: MainActivity, folder: Fil
     runOnMainSync { configBusy.value = true }
     frames(host)
     val savedBefore = savedConfigs.size
-    check(find("保存", exact = true) != null)
-    find("保存", exact = true, clickable = true)?.performAction(AccessibilityNodeInfo.ACTION_CLICK)
+    check(find(add, exact = true) != null)
+    find(add, exact = true, clickable = true)?.performAction(AccessibilityNodeInfo.ACTION_CLICK)
     frames(host)
     check(savedConfigs.size == savedBefore) { "Busy configuration accepted a save" }
     shell("input keyevent BACK")
@@ -111,7 +114,7 @@ private fun AppUiVerification.verifyWidgetConfig(host: MainActivity, folder: Fil
     check(dialog.value == "widget-new") { "Busy configuration dismissed" }
     runOnMainSync { configBusy.value = false }
     frames(host)
-    click("保存")
+    click(add)
     frames(host)
     check(savedConfigs.last() == role.copy(id = "100000002", label = "第二角色").key to "DARK")
     check(dialog.value.isEmpty())

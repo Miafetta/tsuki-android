@@ -87,8 +87,10 @@ class ProbeManifestTest : WidgetResourceFixture() {
             assertTrue(receiver.children("action").any { it.attr("name") == "miui.appwidget.action.APPWIDGET_UPDATE" })
         }
         assertFalse(File(System.getProperty("tsuki.projectDir"), "src/main/res/layout/activity_main.xml").exists())
+        // Reminders add exactly two (docs/DEVELOPMENT_CONSTRAINTS.md §2).
         assertEquals(listOf("com.android.launcher.permission.INSTALL_SHORTCUT", "android.permission.INTERNET",
-            "android.permission.ACCESS_NETWORK_STATE"),
+            "android.permission.ACCESS_NETWORK_STATE", "android.permission.POST_NOTIFICATIONS",
+            "android.permission.RECEIVE_BOOT_COMPLETED"),
             manifest.children("uses-permission").map { it.attr("name") })
     }
 
@@ -132,10 +134,13 @@ class ProbeManifestTest : WidgetResourceFixture() {
         val manifest = xml("AndroidManifest.xml")
         val application = manifest.children("application").single()
         assertEquals("false", application.attr("usesCleartextTraffic"))
-        val service = manifest.children("service").single()
-        assertEquals("false", service.attr("exported"))
-        assertEquals("android.permission.BIND_JOB_SERVICE", service.attr("permission"))
-        assertEquals(":widgetProvider", service.attr("process"))
+        val services = manifest.children("service")
+        assertEquals(listOf(".widget.WidgetRefreshJob", ".widget.ReminderJob"), services.map { it.attr("name") })
+        for (service in services) {
+            assertEquals("false", service.attr("exported"))
+            assertEquals("android.permission.BIND_JOB_SERVICE", service.attr("permission"))
+            assertEquals(":widgetProvider", service.attr("process"))
+        }
         assertEquals("false", manifest.children("activity").single {
             it.attr("name").endsWith("SklandAccountActivity") }.attr("exported"))
         val screen = File(System.getProperty("tsuki.projectDir"), "src/main/java/cafe/miafetta/tsuki/ui/pages/AccountEditor.kt").readText()

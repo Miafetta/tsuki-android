@@ -58,6 +58,15 @@ class WidgetRoleKeyTest {
         assertEquals("000000001", endfield.displayId)
     }
 
+    @Test fun aReminderRoleMapsToTheSameKeyAsTheListedRole() {
+        // A reminder notification names its role by IDs only; the overview must find the listed role by that key.
+        val arknights = UiRole("a", "", "000000001", "测试博士 · 官服 · 000000001")
+        assertEquals(arknights.key, roleKey(SklandArknightsAdapter.ID, "a", "000000001"))
+        val endfield = UiRole("a", "", "1~000000001", "测试管理员", "skland.endfield", "官服")
+        assertEquals(endfield.key, roleKey("skland.endfield", "a", "1~000000001"))
+        assertNotEquals(roleKey(SklandArknightsAdapter.ID, "a", "1"), roleKey("skland.endfield", "a", "1"))
+    }
+
     private fun role(account: String, id: String) = UiRole(account, "账号", id, "角色")
 
     private fun widget(id: Int, account: String, roleId: String) =

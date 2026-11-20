@@ -340,3 +340,4 @@ cafe.miafetta.tsuki:drawable/widget_endfield_band_word = 0x7f040043
 cafe.miafetta.tsuki:id/endfield_band_frame = 0x7f0500cd
 cafe.miafetta.tsuki:id/endfield_band_marks = 0x7f0500ce
 cafe.miafetta.tsuki:id/endfield_band_word = 0x7f0500cf
+cafe.miafetta.tsuki:drawable/ic_reminder = 0x7f04000b

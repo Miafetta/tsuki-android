@@ -55,7 +55,7 @@ private fun saveChange(runner: WidgetRenderInstrumentation, host: MainActivity, 
     val result = editorResult(runner, host, id) {
         clickLabel(runner, row)
         clickLabel(runner, value)
-        clickLabel(runner, "保存")
+        clickLabel(runner, ApplyLabel)
     }
     check(result.resultCode == Activity.RESULT_OK) { "Saving $row=$value returned ${result.resultCode}" }
     check(result.data?.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, -1) == id) { "Save did not return the widget id" }

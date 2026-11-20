@@ -4,6 +4,7 @@ import cafe.miafetta.tsuki.ui.components.TrainingPortrait
 import cafe.miafetta.tsuki.ui.components.EmptyGuide
 import cafe.miafetta.tsuki.ui.components.MetricCard
 import cafe.miafetta.tsuki.ui.components.MetricRow
+import cafe.miafetta.tsuki.ui.components.PageListSpacing
 import cafe.miafetta.tsuki.ui.components.RoleCard
 import cafe.miafetta.tsuki.ui.components.TrainingCard
 import cafe.miafetta.tsuki.ui.components.TsukiSmallTitle
@@ -51,7 +52,7 @@ internal fun LazyListScope.homePage(roles: List<UiRole>, selected: UiRole?, snap
         return
     }
     fadeItem("realtime") { Column {
-        TsukiSmallTitle("实时数据", Modifier.testTag("section-title:realtime"))
+        TsukiSmallTitle("实时数据", Modifier.testTag("section-title:realtime"), spacingAbove = PageListSpacing)
         MetricCard("理智", dashboardMetric(snapshot, "理智"), dashboardDetail(snapshot, "理智", now) ?: "未知",
             recoveryClock(dashboardMetric(snapshot, "理智")?.recoveryAt, now))
     } }
@@ -65,7 +66,7 @@ internal fun LazyListScope.homePage(roles: List<UiRole>, selected: UiRole?, snap
             label, now)) }
     } }
     fadeItem("building") { Column {
-        TsukiSmallTitle("基建数据", Modifier.testTag("section-title:building"))
+        TsukiSmallTitle("基建数据", Modifier.testTag("section-title:building"), spacingAbove = PageListSpacing)
         MetricCard("无人机", dashboardMetric(snapshot, "无人机"), dashboardDetail(snapshot, "无人机", now) ?: "未知",
             recoveryClock(dashboardMetric(snapshot, "无人机")?.recoveryAt, now))
     } }

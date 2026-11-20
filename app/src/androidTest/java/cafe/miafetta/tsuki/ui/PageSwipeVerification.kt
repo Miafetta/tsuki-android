@@ -14,10 +14,11 @@ internal class PageSwipeVerification(private val runner: WidgetRenderInstrumenta
         click("Overview tab") { it.config.getOrNull(SemanticsProperties.TestTag) == "nav-tab:0" }
         swipe(toNext = true)
         click("Add") { it.config.getOrNull(SemanticsProperties.ContentDescription)?.contains("添加") == true }
-        check(texts().any { it == "添加小部件" }) { "Add did not open the widget editor after swiping to Widgets (dock tab ${selectedTab()})" }
+        // The new-widget sheet: its main button reads 添加到桌面 and its head has 返回.
+        check(texts().any { it == "添加到桌面" }) { "Add did not open the widget editor after swiping to Widgets (dock tab ${selectedTab()})" }
         check(selectedTab() == 1) { "Dock still selects tab ${selectedTab()} after swiping to Widgets" }
-        click("Close") { it.config.getOrNull(SemanticsProperties.ContentDescription)?.contains("关闭") == true }
-        check(texts().none { it == "添加小部件" }) { "Widget editor did not close" }
+        click("Back") { it.config.getOrNull(SemanticsProperties.ContentDescription)?.contains("返回") == true }
+        check(texts().none { it == "添加到桌面" }) { "Widget editor did not close" }
         swipe(toNext = false)
         check(selectedTab() == 0) { "Dock still selects tab ${selectedTab()} after swiping back to Overview" }
         return "PASS: swiping to Widgets selects its dock tab and Add opens the editor; swiping back selects Overview"

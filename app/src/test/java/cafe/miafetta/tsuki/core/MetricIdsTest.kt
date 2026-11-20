@@ -1,8 +1,8 @@
 package cafe.miafetta.tsuki.core
 
+import cafe.miafetta.tsuki.providers.ARKNIGHTS_SOURCE_IDS
 import cafe.miafetta.tsuki.providers.EndfieldParser
-import cafe.miafetta.tsuki.providers.FakeArknightsAdapter
-import cafe.miafetta.tsuki.providers.SklandArknightsAdapter
+import cafe.miafetta.tsuki.providers.isArknightsSource
 import java.io.File
 import java.util.Properties
 import org.json.JSONArray
@@ -19,7 +19,7 @@ class MetricIdsTest {
     private fun repository() = FileWidgetRepository(directory.root)
     private fun stored() = Properties().apply { file.inputStream().use { load(it) } }
     // Callers pick the label fallback by the record's data source.
-    private fun WidgetRecord.stableIds() = snapshot!!.metrics.map { it.stableId(config.providerId in ARKNIGHTS_SOURCES) }
+    private fun WidgetRecord.stableIds() = snapshot!!.metrics.map { it.stableId(isArknightsSource(config.providerId)) }
 
     @Test fun snapshotsWithoutIdsResolveArknightsMetricsByLabel() {
         // A metric as 2.1.1 stored it: no "id" key, and an old short label.
@@ -81,8 +81,14 @@ class MetricIdsTest {
         assertTrue(stored().stringPropertyNames().none { it.endsWith(".id") })
     }
 
+    @Test fun arknightsSourcesAreTheSklandAdapterAndTheDebugFixture() {
+        assertEquals(setOf("skland", "fake.skland"), ARKNIGHTS_SOURCE_IDS)
+        assertTrue(ARKNIGHTS_SOURCE_IDS.all(::isArknightsSource))
+        assertFalse(isArknightsSource(ENDFIELD))
+    }
+
     @Test fun arknightsRecordsWrittenWithoutIdsStillResolveByLabel() {
-        for (source in ARKNIGHTS_SOURCES) {
+        for (source in ARKNIGHTS_SOURCE_IDS) {
             writeAsInstalled(source, "skland.arknights.status", "000000001", listOf("理智", "休息", "未知指标"))
             val record = repository().read(10)!!
             assertEquals(List(3) { null }, record.snapshot!!.metrics.map { it.metricId })
@@ -122,6 +128,5 @@ class MetricIdsTest {
 
     private companion object {
         const val ENDFIELD = "skland.endfield"
-        val ARKNIGHTS_SOURCES = setOf(SklandArknightsAdapter.ID, FakeArknightsAdapter.ID)
     }
 }

@@ -17,8 +17,7 @@ internal fun interface SklandTransport {
 
 internal class SklandHttpsTransport : SklandTransport {
     override fun request(pathAndQuery: String, headers: Map<String, String>): SklandResponse {
-        require(pathAndQuery.substringBefore('?') in setOf("/api/v1/auth/refresh", "/api/v1/game/player/binding",
-            "/api/v1/game/player/info", "/api/v1/user/teenager", "/web/v1/game/endfield/card/detail"))
+        require(pathAndQuery.substringBefore('?') in SklandClient.PATHS)
         val connection = URI("https://zonai.skland.com$pathAndQuery").toURL().openConnection() as HttpURLConnection
         try {
             connection.instanceFollowRedirects = false
@@ -106,6 +105,10 @@ internal class SklandClient(private val transport: SklandTransport,
         return signed(cred, "/web/v1/game/endfield/card/detail?$query")
     }
 
+    // The Skland account's own nickname, offered as the optional account name; never a game role's nickname. The
+    // response is the whole profile, so only data.user.nickname is read and nothing else of it is kept.
+    @Synchronized fun nickname(cred: String): String? = parseNickname(signed(cred, "/api/v1/user"))
+
     private fun userId(cred: String): String = try {
         signed(cred, "/api/v1/user/teenager").getJSONObject("teenager").getString("userId")
             .also { require(it.matches(Regex("[0-9]{1,20}"))) }
@@ -165,7 +168,19 @@ internal class SklandClient(private val transport: SklandTransport,
     }
 
     companion object {
+        // The only paths SklandHttpsTransport may request; the query is not part of the check.
+        val PATHS = setOf("/api/v1/auth/refresh", "/api/v1/game/player/binding", "/api/v1/game/player/info",
+            "/api/v1/user", "/api/v1/user/teenager", "/web/v1/game/endfield/card/detail")
+        // Account names are limited to this many characters where they are saved (WidgetRuntime.login).
+        const val NAME_LIMIT = 40
+
         fun validateCred(cred: String) { require(cred.matches(Regex("[!-~]{10,4096}"))) { "Invalid credential" } }
+
+        // A nickname that is missing, not a string or blank after cleaning gives null: the account then stays unnamed.
+        fun parseNickname(data: JSONObject): String? {
+            val value = data.optJSONObject("user")?.opt("nickname") as? String ?: return null
+            return value.filterNot { it.isISOControl() }.trim().take(NAME_LIMIT).trim().ifEmpty { null }
+        }
 
         fun parseRoles(data: JSONObject): List<SklandRole> = try { SklandRoles.parse(data) }
         catch (_: org.json.JSONException) { throw DataSourceFailure(RefreshFailure.INVALID_DATA) }

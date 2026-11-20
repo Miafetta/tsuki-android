@@ -28,7 +28,7 @@ Files left by earlier runs stay on the device.
 param(
     [string]$Serial,
     [string[]]$Scenarios = @('render', 'appUi', 'lifecycle', 'read-lifecycle', 'session-restore', 'widget-editor',
-        'widget-navigation', 'top-refresh', 'errors', 'menu', 'dock', 'widget-tabs', 'page-swipe'),
+        'widget-navigation', 'top-refresh', 'errors', 'menu', 'dock', 'widget-tabs', 'page-swipe', 'reminders'),
     [string]$OutputDirectory,
     [switch]$SkipInstall,
     [string]$RestoreRelease,
@@ -56,9 +56,10 @@ $catalog = [ordered]@{
 # palette and role, then restores the original configuration and verifies it.
 # web-login* are opt-in: they load the official start page without signing in. web-login-kill ends by killing the app
 # process with the login page open, so its instrumentation reports a crash; run web-login-after-kill right after it.
+# reminders is read-only: it opens the reminder settings over in-memory samples and refuses every reminder write.
 foreach ($name in @('read-lifecycle', 'session-restore', 'widget-editor', 'widget-editor-save', 'widget-editor-change',
-    'widget-navigation', 'top-refresh', 'errors', 'menu', 'page-swipe', 'dock', 'widget-tabs', 'web-login', 'web-login-kill',
-    'web-login-after-kill')) {
+    'widget-navigation', 'top-refresh', 'errors', 'menu', 'page-swipe', 'dock', 'widget-tabs', 'reminders', 'web-login',
+    'web-login-kill', 'web-login-after-kill')) {
     $catalog[$name] = @('redesignV4', $name)
 }
 

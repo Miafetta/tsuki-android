@@ -143,18 +143,22 @@ private fun AppUiVerification.redesignConfigMenus(host: Activity, folder: File) 
     frames(host)
     assertMenu(true)
     val menu = assertMenuInside(host)
-    // Field menus reach 14dp past the value's centre line and align with its end (the row's 16dp inner margin).
+    // Field menus reach 14dp past the value's centre line, downward or, without room below, upward, and align with its end
+    // (the row's inner margin, which the widget sheet sets to WidgetSheetInset so its rows span the sheet). In the
+    // full-height widget sheet the palette row may have room either way.
     val dp = host.resources.displayMetrics.density
-    check(menu.top < anchor.top && kotlin.math.abs(menu.bottom - anchor.centerY() - 14 * dp) <= 2 * dp &&
-        kotlin.math.abs(anchor.right - menu.right - 16 * dp) <= 2 * dp) {
-        "Bottom menu did not open upward over the value: $menu / $anchor"
+    val reach = if (menu.top < anchor.top) menu.bottom - anchor.centerY() else anchor.centerY() - menu.top
+    val end = cafe.miafetta.tsuki.ui.components.WidgetSheetInset.value * dp
+    check(kotlin.math.abs(reach - 14 * dp) <= 2 * dp && kotlin.math.abs(anchor.right - menu.right - end) <= 2 * dp) {
+        "Field menu did not reach 14dp past the value's centre line: $menu / $anchor"
     }
     capture(folder, "13-palette-menu-light")
     click("深色")
     frames(host)
     assertMenu(false)
     runOnMainSync { check(composeNodes(host).any { it.config.getOrNull(SemanticsProperties.TestTag) == "config-preview:DARK" }) }
-    click("关闭")
+    // The new-widget sheet's head has 返回 where the edit head has 关闭.
+    click("返回")
     frames(host)
 }
 

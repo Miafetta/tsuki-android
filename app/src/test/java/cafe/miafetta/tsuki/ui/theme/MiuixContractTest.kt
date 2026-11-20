@@ -70,7 +70,7 @@ class MiuixContractTest {
 
     @Test fun navigationRestoresAllRoutesAndDraftNeverSavesCredentials() {
         val routes: List<AppRoute> = listOf(AppRoute.Root, AppRoute.Privacy, AppRoute.Licenses, AppRoute.AddAccount,
-            AppRoute.SelectPlatform, AppRoute.WebLogin)
+            AppRoute.SelectPlatform, AppRoute.WebLogin, AppRoute.Reminders, AppRoute.ReminderAccount("account-1"))
         assertEquals(routes, Json.decodeFromString<List<AppRoute>>(Json.encodeToString(routes)))
         // rememberNavController picks its saved-state serializer from the type argument; inferred from AppRoute.Root it
         // restores every entry as Root and NavDisplay crashes on the duplicate key after a recreation.

@@ -15,6 +15,9 @@ import cafe.miafetta.tsuki.core.DataSourceFailure
 import cafe.miafetta.tsuki.core.SnapshotJson
 import cafe.miafetta.tsuki.core.WidgetInstanceConfig
 import cafe.miafetta.tsuki.core.WidgetTheme
+import cafe.miafetta.tsuki.core.reminder.ReminderMode
+import cafe.miafetta.tsuki.core.reminder.ReminderRule
+import cafe.miafetta.tsuki.core.reminder.ReminderSubject
 import cafe.miafetta.tsuki.providers.OfficialAvatars
 import org.json.JSONArray
 import org.json.JSONObject
@@ -40,6 +43,9 @@ class WidgetStorageProvider : ContentProvider() {
                 Storage.REVERIFY -> Bundle().also {
                     runtime.reverify(requireNotNull(extras?.getString(Storage.ACCOUNT_ID)), requireNotNull(extras.getString(Storage.NAME)))
                 }
+                Storage.PLATFORM_NAME -> Bundle().apply {
+                    putString(Storage.NAME, runtime.platformName(requireNotNull(extras?.getString(Storage.CRED))))
+                }
                 Storage.LOGOUT -> Bundle().also { runtime.logout(requireNotNull(extras?.getString(Storage.ACCOUNT_ID))) }
                 Storage.RESET_ACCOUNTS -> Bundle().also { runtime.resetAccounts() }
                 Storage.PREPARE_PIN -> Bundle().also {
@@ -51,6 +57,8 @@ class WidgetStorageProvider : ContentProvider() {
                         extras?.takeIf { it.containsKey(Storage.PIN_CANCEL_BEFORE) }?.getLong(Storage.PIN_CANCEL_BEFORE))
                 }
                 Storage.CONFIGURE -> configure(context, runtime, extras)
+                Storage.REMINDERS, Storage.SAVE_REMINDER, Storage.DELETE_REMINDER, Storage.SET_REMINDERS_ENABLED ->
+                    reminders(runtime, method, extras)
                 else -> throw IllegalArgumentException("Unsupported storage operation")
             }
         } catch (failure: DataSourceFailure) {
@@ -110,7 +118,7 @@ class WidgetStorageProvider : ContentProvider() {
         require(source == null || source.length <= 128 * 1024)
         val snapshot = source?.let { SnapshotJson.read(JSONObject(it)) }
         val theme = WidgetTheme.valueOf(requireNotNull(extras?.getString(Storage.THEME)))
-        val feature = extras?.getString(Storage.FEATURE_ID) ?: WidgetRuntime.FEATURE
+        val feature = extras.getString(Storage.FEATURE_ID) ?: WidgetRuntime.FEATURE
         return Bundle().apply { putParcelable(Storage.BITMAP, runtime.preview(snapshot, theme, feature)) }
     }
 
@@ -132,6 +140,18 @@ class WidgetStorageProvider : ContentProvider() {
         if (token == null) runtime.configure(extras.widgetConfig(id))
         else runtime.configurePin(extras.widgetConfig(id), token)
         return Bundle()
+    }
+
+    // Rules are checked where they are saved (WidgetRuntimeReminders.kt); an invalid rule is an invalid request.
+    private fun reminders(runtime: WidgetRuntime, method: String, extras: Bundle?): Bundle {
+        val data = when (method) {
+            Storage.SAVE_REMINDER -> runtime.saveReminder(requireNotNull(extras).reminderRule())
+            Storage.DELETE_REMINDER -> runtime.deleteReminder(requireNotNull(extras).reminderSubject(),
+                requireNotNull(extras.getString(Storage.METRIC_ID)))
+            Storage.SET_REMINDERS_ENABLED -> runtime.setRemindersEnabled(requireNotNull(extras).flag(Storage.ENABLED))
+            else -> runtime.reminderData()
+        }
+        return Bundle().apply { putString(Storage.JSON, ReminderAccess.overview(data).toString()) }
     }
 
     private fun errorBundle(failure: String? = null) = Bundle().apply {
@@ -156,3 +176,16 @@ private fun Bundle.widgetConfig(id: Int) = WidgetInstanceConfig(id,
     requireNotNull(getString(Storage.PROVIDER_ID)), requireNotNull(getString(Storage.FEATURE_ID)),
     requireNotNull(getString(Storage.ACCOUNT_ID)), requireNotNull(getString(Storage.CHARACTER_ID)),
     WidgetTheme.valueOf(requireNotNull(getString(Storage.THEME))), getBoolean(Storage.SIMULATE_FAILURE))
+
+private fun Bundle.reminderSubject() = ReminderSubject(requireNotNull(getString(Storage.PROVIDER_ID)),
+    requireNotNull(getString(Storage.ACCOUNT_ID)), requireNotNull(getString(Storage.CHARACTER_ID)))
+
+// A threshold is sent only for the modes that take one; the switch of the rule must always be sent.
+private fun Bundle.reminderRule() = ReminderRule(reminderSubject(), requireNotNull(getString(Storage.METRIC_ID)),
+    ReminderMode.valueOf(requireNotNull(getString(Storage.MODE))),
+    if (containsKey(Storage.THRESHOLD)) getInt(Storage.THRESHOLD) else null, flag(Storage.ENABLED))
+
+private fun Bundle.flag(key: String): Boolean {
+    require(containsKey(key))
+    return getBoolean(key)
+}

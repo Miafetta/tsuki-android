@@ -69,6 +69,7 @@ internal fun AppUiVerification.verifyTrainingCards(host: Activity, folder: File)
                 }
                 checkTraineeName(all, slot, sample, index)
                 if (sample.traineeId != null) checkTrainingDetail(host, tagged("metric-detail:训练室"), slot)
+                if (sample.state == TrainingState.PAUSED) checkLegacyPaused(sample, tagged("metric-detail:训练室"))
             }
             if (index in listOf(0, 1, 2, 5)) capture(folder, "training-${palette.lowercase()}-$scale-$index")
             cases++
@@ -114,6 +115,14 @@ private fun checkTrainingDetail(host: Activity, detail: SemanticsNode, slot: and
     check(kotlin.math.abs(gap - 8 * host.resources.displayMetrics.widthPixels / 360f) <= 1) {
         "Training detail is not 8dp below the fixed name slot"
     }
+}
+
+// PAUSED is only read back from snapshots of earlier versions; a specialisation cannot pause, so it shows as unknown.
+private fun checkLegacyPaused(sample: WidgetTraining, detail: SemanticsNode) {
+    val now = System.currentTimeMillis()
+    check(sample.status(now) == "未知" && sample.time(now) == "时间未知") { "Paused training does not read as unknown" }
+    val text = detail.config.getOrNull(SemanticsProperties.Text)?.joinToString("") { it.text }
+    check(text == "专精时间未知") { "Paused training detail is $text" }
 }
 
 internal fun AppUiVerification.scrollToTag(host: Activity, tag: String, pageIndex: Int = 0) {

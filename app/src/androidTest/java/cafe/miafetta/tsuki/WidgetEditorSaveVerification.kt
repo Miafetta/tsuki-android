@@ -20,7 +20,7 @@ internal fun widgetEditorSaveVerification(runner: WidgetRenderInstrumentation, h
     val id = StatusWidgetProvider.owned(context).firstOrNull { readConfig(runner, it) != null }
         ?: error("Requires an existing configured widget; this test never creates one")
     val before = checkNotNull(readConfig(runner, id))
-    val saved = editorResult(runner, host, id) { clickLabel(runner, "保存") }
+    val saved = editorResult(runner, host, id) { clickLabel(runner, ApplyLabel) }
     check(saved.resultCode == Activity.RESULT_OK) { "Save returned ${saved.resultCode}" }
     check(saved.data?.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, -1) == id) { "Save did not return the widget id" }
     check(readConfig(runner, id) == before) { "Saving an unchanged editor changed the stored configuration" }
@@ -32,7 +32,10 @@ internal fun widgetEditorSaveVerification(runner: WidgetRenderInstrumentation, h
     return "PASS: unchanged save returns RESULT_OK with the widget id and keeps the stored config; close and Back return RESULT_CANCELED"
 }
 
-// readConfig, editorResult and clickLabel are shared with WidgetEditorChangeVerification.
+// readConfig, editorResult, clickLabel and ApplyLabel are shared with WidgetEditorChangeVerification.
+// The edit sheet's main button, which saves the instance's configuration.
+internal const val ApplyLabel = "应用"
+
 internal fun readConfig(runner: WidgetRenderInstrumentation, id: Int) =
     FileWidgetRepository(File(runner.targetContext.noBackupFilesDir, "widgets")).read(id)?.config
 
@@ -53,7 +56,7 @@ internal fun editorResult(runner: WidgetRenderInstrumentation, host: MainActivit
         }
         val editor = runner.waitForMonitorWithTimeout(editorMonitor, 10_000)
         checkNotNull(editor) { "Editor did not open" }
-        awaitLabel(runner, "保存")
+        awaitLabel(runner, ApplyLabel)
         action()
         check(done.await(10, TimeUnit.SECONDS)) { "Editor returned no result" }
         val deadline = android.os.SystemClock.uptimeMillis() + 5000

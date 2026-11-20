@@ -5,6 +5,7 @@ import cafe.miafetta.tsuki.ui.theme.Branding
 
 import cafe.miafetta.tsuki.ui.components.GameTabs
 import cafe.miafetta.tsuki.ui.components.LocalPagerSwipeGuard
+import cafe.miafetta.tsuki.ui.components.PageListSpacing
 import cafe.miafetta.tsuki.ui.components.PagerSwipeGuard
 import cafe.miafetta.tsuki.ui.components.ScrollToTopEffect
 import cafe.miafetta.tsuki.ui.components.pagerSwipeGuard
@@ -56,7 +57,7 @@ import top.yukonga.miuix.kmp.utils.*
 internal fun AppScaffold(page: Int, modifier: Modifier = Modifier, canRefresh: Boolean = false,
     showRefresh: Boolean = canRefresh, onRefresh: () -> Unit = {},
     onNavigate: (Int) -> Unit = {}, onAdd: () -> Unit = {}, addButtonVisible: Boolean = true,
-    blurEnabled: Boolean = true, glassActive: Boolean = true, refreshing: Boolean = false,
+    blurEnabled: Boolean = true, active: Boolean = true, glassActive: Boolean = active, refreshing: Boolean = false,
     appearanceIndex: Int? = null, scrollToAppearance: Boolean = false,
     games: List<Pair<String, String>> = listOf(Branding.GAME_ID to Branding.GAME), selectedGameId: String = Branding.GAME_ID,
     onGameSelect: (String) -> Unit = {}, overlays: @Composable () -> Unit = {}, content: LazyListScope.(Int) -> Unit) {
@@ -82,7 +83,7 @@ internal fun AppScaffold(page: Int, modifier: Modifier = Modifier, canRefresh: B
         }
     }
     // HyperOS 4 status bar tap: the shown tab's list back to its first item and its large title expanded.
-    ScrollToTopEffect(glassActive, canScrollUp = {
+    ScrollToTopEffect(active, canScrollUp = {
         val shown = pager.currentPage
         lists[shown].firstVisibleItemIndex > 0 || lists[shown].firstVisibleItemScrollOffset > 0 ||
             behaviors[shown].state.heightOffset < 0f
@@ -221,7 +222,7 @@ private fun AppPager(pager: PagerState, lists: List<LazyListState>, behaviors: L
                 .overScrollVertical().nestedScroll(behaviors[index].nestedScrollConnection),
                 state = lists[index], overscrollEffect = null,
                 contentPadding = PaddingValues(start = 12.dp, end = 12.dp, top = contentTop, bottom = navBottom + 100.dp),
-                verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                verticalArrangement = Arrangement.spacedBy(PageListSpacing)) {
                 if (index == AppPage.OVERVIEW) item("game-chips-slot") { Spacer(Modifier.height(GameChipSlot)) }
                 content(index)
             }

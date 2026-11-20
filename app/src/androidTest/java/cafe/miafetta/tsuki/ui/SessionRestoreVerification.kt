@@ -96,7 +96,8 @@ internal class SessionRestoreVerification(private val runner: WidgetRenderInstru
         recreate()
         check(selectedTab() == "nav-tab:1") { "Page lost on recreation" }
         check(sheetOpen()) { "Config sheet lost on recreation" }
-        click("关闭")
+        // Add opens the new-widget sheet, whose head has 返回.
+        click("返回")
         check(!sheetOpen()) { "Config sheet did not close" }
         click("概览")
         check(showsText("UID 2")) { "Selected role lost on recreation" }

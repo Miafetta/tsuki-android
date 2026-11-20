@@ -10,6 +10,8 @@ import cafe.miafetta.tsuki.ui.theme.TsukiAppTheme
 
 import cafe.miafetta.tsuki.ui.pages.LicensesPage
 import cafe.miafetta.tsuki.ui.pages.PrivacyPage
+import cafe.miafetta.tsuki.ui.pages.ReminderAccountPage
+import cafe.miafetta.tsuki.ui.pages.RemindersPage
 
 import android.app.Activity
 import androidx.compose.runtime.*
@@ -21,13 +23,15 @@ import cafe.miafetta.tsuki.*
 import top.yukonga.miuix.kmp.basic.*
 import top.yukonga.miuix.kmp.nav.core.*
 
-// overviewWidgetId is the desktop widget whose tap started this launch; the overview switches to its role once.
+// overviewWidgetId is the desktop widget whose tap started this launch, overviewRoleKey the role of the reminder
+// notification that did; the overview switches to that role once.
 @Composable
 internal fun TsukiApp(activity: Activity, initialPage: Int, resumeTick: Int,
-    configuringId: Int? = null, overviewWidgetId: Int? = null, onConfigured: () -> Unit = {},
+    configuringId: Int? = null, overviewWidgetId: Int? = null, overviewRoleKey: String? = null, onConfigured: () -> Unit = {},
     onConfigurationClosed: () -> Unit = {}) {
     BrandLogos.preloadAsync(activity.resources)
-    val controller = rememberAppController(activity, initialPage, resumeTick, configuringId, overviewWidgetId, onConfigured)
+    val controller = rememberAppController(activity, initialPage, resumeTick, configuringId, overviewWidgetId, overviewRoleKey,
+        onConfigured)
     val lifecycle = LocalLifecycleOwner.current.lifecycle
     with(controller) {
         LaunchedEffect(state, lifecycle) {
@@ -47,6 +51,15 @@ internal fun TsukiApp(activity: Activity, initialPage: Int, resumeTick: Int,
                 }
                 entry<AppRoute.Privacy> { PrivacyPage(blur) { nav.pop() } }
                 entry<AppRoute.Licenses> { LicensesPage(blur) { nav.pop() } }
+                entry<AppRoute.Reminders> {
+                    RemindersPage(state.reminders, state.accounts, blur, onAccount = { account ->
+                        if (nav.backStack.lastOrNull() == AppRoute.Reminders) nav.push(AppRoute.ReminderAccount(account.id))
+                    }) { nav.pop() }
+                }
+                entry<AppRoute.ReminderAccount> { route ->
+                    ReminderAccountPage(state.reminders, state.accounts.firstOrNull { it.id == route.accountId }, state.loaded,
+                        blur, onGone = { if (nav.backStack.lastOrNull() == route) nav.pop() }) { nav.pop() }
+                }
                 entry<AppRoute.AddAccount> {
                     val transition = LocalNavTransitionScope.current
                     AccountEditor(activity, state.busy, state.error,
@@ -61,7 +74,7 @@ internal fun TsukiApp(activity: Activity, initialPage: Int, resumeTick: Int,
                         pageProgress = if (transition.isRunning || transition.relativeDepth != 0f) 0f else 1f,
                         onPlatform = { if (AppRoute.SelectPlatform !in nav.backStack) nav.push(AppRoute.SelectPlatform) },
                         onWebLogin = { if (AppRoute.WebLogin !in nav.backStack) nav.push(AppRoute.WebLogin) },
-                        onMessage = { state.messages.send(it) })
+                        onMessage = { state.messages.send(it) }, lookupName = state::platformName)
                 }
                 entry<AppRoute.SelectPlatform> { PlatformSelector(state.busy, blur) { if (!state.busy) nav.pop() } }
                 entry<AppRoute.WebLogin> {

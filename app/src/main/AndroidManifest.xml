@@ -3,6 +3,8 @@
     <uses-permission android:name="com.android.launcher.permission.INSTALL_SHORTCUT" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <application
         android:allowBackup="false"
         android:fullBackupContent="false"
@@ -23,6 +25,8 @@
         </activity>
         <activity android:name=".SklandAccountActivity" android:exported="false" />
         <service android:name=".widget.WidgetRefreshJob" android:exported="false"
+            android:permission="android.permission.BIND_JOB_SERVICE" android:process=":widgetProvider" />
+        <service android:name=".widget.ReminderJob" android:exported="false"
             android:permission="android.permission.BIND_JOB_SERVICE" android:process=":widgetProvider" />
         <activity android:name=".WidgetConfigActivity" android:exported="true">
             <intent-filter>

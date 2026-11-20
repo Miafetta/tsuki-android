@@ -22,7 +22,7 @@ internal fun PlatformSelector(busy: Boolean, blurEnabled: Boolean = true, onBack
     // Controls keep their normal look during the slide-in; input is blocked then and clicks wait for an active page.
     SecondaryScaffold("选择平台", blurEnabled, active, onBack, backEnabled = !busy,
         modifier = Modifier.testTag("platform-selector-page"), contentPadding = PaddingValues(horizontal = 12.dp)) {
-        TsukiSmallTitle("平台")
+        TsukiSmallTitle("平台", first = true)
         Card {
             RadioButtonPreference(title = Branding.PLATFORM, selected = true, enabled = !busy,
                 onClick = { if (active) onBack() },

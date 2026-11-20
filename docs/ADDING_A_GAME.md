@@ -10,7 +10,8 @@
 | 平台与账号 | 实例级的账号／角色绑定（`WidgetInstanceConfig`）；森空岛绑定列表按游戏解析（`SklandGame`、`SklandRoles`）；角色缓存、界面角色键与选中角色都带数据源 ID | 账号仓库只存森空岛账号；应用界面只列出 `AppState` 中 `SHOWN_PROVIDERS` 的游戏 |
 | 数据模型 | `WidgetSnapshot`、`WidgetMetric`（含稳定的 `metricId`） | 只属于《明日方舟》的 `WidgetTraining`，以及 `core/Dashboard.kt` 中它的指标标签与重置规则 |
 | 桌面小部件 | 曝光刷新、后台任务、添加流程（`PinWidgetReceiver`）；Provider 按功能与配色选择（`StatusWidgetProvider.providerClass`、`feature`、`theme`）；`StatusWidgetRenderer` 按实例的功能选择卡片 | 每款游戏自己的 Provider 子类、布局与卡片渲染（方舟：浅色与深色两个 Provider、`status_widget_*` 与 `StatusWidgetRenderer`；终末地：一个固定深色的 Provider、`endfield_widget*` 与 `EndfieldCard`） |
-| 应用界面 | `GameTabs` 的标签 ID 与选择回调、`Branding`、`WidgetPreviewStage`；部件页按 `widgetCatalog` 列出所有游戏的部件 | 各游戏的概览卡片与指标顺序（方舟在 `OverviewPage.kt`，终末地在 `EndfieldOverview.kt`） |
+| 应用界面 | `GameTabs` 的标签 ID 与选择回调、`Branding`、部件页条目 `WidgetGalleryItem` 与部件面板 `WidgetSheet`（预览经 `WidgetPreviewImage`）；部件页按 `widgetCatalog` 列出所有游戏的部件 | 各游戏的概览卡片与指标顺序（方舟在 `OverviewPage.kt`，终末地在 `EndfieldOverview.kt`） |
+| 通知提醒 | 判定器与调度（`core/reminder`、`ReminderPlanner`）、提醒文件与 IPC、唯一的提醒任务、新快照的校准；设置页按指标 ID 前缀列出各游戏的指标；每款森空岛游戏一个通知渠道 | 该游戏在 `ReminderCapabilities` 中登记的指标与模式、`ReminderObservations` 中的读取函数、`SklandGame` 的 `displayName`、`ReminderNotifications.title` 中角色名的取法 |
 
 已规划的功能标识（`featureId`）：
 
@@ -37,7 +38,7 @@
 
 - **数据源 ID**（`providerId`）：格式为 `<平台>.<游戏>`，例如 `skland.endfield`。森空岛游戏在 `SklandGame` 中登记（终末地是 `SklandGame.ENDFIELD.providerId`；《明日方舟》沿用已安装版本写下的 `SklandArknightsAdapter.ID`，即 `skland`，不能改）；其他平台在适配器的伴生对象里定义 `const val ID`。其他地方只引用这个常量，不重复书写字符串。
 - **功能标识**（`featureId`）：取上表中的规划值，与 `WidgetRuntime.FEATURE` 并列定义。
-- **游戏标签 ID 与显示名**：写入 `ui/theme/GameBranding.kt` 的 `Branding`，界面上的游戏名只从这里取。
+- **游戏标签 ID 与显示名**：标签 ID 写入 `ui/theme/GameBranding.kt` 的 `Branding`；游戏名写在 `SklandGame` 的 `displayName`（其他平台写在对应的枚举里），界面经 `Branding` 引用它，提醒通知与通知渠道直接使用它，不另写一份。
 
 ### 3.2 实现数据源
 
@@ -62,7 +63,7 @@
   - 新的网络客户端与账号仓库。凭据继续用 `CredentialCipher` 加密，保存在 `noBackupFilesDir` 中。
   - 新的登录方法，在 `StorageContract` 中定义。
   - 平台选择页（`PlatformSelector`）中的新选项。
-  - 新的网络地址必须写进隐私说明（见 3.7）。
+  - 新的网络地址必须写进隐私说明（见 3.8）。
 
 ### 3.4 注册到运行时
 
@@ -79,7 +80,7 @@
 - 每款新游戏新增一个 `AppWidgetProvider` 子类，在 `AndroidManifest.xml` 中声明，运行在 `:widgetProvider` 进程。外观按下文随官方确定，不要求拆成浅色与深色两个部件；已发布的《明日方舟》Provider 保持兼容。小米桌面所需的 `meta-data` 参考现有 Receiver。
 - 把新 Provider 加入 `StatusWidgetProvider` 伴生对象中的 `providers` 列表，并在 `providerClass`、`themes`、`theme` 与 `feature` 中登记。`WidgetRuntime`、`WidgetStorageProvider` 与 `PinWidgetReceiver` 都通过 `owned()` 判断实例是否属于本应用，不在列表中的实例，刷新与配置都会被忽略；`WidgetStorageProvider` 只接受与实例 Provider 同一功能的配置。参考终末地的 `EndfieldWidgetProvider`。
 - 新增 `res/xml/<游戏>_widget_info.xml`、布局与资源，命名不能与 `status_widget_*` 冲突。`previewLayout` 用带中性示例数据的静态预览布局，`initialLayout` 用加载占位布局，参照 `status_widget_preview_*` 与 `status_widget_loading_*`。
-- 在 `strings.xml` 中新增小部件名称，沿用官方小组件的名称。外观照官方：官方固定一种外观就只做一个 Provider（例如终末地固定深色）；官方随系统外观切换，就做一个 Provider，用 `values-night` 资源跟随系统；不再像《明日方舟》那样拆成浅色、深色两个部件。部件页通过 `widgetName` 显示同一个名称，不要另写一份。
+- 在 `strings.xml` 中新增小部件名称，沿用官方小组件的名称。外观照官方：官方固定一种外观就只做一个 Provider（例如终末地固定深色）；官方随系统外观切换，就做一个 Provider，用 `values-night` 资源跟随系统；不再像《明日方舟》那样拆成浅色、深色两个部件（这两个部件为已放置的实例保留，名称都是官方的“明日方舟数据工具”，不加配色后缀）。部件页与部件面板通过 `widgetName` 显示同一个名称，不要另写一份。
 - 渲染逻辑放在新的 Renderer 中。`widget` 包不能引用 Compose 或 `ui` 包。
 - 首次发布后，把新资源的 ID 追加到 `app/widget-resource-ids.txt`，此后不再改变。
 
@@ -87,10 +88,21 @@
 
 - **游戏标签**：把新游戏加入 `Branding.games`（`AppRoot` 把它传给 `AppScaffold`），并把它的小部件加入同一文件的 `widgetCatalog`。只显示已经实现的游戏。
 - **概览**：按游戏拆分 `core/Dashboard.kt` 中的指标标签与说明函数。新游戏使用自己的卡片组合，界面规格遵守[界面设计约定](UI_DESIGN_CONVENTIONS.md)。
-- **部件页与配置面板**：全部小部件按游戏列出；配置面板的角色列表只显示所选游戏的角色。预览统一使用 `WidgetPreviewStage`。`AppConfigSheet` 按所选角色的数据源取功能标识（`WidgetRuntime.featureFor`）。
+- **部件页与部件面板**：全部小部件按游戏列出；部件面板的角色列表只显示所选游戏的角色。条目与面板统一使用 `WidgetGalleryItem`（放在 `WidgetGallery` 里）、`WidgetSheet`，不另写；新建面板的头部显示游戏标志与游戏名、部件名和描述，部件名与描述经 `widgetName`（`widgetNameRes`）、`widgetDescription` 取自 `strings.xml` 中桌面列表用的同一组字符串，新游戏要在这两个函数里接上。`AppConfigSheet` 按所选角色的数据源取功能标识（`WidgetRuntime.featureFor`）。
 - **品牌素材**：游戏与平台图标放在 `res/drawable-nodpi/`，在 `AppLogo` 中引用。
 
-### 3.7 隐私、许可与文档
+### 3.7 通知提醒
+
+提醒的调度边界见[开发约束 §2](DEVELOPMENT_CONSTRAINTS.md#2-进程边界)，数据流见[架构 §4](ARCHITECTURE_DECISIONS.md#4-后台提醒)。新游戏要做以下几件事：
+
+- **登记指标**：在 `core/reminder/ReminderCapabilities` 中登记这款游戏可以提醒的指标：指标 ID、名称、可选的模式、允许按已知时间推算的模式、计时方式（`ReminderTiming`）、恢复模型与通知文案。没有登记的指标不提供提醒。
+- **指标 ID 前缀**：指标 ID 的前缀必须是这款游戏在 `SklandGame` 中的 `appCode`（例如 `endfield.sanity` 对应 `endfield`）。设置页按前缀把指标归到各游戏，并按 `ReminderOptions.rows` 里的顺序逐行列出（新指标要加进这张表，`ReminderOptionsTest` 会检查登记表里的指标都在表中）；组件进程保存规则时也按前缀核对指标属于该角色的游戏。
+- **读取函数**：在 `core/ReminderObservations` 中为每个登记的指标写一个读取函数，把快照读成观测。`ReminderObservationsTest` 保证两边的指标集合一致，`ReminderCapabilitiesTest` 检查数据源仍然产生登记的每个指标 ID。
+- **游戏名与通知渠道**：`SklandGame` 的 `displayName` 用作通知标题里的游戏名和通知渠道名。`ReminderNotifier` 为 `SklandGame` 的每一项建一个渠道，ID 为 `reminder.<数据源 ID>`，发布后不再改变；`ReminderNotifications.title` 要为新游戏写出角色名的取法。
+- **校准与请求**：在 `WidgetRuntime` 中构造适配器时，像现有两款游戏一样，在 `onSnapshot` 中写入角色缓存后调用 `calibrateReminders`。提醒任务通过 `roleFetchers` 请求角色数据，森空岛游戏加入 `sklandGames` 后自动覆盖。
+- **其他平台**：需要对应的游戏枚举（数据源 ID、`appCode` 与显示名），并扩展提醒代码中按 `SklandGame` 判断的地方（`ReminderAccess`、`ReminderLaunch`、`ReminderNotifier`、`ReminderRoles` 等），以及 `WidgetRuntimeReminderChecks` 中从账号仓库列出角色的部分。
+
+### 3.8 隐私、许可与文档
 
 以下页面和文档需要同步更新：
 
@@ -107,6 +119,7 @@
   - `appUi`：概览、部件页、配置面板。
   - 涉及导航或生命周期时，加上 `session-restore` 与 `page-swipe`。
   - 涉及账号添加或网页登录时，加上 `web-login`（会打开官方首页，不登录）。
+  - 涉及通知提醒的设置页时，加上 `reminders`（只读，不保存规则）。
 - **真实桌面**：添加、刷新、编辑、重启后恢复。另外要确认已有的《明日方舟》与终末地小部件在升级后不受影响。
 
 没有实际运行的检查一律写“未验证”。
@@ -116,5 +129,6 @@
 - [ ] 数据源 ID、功能标识与显示名各只定义一次，其余地方只引用常量
 - [ ] 没有改动已有类名、资源 ID、布局或存储格式的含义
 - [ ] 凭据只经由加密存储，不出现在日志或保存的状态中；任何 IPC 读操作都不返回凭据，“更新凭据”留空时在组件进程中用已保存的凭据重新验证
+- [ ] 可提醒的指标已在 `ReminderCapabilities` 登记，指标 ID 以游戏的 `appCode` 开头，并有对应的观测读取函数
 - [ ] 隐私说明、开源许可、素材来源与 README 已更新
 - [ ] JVM 测试与受影响的设备场景已通过，未运行的检查已写明“未验证”

@@ -23,14 +23,14 @@ class ArknightsProgressTest : SklandFixtureTest() {
         assertEquals("保全酬劳 84/84", ArknightsParser.snapshot(data, "000000001", now).metrics.last().display())
     }
 
-    @Test fun trainingHandlesActiveCompletedPausedAndIdleSlots() {
-        for (mode in listOf("active", "completed", "paused", "idle")) {
+    @Test fun trainingHandlesActiveCompletedSpeedZeroAndIdleSlots() {
+        for (mode in listOf("active", "completed", "speedZero", "idle")) {
             val data = fixture("player")
             val training = data.getJSONObject("building").getJSONObject("training")
             training.put("trainee", JSONObject().put("charId", "char_test_trainee").put("targetSkill", if (mode == "idle") -1 else 2))
                 .put("remainSecs", if (mode == "completed") 0 else 3600)
                 .put("lastUpdateTime", now / 1000 - 600)
-                .put("speed", if (mode == "paused") 0 else 1.5)
+                .put("speed", if (mode == "speedZero") 0 else 1.5)
             val metric = ArknightsParser.snapshot(data, "000000001", now).metrics.single { it.label == "训练室" }
             when (mode) {
                 "active" -> {
@@ -43,12 +43,18 @@ class ArknightsProgressTest : SklandFixtureTest() {
                     assertEquals(1, metric.value)
                     assertEquals("训练预计已完成", ArknightsParser.countdown(metric, now))
                 }
-                "paused" -> {
-                    assertEquals("训练室 名称未知，3技能，暂停", metric.display())
+                // A specialisation cannot pause, so speed 0 with time left is unknown, without an end time.
+                "speedZero" -> {
+                    assertEquals("训练室 名称未知，3技能，未知", metric.display())
                     assertNull(metric.recoveryAt)
                     val info = ArknightsParser.snapshot(data, "000000001", now).training
-                    assertEquals("1时0分（同步）", info.time(now))
-                    assertEquals(info.time(now), info.time(now + 600000))
+                    assertEquals(TrainingState.UNKNOWN, info.state)
+                    assertEquals("char_test_trainee", info.traineeId)
+                    assertEquals(2, info.skill)
+                    assertNull(info.endsAt)
+                    assertNull(info.remainingSecs)
+                    assertEquals("未知", info.status(now))
+                    assertEquals("时间未知", info.time(now))
                 }
                 else -> {
                     assertEquals("训练室 空闲中", metric.display())

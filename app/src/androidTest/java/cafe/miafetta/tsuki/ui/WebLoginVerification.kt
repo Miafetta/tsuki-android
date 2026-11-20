@@ -26,7 +26,8 @@ import java.util.concurrent.TimeUnit
 // change, system back steps back inside the page first, and a failed load offers a retry. The user's clipboard and
 // theme are put back afterwards. Each step loads the official page at most once.
 private const val CHECK_KEY = "tsuki_wipe_check"
-private const val PASTED = "tsuki-paste-check-0123456789"
+// The space keeps it from looking like a Cred, so the editor never sends it to read a nickname for a blank name.
+private const val PASTED = "tsuki-paste-check 0123456789"
 
 internal fun AppUiVerification.verifyWebLogin(host: MainActivity, folder: File): String {
     val clipboard = checkNotNull(targetContext.getSystemService(ClipboardManager::class.java))

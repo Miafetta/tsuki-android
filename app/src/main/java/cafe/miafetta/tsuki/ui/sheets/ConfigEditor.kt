@@ -2,9 +2,14 @@ package cafe.miafetta.tsuki.ui.sheets
 
 import cafe.miafetta.tsuki.ui.components.EmptyCard
 import cafe.miafetta.tsuki.ui.components.MutedText
-import cafe.miafetta.tsuki.ui.components.WidgetPreviewStage
+import cafe.miafetta.tsuki.ui.components.PreviewTarget
 import cafe.miafetta.tsuki.ui.components.WidgetPreviews
+import cafe.miafetta.tsuki.ui.components.WidgetSheet
+import cafe.miafetta.tsuki.ui.components.WidgetSheetHeader
+import cafe.miafetta.tsuki.ui.components.WidgetSheetInset
 import cafe.miafetta.tsuki.ui.theme.Branding
+import cafe.miafetta.tsuki.ui.theme.widgetDescription
+import cafe.miafetta.tsuki.ui.theme.widgetName
 import cafe.miafetta.tsuki.ui.theme.widgetThemes
 import cafe.miafetta.tsuki.providers.FakeArknightsAdapter
 import cafe.miafetta.tsuki.ui.state.UiWidget
@@ -15,7 +20,6 @@ import cafe.miafetta.tsuki.ui.state.widgetFeature
 
 import android.app.Activity
 import android.appwidget.AppWidgetManager
-import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -27,10 +31,11 @@ import cafe.miafetta.tsuki.*
 import cafe.miafetta.tsuki.core.*
 import cafe.miafetta.tsuki.widget.*
 import top.yukonga.miuix.kmp.basic.*
-import top.yukonga.miuix.kmp.icon.extended.*
-import top.yukonga.miuix.kmp.overlay.OverlayBottomSheet
-import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.theme.MiuixTheme
+
+// A sheet adds a new widget only when no instance exists yet. A placed instance, configured or not (the launcher's
+// configure step, a tap on an unconfigured widget), is edited: saving applies to it instead of pinning another.
+internal fun isNewWidget(current: UiWidget?, widgetId: Int) = current == null && widgetId <= AppWidgetManager.INVALID_APPWIDGET_ID
 
 @Composable
 internal fun ConfigEditor(activity: Activity, roles: List<UiRole>, current: UiWidget?, busy: Boolean, error: String,
@@ -62,43 +67,41 @@ internal fun ConfigEditor(activity: Activity, roles: List<UiRole>, current: UiWi
     val snapshot = current?.snapshot?.takeIf { role != null && current.bindsTo(role) }
         ?: preview?.takeIf { it.first == role?.key }?.second
         ?: overviewPreview?.takeIf { current == null && it.first == role?.key }?.second
-    OverlayBottomSheet(show = show, title = if (current == null) "添加小部件" else "编辑小部件",
-        backgroundColor = MiuixTheme.colorScheme.surface, sheetMaxWidth = 600.dp,
-        startAction = { IconButton(onClick = { if (!busy) onDismiss() }, enabled = !busy) { Icon(MiuixIcons.Close, "关闭") } },
-        endAction = { IconButton(onClick = {
-                if (!busy) role?.let { onSave(it, palette, it.provider == FakeArknightsAdapter.ID && failure) }
-            },
-            enabled = role != null && !busy, modifier = Modifier.testTag("config-action")) { Icon(MiuixIcons.Ok, "保存") } },
-        onDismissRequest = { if (!busy) onDismiss() }, onDismissFinished = onDismissFinished, allowDismiss = !busy) {
-        Column(Modifier.fillMaxWidth().navigationBarsPadding().padding(bottom = 16.dp)) {
-        Column(Modifier.fillMaxWidth().weight(1f, fill = false).verticalScroll(rememberScrollState())) {
-            if (role == null) EmptyCard("请先添加${Branding.PLATFORM}账号", "添加账号") { if (!busy) onAccounts() }
-            else {
-                WidgetPreviewStage(previews, snapshot, palette == "DARK", "editor:${role.key}",
-                    imageModifier = Modifier.testTag("config-preview:$palette"), game = game)
-                Card {
-                    TsukiDropdownPreference(title = "角色", items = roles.map { it.name }, selectedIndex = roles.indexOf(role),
-                        enabled = !busy, onSelectedIndexChange = { key = roles[it].key })
-                    if (palettes.size > 1) TsukiDropdownPreference(title = "配色", items = widgetThemes.map { it.second },
-                        selectedIndex = widgetThemes.indexOfFirst { it.first == theme }.coerceAtLeast(0),
-                        enabled = !busy, onSelectedIndexChange = { theme = widgetThemes[it].first })
-                }
-                val chosenProvider = StatusWidgetProvider.providerClass(widgetFeature(game), WidgetTheme.valueOf(palette))
-                if (hostProvider != null && hostProvider.className != chosenProvider.name)
-                    // The sheet already has a 24 dp inside margin
-                    // align with the card content (24 + 16 dp).
-                    MutedText("浅色与深色小部件使用不同的材质。更换配色后，请在桌面移除此小部件并重新添加。", modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 8.dp))
-                if (showTools && role.provider == FakeArknightsAdapter.ID && BuildConfig.DEBUG)
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text("模拟刷新失败", Modifier.weight(1f), style = MiuixTheme.textStyles.headline2)
-                        Switch(failure, { failure = it }, enabled = !busy)
-                    }
-            }
-            if (error.isNotEmpty()) Text(error, Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-                style = MiuixTheme.textStyles.footnote1, color = MiuixTheme.colorScheme.error)
-        }
-
-        }
+    val header = if (isNewWidget(current, widgetId))
+        WidgetSheetHeader.New(game, widgetName(game), widgetDescription(game)) else WidgetSheetHeader.Edit
+    // A placed instance keeps its provider's material, so a new palette only shows once the widget is placed again.
+    val chosenProvider = StatusWidgetProvider.providerClass(widgetFeature(game), WidgetTheme.valueOf(palette))
+    val replaceHint = hostProvider != null && hostProvider.className != chosenProvider.name
+    val tools = showTools && role?.provider == FakeArknightsAdapter.ID && BuildConfig.DEBUG
+    WidgetSheet(show, header, previews, role?.let { PreviewTarget(snapshot, palette == "DARK", "editor:${it.key}", game) },
+        busy, canConfirm = role != null, error = error, onDismiss = onDismiss,
+        onConfirm = { role?.let { onSave(it, palette, it.provider == FakeArknightsAdapter.ID && failure) } },
+        onDismissFinished = onDismissFinished, previewModifier = Modifier.testTag("config-preview:$palette")) {
+        if (role == null) Box(Modifier.padding(horizontal = WidgetSheetInset)) {
+            EmptyCard("请先添加${Branding.PLATFORM}账号", "添加账号") { if (!busy) onAccounts() }
+        } else ConfigSettings(roles, role, { key = it.key }, palette.takeIf { palettes.size > 1 }, { theme = it }, busy,
+            replaceHint, failure.takeIf { tools }) { failure = it }
     }
 }
 
+// The settings rows, straight on the sheet. [palette] is null for a game with one palette; [failure] is the debug switch's
+// value, or null when the switch is hidden.
+@Composable
+private fun ConfigSettings(roles: List<UiRole>, role: UiRole, onRole: (UiRole) -> Unit, palette: String?,
+    onPalette: (String) -> Unit, busy: Boolean, replaceHint: Boolean, failure: Boolean?, onFailure: (Boolean) -> Unit) {
+    TsukiDropdownPreference(title = "角色", items = roles.map { it.name }, selectedIndex = roles.indexOf(role),
+        enabled = !busy, onSelectedIndexChange = { onRole(roles[it]) })
+    if (palette != null) TsukiDropdownPreference(title = "配色", items = widgetThemes.map { it.second },
+        selectedIndex = widgetThemes.indexOfFirst { it.first == palette }.coerceAtLeast(0),
+        enabled = !busy, onSelectedIndexChange = { onPalette(widgetThemes[it].first) })
+    // Lined up with the rows' text and the main button.
+    if (replaceHint) MutedText("浅色与深色小部件使用不同的材质。更换配色后，请在桌面移除此小部件并重新添加。",
+        modifier = Modifier.padding(start = WidgetSheetInset, end = WidgetSheetInset, top = HintGap))
+    if (failure != null) Row(Modifier.padding(horizontal = WidgetSheetInset, vertical = HintGap),
+        verticalAlignment = Alignment.CenterVertically) {
+        Text("模拟刷新失败", Modifier.weight(1f), style = MiuixTheme.textStyles.headline2)
+        Switch(failure, onFailure, enabled = !busy)
+    }
+}
+
+private val HintGap = 8.dp

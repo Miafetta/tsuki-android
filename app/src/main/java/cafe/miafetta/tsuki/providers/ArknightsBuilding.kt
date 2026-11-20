@@ -131,16 +131,19 @@ internal fun ArknightsReader.trainingRoom(): WidgetMetric {
     val speed = room.getDouble("speed").also { require(it.isFinite() && it in 0.0..1000.0) }
     val finish = serverNow + seconds
     require(seconds >= 0)
-    val paused = speed == 0.0 && seconds > 0
+    // A specialisation cannot be stopped or paused once it starts, and it runs without an assistant (PRTS training room
+    // entry), so speed 0 with time left has no known meaning and no end time to trust: it reads as unknown. PAUSED is
+    // never produced; it stays in TrainingState for snapshots stored by earlier versions.
+    val unknown = speed == 0.0 && seconds > 0
     // remainSecs is already remaining at currentTs; do not subtract lastUpdateTime elapsed twice.
     val state = when {
-        paused -> TrainingState.PAUSED
+        unknown -> TrainingState.UNKNOWN
         seconds == 0L -> TrainingState.COMPLETE
         else -> TrainingState.TRAINING
     }
-    training = WidgetTraining(state, id, name, skill, if (paused) null else localTime(finish), OfficialAvatars.character(id),
-        if (paused) seconds else null)
-    return WidgetMetric("训练室", if (state == TrainingState.COMPLETE) 1 else 0, 1, if (paused) null else localTime(finish),
+    val endsAt = if (unknown) null else localTime(finish)
+    training = WidgetTraining(state, id, name, skill, endsAt, OfficialAvatars.character(id))
+    return WidgetMetric("训练室", if (state == TrainingState.COMPLETE) 1 else 0, 1, endsAt,
         MetricTimer.NEXT_COMPLETION, text = "${name ?: "名称未知"}，${skill + 1}技能，${training.status(receivedAt)}")
 }
 

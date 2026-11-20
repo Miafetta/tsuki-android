@@ -70,7 +70,7 @@ internal fun CardViews.bindTraining(training: WidgetTraining, now: Long) {
     }
     views.setTextViewText(trainingName, training.name ?: training.status(now))
     val done = training.state == TrainingState.COMPLETE || training.completedByTime(now)
-    views.setTextViewText(trainingTime, if (done) training.status(now) else compactTimer(training.time(now)).removeSuffix("（同步）"))
+    views.setTextViewText(trainingTime, if (done) training.status(now) else compactTimer(training.time(now)))
 }
 
 internal fun CardViews.bindSummary(snapshot: WidgetSnapshot?) {
