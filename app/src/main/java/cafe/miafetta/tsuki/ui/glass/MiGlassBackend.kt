@@ -18,9 +18,14 @@ internal fun miGlassParams(rounded: Boolean = true) = floatArrayOf(
     0f, -.4f, .6f, -.8f, 0f, .7f, .8f, 1.15f,
     0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f,
 ).also {
-    // OS4 SystemUI GlassToken conversion maps index 19 to shape.edge; use the tested positive edge for rectangles (zero disables blur
-    // on OS4).
-    if (!rounded) it[19] = 1f
+    if (!rounded) {
+        // OS4 GlassToken + libhwui applyGlassColorProcess: index 5 is blend.saturation (1.4 boosts color saturation),
+        // index 15 is inner.colorWhite (0 multiplies midtones by big-blur luma, darkening 119 -> 81; 1 is neutral),
+        // and index 19 is shape.edge (positive required on OS4 rectangles; zero disables blur).
+        it[5] = 1f
+        it[15] = 1f
+        it[19] = 1f
+    }
 }
 
 internal fun glassBlurRadius(value: Float) = value.takeIf { it.isFinite() }?.coerceIn(0f, 40f) ?: 24f

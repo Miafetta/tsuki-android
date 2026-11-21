@@ -21,9 +21,16 @@ class MiGlassBackendTest {
         assertEquals(listOf(0, 12288), calls["setMiBackgroundBlurEnhanceFlag"])
         assertEquals(listOf(1080f, 280f), calls["setMiGlassSdfMaxSize"])
         val params = calls.getValue("setMiGlass").single() as FloatArray
+        val capsule = miGlassParams()
         assertEquals(42, params.size)
+        assertEquals(42, capsule.size)
+        assertEquals(1f, params[5], 0f)
+        assertEquals(1f, params[15], 0f)
         assertEquals(1f, params[19], 0f)
-        assertEquals(2f, miGlassParams()[19], 0f)
+        assertEquals(1.4f, capsule[5], 0f)
+        assertEquals(0f, capsule[15], 0f)
+        assertEquals(2f, capsule[19], 0f)
+        for (index in params.indices) if (index !in setOf(5, 15, 19)) assertEquals(capsule[index], params[index], 0f)
     }
     @Test fun selectionHonorsDisableAndNativePriority() {
         assertEquals("opaque", glassBackend(false, true, true, true))
