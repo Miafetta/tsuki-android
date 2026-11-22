@@ -27,7 +27,7 @@
 
 ## Miuix 图标（Apache License 2.0）
 
-- 应用内的操作图标全部来自 miuix-icons 0.9.4：Home、All、ContactsCircle、ChevronBackward、Refresh、Ok、Add、Close、More、Paste、Show、Hide、ArrowRight 与 ArrowUpDown。
+- 应用内的操作图标全部来自 miuix-icons 0.9.4：Home、All、ContactsCircle、ChevronBackward、Refresh、Ok、Add、Remove、Close、More、Paste、Show、Hide 与 ArrowUpDown（行末右箭头由库组件自带）。
 - 桌面小部件的两个资源由同版本 Miuix 图标的原始路径导出为 VectorDrawable，资源名称和 ID 保持不变：
   - 刷新图标 `widget_refresh.xml`，来自 Refresh。
   - 浅色／深色头像占位图标，来自 ContactsCircle.Regular。
@@ -36,4 +36,4 @@
 
 ## Tsuki 自有素材
 
-- 应用图标（夜空新月：`mipmap-anydpi/ic_launcher*.xml` 自适应图标，背景、前景与主题图标单色层为 `drawable/ic_launcher_*.xml`）为本项目自绘的 VectorDrawable，随代码以 MIT 许可发布。README 中的 `docs/assets/Tsuki.png` 由同一图标渲染而成。
+- 应用图标（夜空新月：`mipmap-anydpi/ic_launcher*.xml` 自适应图标，背景、前景与主题图标单色层为 `drawable/ic_launcher_*.xml`）与通知状态栏单色图标（`drawable/ic_reminder.xml`，由夜空新月单色层缩放派生）为本项目自绘的 VectorDrawable，随代码以 MIT 许可发布。README 中的 `docs/assets/Tsuki.png` 由同一图标渲染而成。

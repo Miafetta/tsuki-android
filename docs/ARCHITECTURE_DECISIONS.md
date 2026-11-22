@@ -21,13 +21,13 @@ Tsuki 只有一个 Gradle 模块 `app`。应用界面使用 Jetpack Compose 与 
 | `WebLoginPage` | 在应用内网页中打开森空岛官方登录页，取得 Cred 后交回 `AccountEditor` 提交；网页数据由 `WebLoginData` 清除，边界见[开发约束 §3](DEVELOPMENT_CONSTRAINTS.md#3-凭据与账号数据) |
 | `PrivacyPage`／`LicensesPage` | 我的 → 关于；许可证全文读取 `assets/third_party/*.txt` |
 | `RemindersPage`／`ReminderAccountPage` | 我的 → 通知；`RemindersPage` 是总开关、状态、账号列表与后台运行，点账号进入 `ReminderAccountPage`，设置该账号各角色的提醒项目，见 §4 |
-| `ConfigEditor` | 选择角色和配色，添加或编辑小部件 |
+| `ConfigEditor` | 选择角色和配色，添加或编辑小部件；新建模式经 `WidgetPreviewPager` 支持横向切换全部小部件并与配色联动，编辑模式保持单卡 |
 | 开发诊断 | 仅 Debug 构建且以 `--ez diagnostics true` 启动时显示 |
 
-- `TsukiApp` 负责主题、导航和页面组装。
-- `AppController` 持有当前页面、所选角色、配置面板、刷新以及添加到桌面的权限流程。
+- `TsukiApp` 负责主题、导航和页面组装（由 `TsukiNavHost`／`TsukiNavEntry` 托管二级页转场，仅在转场外框停用超椭圆离屏层、避免原生玻璃跨页采样）。
+- `AppRoot` 与 `AppController` 持有主页面脚手架控制、所选角色、配置面板、刷新以及添加到桌面的权限流程。
 - `AppScaffold` 组合 `TsukiTopBar`、游戏标签、`PullToRefresh`、`TsukiNavDock` 与底部渐变遮罩，每个标签页独立滚动。页面可以通过底栏或横向滑动切换；无论哪种方式，都以 Pager 最终停留的页同步底栏与当前页，顶栏按钮只在两者一致时响应。
-- 二级页面共用 `SecondaryScaffold`，顶栏使用与主页面相同的 `TsukiTopBar` 与玻璃路径，标题同时作为无障碍窗格标题。数据与隐私、开源许可再共用 `InfoPage` 的文档式版式。
+- 二级页面共用 `SecondaryScaffold`，顶栏使用与主页面相同的 `TsukiTopBar` 与玻璃路径（经 `TransitionGlass` 订阅转场状态），标题同时作为无障碍窗格标题。数据与隐私、开源许可再共用 `InfoPage` 的文档式版式。
 - `components` 中的组件只接收数据、回调和图像，不直接读取存储。
 - 一次性提示由 `UiMessages` 在 STARTED 之后消费，`UiNotifier` 以系统 Toast 显示。
 - 小部件预览只有一个绘制入口 `WidgetPreviewImage`：概览空状态（`WidgetPreviewStage`，放在舞台上）、部件页与部件面板（`ScaledWidgetPreview`，直接放在背景上）共用同一渲染源、位图缓存与外观。部件面板的预览快照通过 `AppState.previewSnapshot` 只读获取。
@@ -62,6 +62,7 @@ Tsuki 只有一个 Gradle 模块 `app`。应用界面使用 Jetpack Compose 与 
 
 - 后端优先级为 HyperOS MiGlass → miuix-blur → 不透明，支持性判断与材质参数集中在 `ui/glass`。
 - `GlassSession` 负责原生材质的初始化、增量更新和失败清理；`MiGlassView` 缓存反射方法，并只读监听系统材质开关。
+- `TransitionGlass` 统一订阅转场活跃度与玻璃开关，避免转场期间逐帧重组页面；`GlassShadows` 的 `chipRowShadow` 为未选中游戏胶囊在滚动后统一绘制并挖空整行轮廓的对称外投影。
 - backdrop 只在 `HorizontalPager` 外侧的单一容器中录制，避免各页采样范围不一致。
 - 可以模糊的范围与实现限制见[开发约束 §6](DEVELOPMENT_CONSTRAINTS.md#6-模糊与-hyperos-原生玻璃)，各表面的参数见[界面设计约定](UI_DESIGN_CONVENTIONS.md#玻璃范围与回退)。
 

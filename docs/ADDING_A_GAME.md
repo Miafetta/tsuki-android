@@ -10,18 +10,15 @@
 | 平台与账号 | 实例级的账号／角色绑定（`WidgetInstanceConfig`）；森空岛绑定列表按游戏解析（`SklandGame`、`SklandRoles`）；角色缓存、界面角色键与选中角色都带数据源 ID | 账号仓库只存森空岛账号；应用界面只列出 `AppState` 中 `SHOWN_PROVIDERS` 的游戏 |
 | 数据模型 | `WidgetSnapshot`、`WidgetMetric`（含稳定的 `metricId`） | 只属于《明日方舟》的 `WidgetTraining`，以及 `core/Dashboard.kt` 中它的指标标签与重置规则 |
 | 桌面小部件 | 曝光刷新、后台任务、添加流程（`PinWidgetReceiver`）；Provider 按功能与配色选择（`StatusWidgetProvider.providerClass`、`feature`、`theme`）；`StatusWidgetRenderer` 按实例的功能选择卡片 | 每款游戏自己的 Provider 子类、布局与卡片渲染（方舟：浅色与深色两个 Provider、`status_widget_*` 与 `StatusWidgetRenderer`；终末地：一个固定深色的 Provider、`endfield_widget*` 与 `EndfieldCard`） |
-| 应用界面 | `GameTabs` 的标签 ID 与选择回调、`Branding`、部件页条目 `WidgetGalleryItem` 与部件面板 `WidgetSheet`（预览经 `WidgetPreviewImage`）；部件页按 `widgetCatalog` 列出所有游戏的部件 | 各游戏的概览卡片与指标顺序（方舟在 `OverviewPage.kt`，终末地在 `EndfieldOverview.kt`） |
+| 应用界面 | `GameTabs` 的标签 ID 与选择回调、`Branding`、部件页条目 `WidgetGalleryItem`、新建面板横向轮播 `WidgetPreviewPager` 与部件面板 `WidgetSheet`（预览经 `WidgetPreviewImage`）；部件页与新建轮播按 `widgetCatalog` 列出所有游戏的部件 | 各游戏的概览卡片与指标顺序（方舟在 `OverviewPage.kt`，终末地在 `EndfieldOverview.kt`） |
 | 通知提醒 | 判定器与调度（`core/reminder`、`ReminderPlanner`）、提醒文件与 IPC、唯一的提醒任务、新快照的校准；设置页按指标 ID 前缀列出各游戏的指标；每款森空岛游戏一个通知渠道 | 该游戏在 `ReminderCapabilities` 中登记的指标与模式、`ReminderObservations` 中的读取函数、`SklandGame` 的 `displayName`、`ReminderNotifications.title` 中角色名的取法 |
 
-已规划的功能标识（`featureId`）：
+当前已实现的功能标识（`featureId`，新增游戏按 `<平台>.<游戏>.status` 命名）：
 
 | 功能标识 | 状态 |
 | --- | --- |
 | `skland.arknights.status` | 已实现 |
 | `skland.endfield.status` | 已实现 |
-| `miyoushe.genshin.status` | 未实现 |
-| `miyoushe.starrail.status` | 未实现 |
-| `miyoushe.zzz.status` | 未实现 |
 
 ## 2. 不能改动的部分
 
@@ -37,7 +34,7 @@
 ### 3.1 定义标识
 
 - **数据源 ID**（`providerId`）：格式为 `<平台>.<游戏>`，例如 `skland.endfield`。森空岛游戏在 `SklandGame` 中登记（终末地是 `SklandGame.ENDFIELD.providerId`；《明日方舟》沿用已安装版本写下的 `SklandArknightsAdapter.ID`，即 `skland`，不能改）；其他平台在适配器的伴生对象里定义 `const val ID`。其他地方只引用这个常量，不重复书写字符串。
-- **功能标识**（`featureId`）：取上表中的规划值，与 `WidgetRuntime.FEATURE` 并列定义。
+- **功能标识**（`featureId`）：格式为 `<平台>.<游戏>.status`，与 `WidgetRuntime.FEATURE` 并列定义。
 - **游戏标签 ID 与显示名**：标签 ID 写入 `ui/theme/GameBranding.kt` 的 `Branding`；游戏名写在 `SklandGame` 的 `displayName`（其他平台写在对应的枚举里），界面经 `Branding` 引用它，提醒通知与通知渠道直接使用它，不另写一份。
 
 ### 3.2 实现数据源
@@ -88,7 +85,7 @@
 
 - **游戏标签**：把新游戏加入 `Branding.games`（`AppRoot` 把它传给 `AppScaffold`），并把它的小部件加入同一文件的 `widgetCatalog`。只显示已经实现的游戏。
 - **概览**：按游戏拆分 `core/Dashboard.kt` 中的指标标签与说明函数。新游戏使用自己的卡片组合，界面规格遵守[界面设计约定](UI_DESIGN_CONVENTIONS.md)。
-- **部件页与部件面板**：全部小部件按游戏列出；部件面板的角色列表只显示所选游戏的角色。条目与面板统一使用 `WidgetGalleryItem`（放在 `WidgetGallery` 里）、`WidgetSheet`，不另写；新建面板的头部显示游戏标志与游戏名、部件名和描述，部件名与描述经 `widgetName`（`widgetNameRes`）、`widgetDescription` 取自 `strings.xml` 中桌面列表用的同一组字符串，新游戏要在这两个函数里接上。`AppConfigSheet` 按所选角色的数据源取功能标识（`WidgetRuntime.featureFor`）。
+- **部件页与部件面板**：全部小部件按游戏列出；部件面板的角色列表只显示所选游戏的角色。条目与面板统一使用 `WidgetGalleryItem`（放在 `WidgetGallery` 里）、`WidgetSheet`，新建面板经 `WidgetPreviewPager` 按 `widgetCatalog` 自动纳入所有已登记小部件供横向滑动切换，不另写；新建面板的头部显示游戏标志与游戏名、部件名和描述，部件名与描述经 `widgetName`（`widgetNameRes`）、`widgetDescription` 取自 `strings.xml` 中桌面列表用的同一组字符串，新游戏要在这两个函数里接上。`AppConfigSheet` 按所选角色的数据源取功能标识（`WidgetRuntime.featureFor`）。
 - **品牌素材**：游戏与平台图标放在 `res/drawable-nodpi/`，在 `AppLogo` 中引用。
 
 ### 3.7 通知提醒
