@@ -35,8 +35,8 @@ internal fun MetricCard(label: String, metric: WidgetMetric?, detail: String, cl
             }, style = MiuixTheme.textStyles.title1, fontSize = if (sanity) 34.sp else 28.sp,
                 fontWeight = FontWeight.Bold)
             }
-                Image(painterResource(if (sanity) { if (light) R.drawable.widget_sanity_light else R.drawable.widget_sanity_dark }
-                    else { if (light) R.drawable.widget_drone_light else R.drawable.widget_drone_dark }), null, Modifier.size(44.dp))
+                Image(painterResource(if (sanity) { if (light) R.drawable.widget_sanity_v2_light else R.drawable.widget_sanity_v2_dark }
+                    else { if (light) R.drawable.widget_drone_v2_light else R.drawable.widget_drone_v2_dark }), null, Modifier.size(44.dp))
             }
             LinearProgressIndicator(progress = metric?.maximum?.takeIf { it > 0 }?.let { (metric.value.toFloat() / it)
                 .coerceIn(0f, 1f) } ?: 0f)

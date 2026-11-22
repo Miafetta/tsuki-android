@@ -16,7 +16,7 @@
         android:enableOnBackInvokedCallback="false"
         android:usesCleartextTraffic="false"
         android:theme="@style/Theme.Tsuki">
-        <meta-data android:name="miuiWidgetVersion" android:value="54" />
+        <meta-data android:name="miuiWidgetVersion" android:value="56" />
         <activity android:name=".MainActivity" android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

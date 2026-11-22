@@ -52,9 +52,10 @@ class WidgetPlaceholderTest : WidgetResourceFixture() {
             assertEquals("@string/status_loading", root.attr("contentDescription"))
             assertTrue("Loading $palette shows text", root.children("TextView").isEmpty())
             val sources = root.children("ImageView").map { it.attr("src") }.filter { it.isNotEmpty() }
-            assertEquals(listOf("@drawable/widget_placeholder_circle_$palette", "@drawable/widget_refresh",
-                "@drawable/widget_sanity_$palette", "@drawable/widget_clock_$palette", "@drawable/widget_drone_$palette",
-                "@drawable/widget_clock_$palette", "@drawable/widget_clock_$palette"), sources)
+            val expectedSources = listOf("@drawable/widget_arknights_bg_$palette", "@drawable/widget_placeholder_circle_$palette",
+                "@drawable/widget_refresh", "@drawable/widget_sanity_v2_$palette", "@drawable/widget_clock_$palette",
+                "@drawable/widget_drone_v2_$palette", "@drawable/widget_clock_$palette", "@drawable/widget_clock_$palette")
+            assertEquals(expectedSources, sources)
             val shapes = root.children("ImageView").map { it.attr("background") }.filter { it.isNotEmpty() }
             assertTrue(shapes.all { it in placeholderShapes(palette) })
             // One per text bar, the training portrait and the two progress lines.
@@ -71,14 +72,19 @@ class WidgetPlaceholderTest : WidgetResourceFixture() {
         assertEquals(mapOf("widget_placeholder_light" to "@color/widget_placeholder_dark"), night)
     }
 
-    // Palette resources cannot be swapped inside a shared include, so the two loading layouts mirror each other.
+    // Palette resources cannot be swapped inside a shared include, so both loading layouts mirror each other's content
+    // inside a FrameLayout carrying the official Arknights artwork background.
     @Test fun loadingLayoutsDifferOnlyInTheirPalette() {
-        fun structure(palette: String) = xml("res/layout/status_widget_loading_$palette.xml").let { listOf(it) + it.children("*") }
-            .map { element ->
-                val attributes = (0 until element.attributes.length).map { element.attributes.item(it) }
-                element.tagName to attributes.associate { it.nodeName to it.nodeValue.replace("_$palette", "_palette") }.toSortedMap()
-            }
-        assertEquals(structure("light"), structure("dark"))
+        fun normalize(palette: String, value: String) = value.replace("_v2_$palette", "_palette").replace("_$palette", "_palette")
+        fun structure(root: Element, palette: String) = (listOf(root) + root.children("*")).map { element ->
+            val attributes = (0 until element.attributes.length).map { element.attributes.item(it) }
+            element.tagName to attributes.associate { it.nodeName to normalize(palette, it.nodeValue) }.toSortedMap()
+        }
+        val lightContent = xml("res/layout/status_widget_loading_light.xml").children("LinearLayout")
+            .first { it.attr("id") == "@+id/status_loading_content" }
+        val darkContent = xml("res/layout/status_widget_loading_dark.xml").children("LinearLayout")
+            .first { it.attr("id") == "@+id/status_loading_content" }
+        assertEquals(structure(lightContent, "light"), structure(darkContent, "dark"))
     }
 
     // The cold initial layout sizes itself from weights and minimums alone; the runtime card then sets the same reference
@@ -90,7 +96,8 @@ class WidgetPlaceholderTest : WidgetResourceFixture() {
         for (palette in palettes) {
             val root = xml("res/layout/status_widget_loading_$palette.xml")
             val elements = root.children("*").filter { it.attr("id").isNotEmpty() }.associateBy { it.attr("id").substringAfter('/') }
-            assertEquals(CardSizer.INSET, root.dp("padding"), 0f)
+            val padded = elements.getValue("status_loading_content")
+            assertEquals(CardSizer.INSET, padded.dp("padding"), 0f)
             assertEquals(CardSizer.HEADER, elements.getValue("status_header").attr("layout_weight").toFloat(), 0f)
             assertEquals(CardSizer.PRIMARY, elements.getValue("status_primary").attr("layout_weight").toFloat(), .01f)
             assertEquals(CardSizer.SUMMARY, elements.getValue("status_summary").attr("layout_weight").toFloat(), 0f)

@@ -10,7 +10,8 @@
     <color name="widget_track_light">@color/widget_track_dark</color>
     <color name="widget_progress_light">@color/widget_progress_dark</color>
     <color name="widget_time_light">@color/widget_secondary_dark</color>
-    <item type="drawable" name="widget_sanity_light">@drawable/widget_sanity_dark</item>
-    <item type="drawable" name="widget_drone_light">@drawable/widget_drone_dark</item>
+    <item type="drawable" name="widget_sanity_v2_light">@drawable/widget_sanity_v2_dark</item>
+    <item type="drawable" name="widget_drone_v2_light">@drawable/widget_drone_v2_dark</item>
+    <item type="drawable" name="widget_arknights_bg_light">@drawable/widget_arknights_bg_night_dark</item>
     <item type="drawable" name="avatar_placeholder_light">@drawable/avatar_placeholder_dark</item>
 </resources>

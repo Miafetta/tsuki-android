@@ -51,10 +51,12 @@ class SklandNicknameTest : SklandFixtureTest() {
     }
 
     @Test fun transportAllowsOnlyTheListedPaths() {
-        assertEquals(setOf("/api/v1/auth/refresh", "/api/v1/game/player/binding", "/api/v1/game/player/info", "/api/v1/user",
-            "/api/v1/user/teenager", "/web/v1/game/endfield/card/detail"), SklandClient.PATHS)
+        assertEquals(setOf("/api/v1/auth/refresh", "/api/v1/game/cards", "/api/v1/game/player/binding",
+            "/api/v1/game/player/info", "/api/v1/user", "/api/v1/user/teenager",
+            "/web/v1/game/endfield/card/detail"), SklandClient.PATHS)
         // Rejected before any connection is opened.
-        for (path in listOf("/api/v1/user/me", "/api/v1/user/info", "/api/v1/users", "/api/v1/user/", "/web/v1/user")) {
+        for (path in listOf("/api/v1/user/me", "/api/v1/user/info", "/api/v1/users", "/api/v1/user/", "/web/v1/user",
+            "/api/v2/game/cards", "/api/v1/user/center")) {
             assertThrows(IllegalArgumentException::class.java) { SklandHttpsTransport().request(path, emptyMap()) }
         }
     }

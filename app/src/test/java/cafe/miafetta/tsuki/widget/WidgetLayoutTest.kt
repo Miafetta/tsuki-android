@@ -121,20 +121,18 @@ class WidgetLayoutTest : WidgetResourceFixture() {
     }
 
     @Test fun lightWidgetsUseTheDarkPaletteAtNightWithoutAProtectiveWhiteSurface() {
-        val surface = xml("res/drawable/widget_instance_light_surface.xml")
-        assertEquals("#00F5F5F5", surface.children("solid").single().attr("color"))
-        assertTrue(surface.children("stroke").isEmpty())
-        assertFalse(File(System.getProperty("tsuki.projectDir"), "src/main/res/drawable-night/widget_instance_light_surface.xml").exists())
         val palette = xml("res/values-night/widget_palette.xml")
         val colors = palette.children("color").associate { it.getAttribute("name") to it.textContent }
         for (key in listOf("background", "text", "secondary", "label", "accent", "cell", "extra", "track", "progress"))
             assertEquals("@color/widget_${key}_dark", colors["widget_${key}_light"])
         assertEquals("@color/widget_secondary_dark", colors["widget_time_light"])
         val icons = palette.children("item").associate { it.getAttribute("name") to it.textContent }
-        for (key in listOf("widget_sanity", "widget_drone", "avatar_placeholder"))
-            assertEquals("@drawable/${key}_dark", icons["${key}_light"])
-        for (theme in listOf("dark", "light"))
-            assertEquals("false", xml("res/layout/status_widget_native_v30_$theme.xml").attr("forceDarkAllowed"))
+        assertEquals("@drawable/widget_sanity_v2_dark", icons["widget_sanity_v2_light"])
+        assertEquals("@drawable/widget_drone_v2_dark", icons["widget_drone_v2_light"])
+        assertEquals("@drawable/widget_arknights_bg_night_dark", icons["widget_arknights_bg_light"])
+        assertEquals("@drawable/avatar_placeholder_dark", icons["avatar_placeholder_light"])
+        assertEquals("false", xml("res/layout/status_widget_native_v31_dark.xml").attr("forceDarkAllowed"))
+        assertEquals("false", xml("res/layout/status_widget_native_v31_light.xml").attr("forceDarkAllowed"))
     }
 
     @Test fun bothThemeTextAndPlaceholderColorsHaveReadableContrast() {
@@ -168,19 +166,19 @@ class WidgetLayoutTest : WidgetResourceFixture() {
         for (surface in listOf("cell", "extra")) {
             // Light: 60% white lets the HyperOS host blur show through.
             assertEquals("#99FFFFFF", raw["widget_${surface}_light"])
-            // Dark, and light widgets at night: 19% black, translucent over the blur yet close to #2B2B2B on #353535.
-            assertEquals("#30000000", raw["widget_${surface}_dark"])
+            // Dark, and light widgets at night: official Skland #8C222222, translucent over artwork and blur.
+            assertEquals("#8C222222", raw["widget_${surface}_dark"])
             for (theme in listOf("light", "dark")) {
                 val alpha = argb(colors.getValue("widget_${surface}_$theme")) ushr 24
                 assertTrue("$surface $theme must be translucent", alpha in 1L..254L)
             }
             val composite = over(colors.getValue("widget_${surface}_dark"), colors.getValue("widget_background_dark"))
-            for (shift in listOf(16, 8, 0)) assertTrue("Dark $surface over #353535 is $composite",
-                kotlin.math.abs(((argb(composite) shr shift) and 255) - 0x2B) <= 1)
+            for (shift in listOf(16, 8, 0)) assertTrue("Dark $surface over #323232 is $composite",
+                kotlin.math.abs(((argb(composite) shr shift) and 255) - 0x29) <= 1)
         }
-        // Day light widgets keep the Miuix primary; dark widgets and light widgets at night use the official refresh blue.
+        // Day light widgets keep the Miuix primary; dark widgets and light widgets at night use official sk_game_arknights.
         assertEquals("#FF3482FF", colors["widget_accent_light"])
-        assertEquals("#FF3BB8FF", raw["widget_accent_dark"])
+        assertEquals("#FF22BBFF", raw["widget_accent_dark"])
     }
 
     @Test fun widgetPaletteUsesMiuixSemanticsAndPreservesGameArtwork() {
@@ -189,10 +187,10 @@ class WidgetLayoutTest : WidgetResourceFixture() {
         val expected = mapOf("background" to "surface", "text" to "on_surface", "secondary" to "summary",
             "time" to "summary", "label" to "summary", "accent" to "primary", "track" to "container", "progress" to "primary")
         for ((name, token) in expected) assertEquals("@color/miuix_widget_${token}_light", colors["widget_${name}_light"])
-        assertEquals("#FF353535", colors["widget_background_dark"])
+        assertEquals("#FF323232", colors["widget_background_dark"])
         for (name in listOf("sanity", "drone", "training")) {
             val icon = javax.imageio.ImageIO.read(File(System.getProperty("tsuki.projectDir"),
-                "src/main/res/drawable-nodpi/widget_${name}_light.png"))
+                "src/main/res/drawable-nodpi/widget_${name}_v2_light.png"))
             for (y in 0 until icon.height) for (x in 0 until icon.width) {
                 val pixel = icon.getRGB(x, y)
                 if (pixel.ushr(24) > 0) assertEquals(0x4B4B4B, pixel and 0xffffff)
@@ -214,30 +212,14 @@ class WidgetLayoutTest : WidgetResourceFixture() {
             }
         }
         for (theme in listOf("dark", "light")) {
-            val root = xml("res/layout/status_widget_native_v30_$theme.xml")
-            if (theme == "dark") {
-                assertEquals(xml("res/layout/probe_widget.xml").nodeName, root.nodeName)
-                assertEquals("vertical", root.attr("orientation"))
-                assertTrue(root.children("ImageView").isEmpty())
-                assertEquals(1, (0 until root.childNodes.length).count { root.childNodes.item(it) is Element })
-                val fill = xml("res/drawable/widget_host_dark.xml")
-                assertEquals("shape", fill.nodeName)
-                assertEquals("@color/widget_background_dark", fill.children("solid").single().attr("color"))
-                assertTrue(fill.children("stroke").isEmpty())
-            } else {
-                val surface = root.children("ImageView").single()
-                assertEquals("@+id/status_native_surface", surface.attr("id"))
-                assertEquals("@drawable/widget_instance_light_surface", surface.attr("src"))
-                assertEquals("", surface.attr("layout_margin"))
-                assertEquals("match_parent", surface.attr("layout_width"))
-                assertEquals("match_parent", surface.attr("layout_height"))
-                assertEquals("fitXY", surface.attr("scaleType"))
-                assertEquals("no", surface.attr("importantForAccessibility"))
-                assertEquals("false", surface.attr("clickable"))
-                assertEquals("false", surface.attr("focusable"))
-                val layers = (0 until root.childNodes.length).map { root.childNodes.item(it) }.filterIsInstance<Element>()
-                assertEquals(listOf("ImageView", "include"), layers.map { it.nodeName })
-            }
+            val root = xml("res/layout/status_widget_native_v31_$theme.xml")
+            val surface = root.children("ImageView").single()
+            assertEquals(if (theme == "dark") "@+id/status_dark_surface" else "@+id/status_native_surface", surface.attr("id"))
+            assertEquals("@drawable/widget_arknights_bg_$theme", surface.attr("src"))
+            assertEquals("fitXY", surface.attr("scaleType"))
+            assertEquals("true", root.attr("clipToOutline"))
+            val layers = (0 until root.childNodes.length).map { root.childNodes.item(it) }.filterIsInstance<Element>()
+            assertEquals(listOf("ImageView", "include"), layers.map { it.nodeName })
             assertEquals("@drawable/widget_host_$theme", root.attr("background"))
             val native = root.children("include").single()
             assertEquals("match_parent", native.attr("layout_width"))
@@ -253,9 +235,8 @@ class WidgetLayoutTest : WidgetResourceFixture() {
         val manifest = xml("AndroidManifest.xml")
         val version = manifest.children("application").single().children("meta-data")
             .single { it.attr("name") == "miuiWidgetVersion" }.attr("value").toInt()
-        // Bump whenever the widget layout, palette, metadata or default renderer changes, so the launcher drops its cache.
-        // 53: the Endfield card (2.2.0). 54: its header marks, texture and translucent panels.
-        assertEquals(54, version)
+        // 53: Endfield (2.2.0). 54: Endfield marks/texture. 55: Official Endfield & Arknights dark. 56: Endfield v3 & Arknights light.
+        assertEquals(56, version)
         assertTrue(version > 1)
     }
 

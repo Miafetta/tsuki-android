@@ -54,18 +54,19 @@ internal class SklandHttpsTransport : SklandTransport {
 }
 
 internal object SklandSigner {
-    fun headers(cred: String, token: String, pathAndQuery: String, seconds: Long): Map<String, String> {
+    fun headers(cred: String, token: String, pathAndQuery: String, seconds: Long,
+        platform: String = "", vName: String = ""): Map<String, String> {
         val timestamp = seconds.toString()
         // Signature order and raw query bytes are part of the server protocol.
-        val header = "{\"platform\":\"\",\"timestamp\":\"$timestamp\",\"dId\":\"\",\"vName\":\"\"}"
+        val header = "{\"platform\":\"$platform\",\"timestamp\":\"$timestamp\",\"dId\":\"\",\"vName\":\"$vName\"}"
         val path = pathAndQuery.substringBefore('?')
         val query = pathAndQuery.substringAfter('?', "")
         val hmac = Mac.getInstance("HmacSHA256").apply {
             init(SecretKeySpec(token.toByteArray(Charsets.UTF_8), "HmacSHA256"))
         }.doFinal((path + query + timestamp + header).toByteArray(Charsets.UTF_8)).hex()
         val sign = MessageDigest.getInstance("MD5").digest(hmac.toByteArray(Charsets.UTF_8)).hex()
-        return linkedMapOf("cred" to cred, "platform" to "", "timestamp" to timestamp,
-            "dId" to "", "vName" to "", "sign" to sign)
+        return linkedMapOf("cred" to cred, "platform" to platform, "timestamp" to timestamp,
+            "dId" to "", "vName" to vName, "sign" to sign)
     }
     private fun ByteArray.hex() = joinToString("") { "%02x".format(it.toInt() and 255) }
 }
@@ -88,7 +89,18 @@ internal class SklandClient(private val transport: SklandTransport,
         userIds.clear()
     }
 
-    @Synchronized fun roles(cred: String): List<SklandRole> = parseRoles(signed(cred, "/api/v1/game/player/binding"))
+    // Reads the account's game bindings, then best-effort fills Endfield's "#<digits>" tag from the compact game
+    // cards (/api/v1/game/cards), which only include Endfield when signed with Android app platform/version headers.
+    @Synchronized fun roles(cred: String): List<SklandRole> {
+        val binding = signed(cred, "/api/v1/game/player/binding")
+        val roles = parseRoles(binding)
+        if (roles.none { it.game == SklandGame.ENDFIELD && '#' !in it.label }) return roles
+        return try {
+            val uid = userIds[cred] ?: userId(cred).also { userIds[cred] = it }
+            val path = "/api/v1/game/cards?uid=${URLEncoder.encode(uid, Charsets.UTF_8.name())}"
+            SklandRoles.applyEndfieldCards(roles, binding, signed(cred, path, CARDS_PLATFORM, CARDS_VERSION))
+        } catch (_: DataSourceFailure) { roles }
+    }
 
     @Synchronized fun player(cred: String, uid: String): JSONObject {
         require(uid.matches(Regex("[0-9]{1,20}")))
@@ -115,7 +127,7 @@ internal class SklandClient(private val transport: SklandTransport,
     } catch (_: org.json.JSONException) { throw DataSourceFailure(RefreshFailure.INVALID_DATA) }
     catch (_: IllegalArgumentException) { throw DataSourceFailure(RefreshFailure.INVALID_DATA) }
 
-    private fun signed(cred: String, path: String): JSONObject {
+    private fun signed(cred: String, path: String, platform: String = "", vName: String = ""): JSONObject {
         validateCred(cred)
         val now = clock()
         val retryAt = blockedUntil[cred] ?: 0
@@ -123,7 +135,8 @@ internal class SklandClient(private val transport: SklandTransport,
         for (attempt in 0..1) {
             val session = sessions[cred]?.takeIf { it.expires > clock() } ?: refresh(cred)
             try {
-                return data(transport.request(path, SklandSigner.headers(cred, session.token, path, clock() / 1000 - 1)))
+                val headers = SklandSigner.headers(cred, session.token, path, clock() / 1000 - 1, platform, vName)
+                return data(transport.request(path, headers))
             } catch (failure: DataSourceFailure) {
                 if (failure.reason == RefreshFailure.AUTH_EXPIRED && attempt == 0) {
                     sessions.remove(cred)
@@ -169,8 +182,11 @@ internal class SklandClient(private val transport: SklandTransport,
 
     companion object {
         // The only paths SklandHttpsTransport may request; the query is not part of the check.
-        val PATHS = setOf("/api/v1/auth/refresh", "/api/v1/game/player/binding", "/api/v1/game/player/info",
-            "/api/v1/user", "/api/v1/user/teenager", "/web/v1/game/endfield/card/detail")
+        val PATHS = setOf("/api/v1/auth/refresh", "/api/v1/game/cards", "/api/v1/game/player/binding",
+            "/api/v1/game/player/info", "/api/v1/user", "/api/v1/user/teenager", "/web/v1/game/endfield/card/detail")
+        // /api/v1/game/cards omits Endfield when platform and vName are empty; Skland Android 2.5.0 headers return it.
+        private const val CARDS_PLATFORM = "1"
+        private const val CARDS_VERSION = "2.5.0"
         // Account names are limited to this many characters where they are saved (WidgetRuntime.login).
         const val NAME_LIMIT = 40
 

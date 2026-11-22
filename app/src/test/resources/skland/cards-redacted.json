@@ -1,0 +1,29 @@
+{
+  "list": [
+    {
+      "id": 1,
+      "name": "明日方舟",
+      "channelId": 1,
+      "arknights": {
+        "uid": "000000001",
+        "name": "测试博士#0001",
+        "level": 120
+      },
+      "privacy": { "cardOn": true, "detailOn": true }
+    },
+    {
+      "id": 3,
+      "name": "明日方舟：终末地",
+      "channelId": 1,
+      "endfield": {
+        "achievementCount": 0,
+        "charCount": 2,
+        "createdAtTs": "1790000000",
+        "level": 1,
+        "name": "测试管理员#0002",
+        "serverName": ""
+      },
+      "privacy": { "cardOn": true, "detailOn": true }
+    }
+  ]
+}

@@ -41,7 +41,7 @@ internal val loadingBars = listOf(LoadingBar(R.id.status_loading_title, 64f, 10f
 // exact heights set here those weights only absorb the pixel or two the host's rounding leaves over.
 internal fun sizeLoadingContent(views: RemoteViews, context: Context, width: Float, height: Float) {
     val sizer = CardSizer(views, context, referenceScale(width, height))
-    sizeCardFrame(sizer, android.R.id.background, R.id.status_loading_trainee)
+    sizeCardFrame(sizer, R.id.status_loading_content, R.id.status_loading_trainee)
     // The native primary row takes what the inset, header and summary leave; give it the same pixels.
     val primary = (referenceHeight(height) * sizer.density).toInt() - 2 * sizer.px(CardSizer.INSET) -
         sizer.sizePx(CardSizer.HEADER) - sizer.sizePx(CardSizer.SUMMARY) - 2 * sizer.offsetPx(CardSizer.PRIMARY_GAP)

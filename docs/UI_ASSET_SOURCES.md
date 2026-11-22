@@ -12,27 +12,18 @@
 - 它们归各自权利人所有，不在本项目的 MIT 许可范围内。
 - 概览与桌面小部件中的角色头像在运行时从鹰角网络的素材服务器下载，同样归权利人所有，不随仓库分发。
 
-## 小部件指标图标
+## 小部件官方元素与图标
 
-| 文件 | 内容 |
-| --- | --- |
-| `res/drawable-nodpi/widget_sanity_light.png`、`widget_sanity_dark.png` | 理智 |
-| `res/drawable-nodpi/widget_drone_light.png`、`widget_drone_dark.png` | 无人机 |
-| `res/drawable-nodpi/widget_training_light.png`、`widget_training_dark.png` | 训练室（无头像时的占位图） |
-| `res/drawable-nodpi/widget_endfield_sanity.png` | 终末地理智（小部件底纹） |
-| `res/drawable-nodpi/widget_endfield_daily.png` | 终末地日常活跃度 |
-| `res/drawable-nodpi/widget_endfield_weekly.png` | 终末地每周事务 |
-| `res/drawable-nodpi/widget_endfield_pass.png` | 终末地通行证等级 |
+| 文件 | 内容 | 来源 |
+| --- | --- | --- |
+| `res/drawable-nodpi/widget_arknights_bg_dark.webp`、`widget_sanity_v2_dark.png`、`widget_drone_v2_dark.png`、`widget_training_v2_dark.png`、`widget_training_badge_dark.png` | 明日方舟深色小部件背景纹理、理智、无人机、训练室占位与训练室角标 | 森空岛官方 Android 端小部件资源（背景按卡片圆角与 4×2 比例裁切缩放，图标原样使用） |
+| `res/drawable-nodpi/widget_arknights_bg_light.webp`、`widget_arknights_bg_night_dark.webp`、`widget_sanity_v2_light.png`、`widget_drone_v2_light.png`、`widget_training_v2_light.png` | 明日方舟浅色小部件（及浅色夜间模式）半透明背景纹理、深灰单色理智／无人机与训练室占位图标 | 基于上述森空岛官方 Android 端同类元素换算配色生成（保留官方形状与透明通道，适配浅色毛玻璃背景） |
+| `res/drawable/widget_clock_dark.xml`、`widget_clock_light.xml` | 明日方舟深色／浅色小部件计时行时钟图标 | 参照森空岛官方 Android 端 `widget_arknights_clock` 矢量路径，分别使用深色／浅色次级文本颜色 |
+| `res/drawable-nodpi/widget_endfield_bg_v3.webp`、`widget_endfield_band_hatch.png`、`widget_endfield_band_marks_v2.png`、`widget_endfield_band_word_v2.png`、`widget_endfield_brand_v2.png`、`widget_endfield_refresh_v3.png`、`widget_endfield_sanity_v2.png`、`widget_endfield_panel_mark_v2.png`、`widget_endfield_item_dot.png`、`widget_endfield_daily_v2.png`、`widget_endfield_weekly_v2.png`、`widget_endfield_pass_v2.png` | 终末地小部件等高线点阵底纹、左侧斜纹竖条与标识、顶栏标识与刷新图标、理智底纹、右侧面板徽记水印、行顶双排点阵与三项实时数据图标 | 森空岛官方 Android 端终末地小部件资源（底纹避开左侧黄条圆角区并按右圆角裁切，斜纹层与右下徽记按卡片／面板圆角裁切，刷新图标取自官方原图左侧区域并保留原有半透明灰度） |
+| `res/drawable-nodpi/widget_endfield_seek.png` | 终末地“蚀像寻遗”实时数据图标 | 森空岛官方实时数据前端静态资源（按官方白灰透明度换算以与其余三行图标一致） |
 
-- 方舟的三组 PNG 原始素材来自森空岛的《明日方舟》官方小组件，由 ChatGPT 复刻重绘，分浅色与深色两版。终末地的理智沿用同一个理智图标，森空岛对终末地理智用的是同一图形。
-- 终末地小部件的以下位图参照官方小组件绘制，文字用 Windows 自带字体排版后栅格化，不包含字体文件：
-  - 左侧竖条的顶部小标记 `widget_endfield_band_marks.png` 与底部字标 `widget_endfield_band_word.png`（透明底，分别贴上下边放在带圆角的黄色形状 `drawable/widget_endfield_band_shape.xml` 上）：ENDFIELD 与 INDUSTRIES 用 Bahnschrift，小标记为几何图形和小字。
-  - 顶栏标识 `widget_endfield_brand.png`：森空岛吉祥物取自上表的森空岛图标（去掉底色、换算成灰白），“森空岛”方框字用思源黑体 Bold，“终末地”用 MiSans Heavy；不是官方标志文件。
-  - 刷新图标 `widget_endfield_refresh.png`：圆形底上镂空两段箭头，运行时着色。
-  - 背景纹理 `widget_endfield_texture.png`：程序生成的等高线，右下角是放大的日常活跃度徽记与 MiSans Heavy 的“终末地”，都以很低的不透明度绘制，透过半透明面板显示；官方纹理图片没有复制。
-- 面板、胶囊、圆点、点状装饰与底部三色线是本项目绘制的形状，颜色取自官方小组件截图。
-- 终末地的四个图标是官方图形：取自森空岛 App《明日方舟：终末地》实时数据页的截图，按灰度换算成白色图形加透明度，没有重新绘制；终末地小部件固定深色，只有白色一版。
-- 图形设计归鹰角网络（Hypergryph）所有，不在本项目的 MIT 许可范围内，仅用于在小部件和概览中标识对应的游戏数据。
+- 面板描边渐变、回复时间胶囊、橙／绿状态圆点与底部三色条为 XML 形状与配色，颜色取自森空岛官方 Android 端小部件资源。
+- 以上游戏与社区图形设计均归鹰角网络（Hypergryph）所有，不在本项目的 MIT 许可范围内，仅用于在小部件和概览中标识对应的游戏数据。
 
 ## Miuix 图标（Apache License 2.0）
 
@@ -45,5 +36,4 @@
 
 ## Tsuki 自有素材
 
-- 应用图标（夜空新月：`mipmap-anydpi/ic_launcher*.xml` 自适应图标，背景、前景与主题图标单色层为 `drawable/ic_launcher_*.xml`）与桌面小部件计时行的时钟图标（`widget_clock_*.xml`）为本项目自绘的 VectorDrawable，随代码以 MIT 许可发布。README 中的 `docs/assets/Tsuki.png` 由同一图标渲染而成。
-- 桌面深色配色参考了森空岛官方小组件的整体色调，用纯色做平面近似，没有复制官方纹理或实现。
+- 应用图标（夜空新月：`mipmap-anydpi/ic_launcher*.xml` 自适应图标，背景、前景与主题图标单色层为 `drawable/ic_launcher_*.xml`）为本项目自绘的 VectorDrawable，随代码以 MIT 许可发布。README 中的 `docs/assets/Tsuki.png` 由同一图标渲染而成。

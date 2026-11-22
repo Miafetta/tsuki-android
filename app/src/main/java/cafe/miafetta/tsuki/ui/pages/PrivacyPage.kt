@@ -6,7 +6,7 @@ import androidx.compose.runtime.Composable
 import cafe.miafetta.tsuki.BuildConfig
 
 // Update the date whenever the content below changes; every statement is checked against the code.
-private const val PrivacyUpdated = "2026 年 11 月 20 日"
+private const val PrivacyUpdated = "2026 年 11 月 21 日"
 
 private val privacySections = listOf(
     InfoSection("我们保存的信息", listOf(
@@ -27,7 +27,8 @@ private val privacySections = listOf(
     InfoSection("网络通信", listOf(
         "${Branding.PLATFORM}（zonai.skland.com）" to "使用 Cred 验证账号，并获取明日方舟与终末地的角色数据。" +
             "添加账号或更新 Cred 时，如果账号名称为空，会读取一次${Branding.PLATFORM}账号资料（/api/v1/user），只取其中的昵称" +
-            "填入名称框，资料的其他内容不保存。获取终末地数据前，" +
+            "填入名称框，资料的其他内容不保存；验证含终末地角色的账号时，还会读取一次游戏卡片摘要（/api/v1/game/cards），" +
+            "只取终末地角色带 #编号 的显示名称，其他字段不保存。获取终末地数据前，" +
             "会先读取一次${Branding.PLATFORM}账号的用户 ID，它只保存在内存中。Cred 只会发送到该地址。",
         "鹰角网络素材服务器（web.hycdn.cn）" to "下载公开的游戏头像，请求中不包含任何账号信息。",
         "${Branding.PLATFORM}官方登录页（仅在你选择网页登录时）" to "在应用内网页中打开官方页面。账号、密码与验证码由你直接" +

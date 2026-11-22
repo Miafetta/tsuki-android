@@ -15,15 +15,14 @@ import android.graphics.Rect
 import android.graphics.RectF
 import android.graphics.Shader
 import androidx.core.graphics.createBitmap
-import androidx.core.graphics.get
-import androidx.core.graphics.set
 import cafe.miafetta.tsuki.R
 
 // Bitmaps drawn for the widget: rounded avatars, the training placeholder and portrait mark, and the bitmap-path rim.
 
 private fun smoothPaint() = Paint(Paint.ANTI_ALIAS_FLAG or Paint.FILTER_BITMAP_FLAG)
 
-private fun frameColor(light: Boolean) = if (light) Color.rgb(100, 103, 103) else Color.rgb(229, 229, 229)
+// Opaque equivalent of official widget_training_room_bg (#BFFFFFFF over #363636) so all 4 frame edges have identical pixels.
+private fun frameColor(light: Boolean) = if (light) Color.rgb(100, 103, 103) else Color.rgb(205, 205, 205)
 
 internal fun roundedAvatar(source: Bitmap, radiusRatio: Float): Bitmap {
     val size = minOf(source.width, source.height).coerceAtMost(128)
@@ -75,12 +74,12 @@ internal fun drawSurfaceRim(canvas: Canvas, light: Boolean) {
 
 internal fun trainingIdleIcon(context: Context, light: Boolean): Bitmap {
     val source = BitmapFactory.decodeResource(context.resources,
-        if (light) R.drawable.widget_training_light else R.drawable.widget_training_dark)
+        if (light) R.drawable.widget_training_v2_light else R.drawable.widget_training_v2_dark)
     val result = createBitmap(98, 98, Bitmap.Config.ARGB_8888)
     val canvas = Canvas(result)
     val paint = smoothPaint()
-    // The source frame is asymmetric; retain its interior and draw one uniform frame.
-    canvas.drawBitmap(source, Rect(2, 2, source.width - 2, source.height - 3), RectF(0f, 0f, 98f, 98f), paint)
+    // Retain the interior and draw one uniform frame matching the official 0.5dp border.
+    canvas.drawBitmap(source, Rect(2, 2, source.width - 2, source.height - 2), RectF(0f, 0f, 98f, 98f), paint)
     paint.color = frameColor(light)
     paint.style = Paint.Style.STROKE
     paint.strokeWidth = 2f
@@ -97,19 +96,10 @@ internal fun trainingPortrait(context: Context, avatar: Bitmap, light: Boolean):
     paint.strokeWidth = size * 2f / 98f
     val inset = paint.strokeWidth / 2f
     canvas.drawRect(inset, inset, size - inset, size - inset, paint)
-    val source = BitmapFactory.decodeResource(context.resources, R.drawable.widget_training_dark)
+    val badge = BitmapFactory.decodeResource(context.resources, R.drawable.widget_training_badge_dark)
     paint.style = Paint.Style.FILL
     paint.colorFilter = PorterDuffColorFilter(if (light) Color.rgb(75, 75, 75) else Color.WHITE, PorterDuff.Mode.SRC_IN)
-    // The lower-left mark uses only the placeholder's inner artwork, without its frame or backing.
-    val mark = createBitmap(source.width - 4, source.height - 5)
-    for (y in 2 until source.height - 3) for (x in 2 until source.width - 2) {
-        val c = source[x, y]
-        val brightness = maxOf(Color.red(c), Color.green(c), Color.blue(c))
-        // Discard the idle slash; the dim training-room artwork remains underneath it.
-        if (brightness in 60..180) mark[x - 2, y - 2] = Color.WHITE
-    }
-    canvas.drawBitmap(mark, null, RectF(0f, size * .62f, size * .38f, size), paint)
-    source.recycle()
-    mark.recycle()
+    canvas.drawBitmap(badge, null, RectF(0f, size * .625f, size * .406f, size), paint)
+    badge.recycle()
     return avatar
 }

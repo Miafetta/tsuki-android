@@ -114,7 +114,7 @@ internal class StatusWidgetRenderer(private val avatars: AvatarCache) {
         val theme = themeOverride ?: record?.config?.theme ?: StatusWidgetProvider.theme(context, id)
         val light = theme == WidgetTheme.LIGHT
         val layout = if (!native) themeLayout(theme)
-            else if (light) R.layout.status_widget_native_v30_light else R.layout.status_widget_native_v30_dark
+            else if (light) R.layout.status_widget_native_v31_light else R.layout.status_widget_native_v31_dark
         val card = CardViews(context, RemoteViews(context.packageName, layout), light, native)
         val snapshot = snapshotOverride ?: record?.snapshot
         val now = System.currentTimeMillis()

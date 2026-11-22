@@ -50,10 +50,25 @@
         <item name="android:layout_height">wrap_content</item>
     </style>
     <style name="WidgetEndfield.Brand"><item name="android:textSize">@dimen/widget_endfield_brand</item></style>
-    <style name="WidgetEndfield.Amount"><item name="android:textSize">@dimen/widget_endfield_amount</item></style>
+    <style name="WidgetEndfield.Amount">
+        <item name="android:textSize">@dimen/widget_endfield_amount</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textFontWeight">700</item>
+    </style>
+    <style name="WidgetEndfield.AmountMax">
+        <item name="android:textSize">@dimen/widget_endfield_amount_max</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:textFontWeight">500</item>
+    </style>
     <style name="WidgetEndfield.SanityLabel"><item name="android:textSize">@dimen/widget_endfield_sanity_label</item></style>
     <style name="WidgetEndfield.Caption"><item name="android:textSize">@dimen/widget_endfield_caption</item></style>
     <style name="WidgetEndfield.Pill"><item name="android:textSize">@dimen/widget_endfield_pill</item></style>
     <style name="WidgetEndfield.Row"><item name="android:textSize">@dimen/widget_endfield_row</item></style>
-    <style name="WidgetEndfield.Value"><item name="android:textSize">@dimen/widget_endfield_value</item></style>
+    <style name="WidgetEndfield.Value">
+        <item name="android:textSize">@dimen/widget_endfield_value</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:textFontWeight">500</item>
+        <item name="android:fontFeatureSettings">tnum, lnum</item>
+    </style>
 </resources>

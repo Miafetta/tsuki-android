@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" android:id="@android:id/background" android:forceDarkAllowed="false"
-    android:layout_width="match_parent" android:layout_height="match_parent" android:clipChildren="false" android:clipToPadding="false"
-    android:orientation="vertical" android:background="@drawable/widget_host_dark">
-    <include layout="@layout/status_widget_native_v30_content" android:layout_width="match_parent" android:layout_height="match_parent" />
-</LinearLayout>

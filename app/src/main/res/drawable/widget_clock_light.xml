@@ -1,1 +1,10 @@
-<vector xmlns:android="http://schemas.android.com/apk/res/android" android:width="7.2dp" android:height="7.2dp" android:viewportWidth="16" android:viewportHeight="16"><path android:fillColor="#00000000" android:strokeColor="@color/widget_secondary_light" android:strokeWidth="1.84" android:pathData="M8,1a7,7 0,1 0,0 14a7,7 0,1 0,0 -14M8,4L8,8L11,10"/></vector>
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Official Skland Arknights open-arc clock geometry for light widgets. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android" android:width="10dp" android:height="10dp"
+    android:viewportWidth="10" android:viewportHeight="10">
+    <path android:fillColor="#00000000" android:strokeColor="@color/widget_secondary_light" android:strokeWidth="0.65"
+        android:strokeLineCap="round"
+        android:pathData="M8.204,4.081C7.998,3.361 7.555,2.732 6.947,2.295C6.34,1.857 5.602,1.637 4.854,1.67C4.106,1.703 3.391,1.986 2.824,2.475C2.257,2.964 1.871,3.629 1.728,4.364C1.585,5.099 1.694,5.861 2.037,6.526C2.38,7.192 2.937,7.723 3.618,8.033C4.299,8.344 5.065,8.416 5.793,8.238C6.52,8.06 7.166,7.642 7.627,7.052" />
+    <path android:fillColor="@color/widget_secondary_light" android:fillType="evenOdd"
+        android:pathData="M5.25,3C5.25,2.862 5.138,2.75 5,2.75C4.862,2.75 4.75,2.862 4.75,3V5C4.75,5.089 4.797,5.168 4.867,5.212L6.248,6.132C6.363,6.209 6.518,6.178 6.595,6.063C6.671,5.948 6.64,5.793 6.525,5.716L5.25,4.866V3Z" />
+</vector>

@@ -39,19 +39,29 @@
     <string name="status_preview_training">训练中</string>
     <string name="status_preview_time" translatable="false">08:30</string>
     <!-- font size is in dp: 12 against the 14.4dp amount text matches the renderer's title3/title2 span on the maximum. -->
-    <string name="status_preview_sanity" translatable="false">84<font size="12">/135</font></string>
+    <string name="status_preview_sanity" translatable="false">84<font size="12" color="#99000000">/135</font></string>
     <string name="status_preview_sanity_time" translatable="false">6h12m</string>
-    <string name="status_preview_drone" translatable="false">120<font size="12">/200</font></string>
+    <string name="status_preview_drone" translatable="false">120<font size="12" color="#99000000">/200</font></string>
     <string name="status_preview_drone_time" translatable="false">3h20m</string>
     <string name="status_preview_training_time" translatable="false">2h30m</string>
-    <string name="status_preview_recruit" translatable="false">2/4</string>
-    <string name="status_preview_fatigue" translatable="false">0</string>
-    <string name="status_preview_orders" translatable="false">8/20</string>
-    <string name="status_preview_jade" translatable="false">1200/1800</string>
-    <string name="status_preview_daily" translatable="false">7/10</string>
-    <string name="status_preview_rest" translatable="false">18/20</string>
-    <string name="status_preview_manufacture" translatable="false">15/64</string>
-    <string name="status_preview_tower" translatable="false">36/84</string>
+    <string name="status_preview_recruit" translatable="false"><font color="#FF3482FF">2</font>/4</string>
+    <string name="status_preview_fatigue" translatable="false"><font color="#FF3482FF">0</font></string>
+    <string name="status_preview_orders" translatable="false"><font color="#FF3482FF">8</font>/20</string>
+    <string name="status_preview_jade" translatable="false"><font color="#FF3482FF">1200</font>/1800</string>
+    <string name="status_preview_daily" translatable="false"><font color="#FF3482FF">7</font>/10</string>
+    <string name="status_preview_rest" translatable="false"><font color="#FF3482FF">18</font>/20</string>
+    <string name="status_preview_manufacture" translatable="false"><font color="#FF3482FF">15</font>/64</string>
+    <string name="status_preview_tower" translatable="false"><font color="#FF3482FF">36</font>/84</string>
+    <string name="status_preview_dark_sanity" translatable="false">84<font size="12" color="#CCFFFFFF">/135</font></string>
+    <string name="status_preview_dark_drone" translatable="false">120<font size="12" color="#CCFFFFFF">/200</font></string>
+    <string name="status_preview_dark_recruit" translatable="false"><font color="#FF22BBFF">2</font>/4</string>
+    <string name="status_preview_dark_fatigue" translatable="false"><font color="#FF22BBFF">0</font></string>
+    <string name="status_preview_dark_orders" translatable="false"><font color="#FF22BBFF">8</font>/20</string>
+    <string name="status_preview_dark_jade" translatable="false"><font color="#FF22BBFF">1200</font>/1800</string>
+    <string name="status_preview_dark_daily" translatable="false"><font color="#FF22BBFF">7</font>/10</string>
+    <string name="status_preview_dark_rest" translatable="false"><font color="#FF22BBFF">18</font>/20</string>
+    <string name="status_preview_dark_manufacture" translatable="false"><font color="#FF22BBFF">15</font>/64</string>
+    <string name="status_preview_dark_tower" translatable="false"><font color="#FF22BBFF">36</font>/84</string>
     <!-- Endfield card, after the official 明日方舟：终末地数据工具: one card, always dark like the official widget. -->
     <string name="endfield_widget_name">明日方舟：终末地数据工具</string>
     <string name="endfield_description">查看明日方舟：终末地的理智与任务进度</string>
@@ -66,10 +76,18 @@
     <string name="endfield_label_daily">日常活跃度</string>
     <string name="endfield_label_weekly">每周事务</string>
     <string name="endfield_label_pass">通行证等级</string>
+    <string name="endfield_label_seek">蚀像寻遗</string>
+    <string name="endfield_slash" translatable="false">/</string>
     <!-- Neutral sample card for the Endfield picker preview: never a real nickname or UID. -->
-    <string name="endfield_preview_sanity" translatable="false"><font color="#FFFAEE1C">84</font><font size="13" color="#FF9E9E9E"> /125</font></string>
-    <string name="endfield_preview_sanity_time">5小时40分钟</string>
-    <string name="endfield_preview_daily" translatable="false">60<font color="#FF9E9E9E">\u0020\u0020/100</font></string>
-    <string name="endfield_preview_weekly" translatable="false">4<font color="#FF9E9E9E">\u0020\u0020/\u200710</font></string>
-    <string name="endfield_preview_pass" translatable="false">12<font color="#FF9E9E9E">\u0020\u0020/\u200760</font></string>
+    <string name="endfield_preview_sanity" translatable="false">84</string>
+    <string name="endfield_preview_sanity_max" translatable="false">125</string>
+    <string name="endfield_preview_sanity_time" translatable="false">5h 40min</string>
+    <string name="endfield_preview_daily" translatable="false">60</string>
+    <string name="endfield_preview_daily_max" translatable="false">100</string>
+    <string name="endfield_preview_weekly" translatable="false">4</string>
+    <string name="endfield_preview_weekly_max" translatable="false">10</string>
+    <string name="endfield_preview_pass" translatable="false">12</string>
+    <string name="endfield_preview_pass_max" translatable="false">60</string>
+    <string name="endfield_preview_seek" translatable="false">0</string>
+    <string name="endfield_preview_seek_max" translatable="false">20w</string>
 </resources>

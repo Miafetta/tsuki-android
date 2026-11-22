@@ -106,7 +106,7 @@ private fun MetricCardPreview(@PreviewParameter(ThemeProvider::class) theme: Str
 @Composable
 private fun TrainingCardPreview(@PreviewParameter(ThemeProvider::class) theme: String) {
     TsukiAppTheme(theme) {
-        TrainingCard("空闲中", "暂无专精训练") { Image(painterResource(R.drawable.widget_training_light), null, it) }
+        TrainingCard("空闲中", "暂无专精训练") { Image(painterResource(R.drawable.widget_training_v2_light), null, it) }
     }
 }
 

@@ -55,6 +55,7 @@ internal data class SklandRole(val uid: String, val label: String, val game: Skl
 internal object SklandRoles {
     private const val PER_LIST = 20
     const val LIMIT = 40
+    private val TAGGED_NAME = Regex(".+#\\d+$")
 
     // An account is valid when it has a role in at least one supported game; unknown games are skipped.
     fun parse(data: JSONObject): List<SklandRole> {
@@ -73,6 +74,77 @@ internal object SklandRoles {
         require(roles.isNotEmpty() && roles.size <= LIMIT && roles.distinctBy { it.key }.size == roles.size)
         return roles
     }
+
+    // Skland's binding list omits Endfield's "#<digits>" tag, which appears on the compact Endfield card
+    // (/api/v1/game/cards). Upgrade a role's label only when the card's base name uniquely identifies it.
+    fun applyEndfieldCards(roles: List<SklandRole>, binding: JSONObject, cards: JSONObject): List<SklandRole> {
+        val entries = endfieldCards(cards)
+        if (entries.isEmpty()) return roles
+        val meta = endfieldMeta(binding)
+        val updated = roles.toMutableList()
+        for (card in entries) {
+            var candidates = updated.indices.filter { index ->
+                updated[index].game == SklandGame.ENDFIELD && updated[index].label == card.baseName
+            }
+            if (candidates.size > 1 && card.channelId != null) {
+                candidates.filter { meta[updated[it].uid]?.channelId == card.channelId }.takeIf { it.isNotEmpty() }
+                    ?.let { candidates = it }
+            }
+            if (candidates.size > 1) {
+                candidates.filter { meta[updated[it].uid]?.isDefault == true }.takeIf { it.isNotEmpty() }
+                    ?.let { candidates = it }
+            }
+            if (candidates.size == 1) {
+                val target = candidates.single()
+                updated[target] = updated[target].copy(label = card.taggedName)
+            }
+        }
+        return updated
+    }
+
+    private fun endfieldCards(cards: JSONObject): List<EndfieldCardName> {
+        val list = cards.optJSONArray("list") ?: return emptyList()
+        return (0 until list.length()).mapNotNull { index ->
+            val item = list.optJSONObject(index) ?: return@mapNotNull null
+            val endfield = item.optJSONObject("endfield") ?: return@mapNotNull null
+            val raw = endfield.opt("name") as? String ?: return@mapNotNull null
+            val name = raw.filterNot { it.isISOControl() }.trim()
+            if (name.length > 40 || !name.matches(TAGGED_NAME)) return@mapNotNull null
+            val baseName = name.substringBeforeLast('#').trim().ifEmpty { return@mapNotNull null }
+            val channelId = item.opt("channelId")?.takeIf { it != JSONObject.NULL }?.toString()
+                ?.takeIf { it.isNotEmpty() && it != "0" }
+            EndfieldCardName(name, baseName, channelId)
+        }
+    }
+
+    private fun endfieldMeta(binding: JSONObject): Map<String, EndfieldRoleMeta> {
+        val apps = binding.optJSONArray("list") ?: return emptyMap()
+        val result = mutableMapOf<String, EndfieldRoleMeta>()
+        for (appIndex in 0 until apps.length()) {
+            val app = apps.optJSONObject(appIndex) ?: continue
+            if (app.optString("appCode") != SklandGame.ENDFIELD.appCode) continue
+            val bindings = app.optJSONArray("bindingList") ?: continue
+            for (bIndex in 0 until bindings.length()) {
+                val entry = bindings.optJSONObject(bIndex) ?: continue
+                if (entry.optBoolean("isDelete")) continue
+                val channelId = entry.optString("channelMasterId").ifBlank { null }
+                val defaultRoleId = entry.optJSONObject("defaultRole")?.optString("roleId").orEmpty()
+                val roles = entry.optJSONArray("roles") ?: continue
+                for (rIndex in 0 until roles.length()) {
+                    val role = roles.optJSONObject(rIndex) ?: continue
+                    val serverId = role.optString("serverId")
+                    val roleId = role.optString("roleId")
+                    val uid = runCatching { SklandRole.endfieldId(serverId, roleId) }.getOrNull() ?: continue
+                    val isDefault = role.optBoolean("isDefault") || (defaultRoleId.isNotEmpty() && defaultRoleId == roleId)
+                    result[uid] = EndfieldRoleMeta(channelId, isDefault)
+                }
+            }
+        }
+        return result
+    }
+
+    private data class EndfieldCardName(val taggedName: String, val baseName: String, val channelId: String?)
+    private data class EndfieldRoleMeta(val channelId: String?, val isDefault: Boolean)
 
     private fun arknights(bindings: JSONArray) = (0 until bindings.length()).map { index ->
         val role = bindings.getJSONObject(index)

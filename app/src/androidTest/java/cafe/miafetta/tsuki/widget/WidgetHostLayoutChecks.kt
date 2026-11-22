@@ -47,11 +47,14 @@ internal fun checkSurfaceAndAvatar(context: Context, root: View, theme: WidgetTh
 internal fun checkThemeColors(context: Context, root: View, theme: WidgetTheme) {
     val textColor = context.getColor(if (theme == WidgetTheme.LIGHT) R.color.widget_text_light
         else R.color.widget_text_dark)
-    for (id in listOf(R.id.status_title, R.id.status_sanity, R.id.status_drone,
-        R.id.status_training, R.id.status_recruit, R.id.status_orders,
-        R.id.status_manufacture, R.id.status_fatigue, R.id.status_jade, R.id.status_tower,
-        R.id.status_daily, R.id.status_rest)) {
+    for (id in listOf(R.id.status_title, R.id.status_sanity, R.id.status_drone, R.id.status_training)) {
         check(root.findViewById<TextView>(id).currentTextColor == textColor) { "Mixed theme" }
+    }
+    val summaryColor = context.getColor(if (theme == WidgetTheme.LIGHT) R.color.widget_accent_light
+        else R.color.widget_accent_dark)
+    for (id in listOf(R.id.status_recruit, R.id.status_orders, R.id.status_manufacture, R.id.status_fatigue,
+        R.id.status_jade, R.id.status_tower, R.id.status_daily, R.id.status_rest)) {
+        check(root.findViewById<TextView>(id).currentTextColor == summaryColor) { "Mixed summary theme" }
     }
     val secondary = context.getColor(if (theme == WidgetTheme.LIGHT) R.color.widget_secondary_light
         else R.color.widget_secondary_dark)

@@ -2,45 +2,44 @@
 <resources>
     <color name="widget_text_dark">#FFFFFFFF</color>
     <color name="widget_text_light">@color/miuix_widget_on_surface_light</color>
-    <color name="widget_background_dark">#FF353535</color>
+    <!-- Official Skland Arknights widget dark tone (base behind widget_arknights_bg_dark.webp). -->
+    <color name="widget_background_dark">#FF323232</color>
     <color name="widget_background_light">@color/miuix_widget_surface_light</color>
-    <color name="widget_secondary_dark">#FFC2C2C2</color>
+    <color name="widget_secondary_dark">#B2FFFFFF</color>
     <color name="widget_secondary_light">@color/miuix_widget_summary_light</color>
-    <color name="widget_label_dark">#FFD6D6D6</color>
+    <color name="widget_label_dark">#CCFFFFFF</color>
     <color name="widget_label_light">@color/miuix_widget_summary_light</color>
-    <!-- Refresh text and arrow on dark widgets, and on light widgets at night via values-night/widget_palette.xml:
-         the official Skland widget's check-in blue, estimated from a device screenshot after correcting the capture
-         shift measured on Tsuki's known #277AF7 refresh in the same image. -->
-    <color name="widget_accent_dark">#FF3BB8FF</color>
+    <!-- Official Skland Arknights accent blue (sk_game_arknights): refresh and dark summary counts. -->
+    <color name="widget_accent_dark">#FF22BBFF</color>
     <!-- Day light widgets keep the Miuix primary for refresh. -->
     <color name="widget_accent_light">@color/miuix_widget_primary_light</color>
-    <!-- Summary cells are translucent so the light widget's host blur shows through. Dark (also light widgets at
-         night): 19% black, which over the opaque #353535 dark surface composites to the former solid #2B2B2B. -->
-    <color name="widget_cell_dark">#30000000</color>
+    <!-- Summary cells are translucent: official Skland #8C222222 on dark cards (and light widgets at night),
+         letting the artwork or host blur show through while keeping high contrast. -->
+    <color name="widget_cell_dark">#8C222222</color>
     <!-- Light: 60% white over the host blur material. -->
     <color name="widget_cell_light">#99FFFFFF</color>
     <!-- Extra cells (daily tasks, rest progress) share the summary cell surfaces above. -->
-    <color name="widget_extra_dark">#30000000</color>
+    <color name="widget_extra_dark">#8C222222</color>
     <color name="widget_extra_light">#99FFFFFF</color>
-    <color name="widget_track_dark">#FF878787</color>
+    <color name="widget_track_dark">#80D9D9D9</color>
     <color name="widget_track_light">@color/miuix_widget_container_light</color>
     <color name="widget_progress_dark">#FFD9D9D9</color>
     <color name="widget_progress_light">@color/miuix_widget_primary_light</color>
     <color name="widget_time_light">@color/miuix_widget_summary_light</color>
-    <!-- Endfield card, sampled from the official 明日方舟：终末地数据工具 (maintainer's screenshot, 2026-11-06); always dark. The
-         surface is the official average tone under a drawn texture (widget_endfield_texture); the panels darken it to the
-         official #383838 while letting the texture through, and carry a faint rim. -->
-    <color name="widget_endfield_surface">#FF444444</color>
-    <color name="widget_endfield_panel">#2E000000</color>
-    <color name="widget_endfield_panel_rim">#1AFFFFFF</color>
-    <color name="widget_endfield_yellow">#FFFAEE1C</color>
+    <!-- Endfield card, aligned to the official Android Skland Endfield widget (always dark). -->
+    <color name="widget_endfield_surface">#FF292929</color>
+    <color name="widget_endfield_panel">#FF363636</color>
+    <color name="widget_endfield_panel_rim">#33FFFFFF</color>
+    <color name="widget_endfield_yellow">#FFFFF100</color>
     <color name="widget_endfield_text">#FFFFFFFF</color>
-    <color name="widget_endfield_secondary">#FF9E9E9E</color>
-    <color name="widget_endfield_pill">#FF474747</color>
-    <color name="widget_endfield_dot">#FFF27D1E</color>
-    <color name="widget_endfield_divider">#FF4A4A4A</color>
-    <color name="widget_endfield_track">#FF545454</color>
-    <color name="widget_endfield_fill">#FFE0E0E0</color>
-    <color name="widget_endfield_magenta">#FFE040D3</color>
-    <color name="widget_endfield_cyan">#FF22C7AC</color>
+    <color name="widget_endfield_row_text">#E6FFFFFF</color>
+    <color name="widget_endfield_secondary">#B2FFFFFF</color>
+    <color name="widget_endfield_refresh_text">#73FFFFFF</color>
+    <color name="widget_endfield_slash">#FFA7A7A7</color>
+    <color name="widget_endfield_pill">#12FFFFFF</color>
+    <color name="widget_endfield_dot">#FFFF7500</color>
+    <color name="widget_endfield_dot_green">#FF7DCB1A</color>
+    <color name="widget_endfield_divider">#14FFFFFF</color>
+    <color name="widget_endfield_magenta">#FFFF00FE</color>
+    <color name="widget_endfield_cyan">#FF00FFB8</color>
 </resources>

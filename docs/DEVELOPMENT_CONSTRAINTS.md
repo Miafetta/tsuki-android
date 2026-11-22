@@ -9,7 +9,7 @@
 - `AndroidManifest.xml` 中的 Activity、Provider、Receiver、Service 以及被 `PendingIntent`／`ComponentName`／`tsuki://` 深链引用的类：不移动、不改名。需要调整职责时，原类保留为薄壳。提醒任务 `ReminderJob` 是持久任务，系统在重启和应用更新后按组件名恢复它，所以同样适用。
 - 已发出的通知里的 `PendingIntent` 会跨应用更新保留：`ReminderLaunch` 的 extras 键与 `MainActivity` 对它们的解析保持兼容。提醒的通知渠道 ID（`ReminderNotifications.channelId`）发布后不改，用户对声音与振动的设置按渠道 ID 保存。
 - `app/widget-resource-ids.txt` 与 `--stable-ids`：资源名和编号保持含义，已删除的编号不复用。只有钉入的条目编号固定；未钉资源的编号会随新增资源移动，所以 RemoteViews 布局与动作引用的资源（含被布局引用的 `strings.xml` 条目）都必须钉入。HyperOS 桌面会沿用已放置部件中同一编号的位图（PNG），应用更新后也不重新读取，所以重绘位图时要换新资源名，旧名在 `ProbeManifestTest` 的退役清单中保留编号；XML 形状与颜色不受影响。
-- Provider 元数据：`miuiWidgetVersion=54`（应用级、所有部件共用；小部件布局、外观或元数据变化时只升不降）、4×2 尺寸、《明日方舟》浅色／深色两套主题布局、终末地固定深色一套，以及曝光元数据；资源收缩保持关闭。
+- Provider 元数据：`miuiWidgetVersion=56`（应用级、所有部件共用；小部件布局、外观或元数据变化时只升不降）、4×2 尺寸、《明日方舟》浅色／深色两套主题布局、终末地固定深色一套，以及曝光元数据；资源收缩保持关闭。
 - 桌面部件资源：`res/layout/status_widget*.xml`、`endfield_widget*.xml`、`probe_widget.xml`、`res/drawable*/widget_*` 与 `avatar_placeholder_*`、`res/values*/widget_palette.xml`、`res/values*/widget_placeholder.xml`、`colors.xml`、`miuix_widget_tokens.xml`、`widget_endfield_dimens.xml`、`widget_retired_ids.xml`（已退役的 View ID，只为保留编号）、`styles.xml` 中的 `Widget*` 样式、`res/xml/*`，以及 `strings.xml` 中被小部件布局引用的 `status_*` 与 `endfield_*` 条目。
 - 跨进程协议与存储：`StorageContract`（包括提醒操作 `REMINDERS`、`SAVE_REMINDER`、`DELETE_REMINDER`、`SET_REMINDERS_ENABLED`）、`StorageCalls`、`SnapshotJson`，以及 `core/` 的实例存储、角色缓存 schema、协调器和提醒文件（`ReminderStore` 写在 `noBackupFilesDir` 的 `reminders/v1.json`，格式由 `ReminderJson` 定义）。
 
@@ -36,7 +36,7 @@
 - 电脑版在弹窗中登录，页面不一定跳转，因此登录页打开期间每秒在本机读取一次当前官方页面存储中的 Cred 键，取得后停止。这是本地读取，不发请求，不属于 §2 所说的轮询。
 - 网页登录的 WebView 只在主进程使用：不添加 JavaScript 接口；主框架导航只放行 `SklandWebLogin` 白名单中的 https 域名，其他一律拦截，不转交外部应用；禁用文件与内容访问、多窗口、地理位置和混合内容，不处理下载，`isSaveEnabled = false`。
 - 手动填写 Cred 的表单永久保留，作为兜底；它只接受 Cred 值，不解析 Cookie 或其他格式。输入框带“粘贴”和“显示／隐藏”按钮：只在用户点击粘贴时读取一次剪贴板，默认隐藏内容。账号名称是可选的别名，按填写的原样保存，可以为空；为空时界面以平台名称称呼该账号（例如“森空岛账号”），不从某个游戏的角色推断账号名称。编辑页取得 Cred（网页登录、粘贴或输入）后，如果名称框为空，`StorageContract.PLATFORM_NAME` 在 `:widgetProvider` 中读取一次森空岛账号资料（`/api/v1/user`），只取 `data.user.nickname` 填入名称框，由用户修改或清空；用户已填的名称不覆盖，读取失败时名称留空，不阻断添加。资料的其他字段不保存、不传回界面进程，昵称只在用户保存账号后作为名称存入本机。
-- `SklandClient` 只请求 `SklandClient.PATHS` 中的路径：`/api/v1/auth/refresh`、`/api/v1/game/player/binding`、`/api/v1/game/player/info`、`/api/v1/user`（只取昵称）、`/api/v1/user/teenager`（只取用户 ID，保存在内存中）与 `/web/v1/game/endfield/card/detail`；新增路径要同步隐私说明。
+- `SklandClient` 只请求 `SklandClient.PATHS` 中的路径：`/api/v1/auth/refresh`、`/api/v1/game/cards`（验证含终末地角色的账号时，只取终末地角色带 `#编号` 的显示名称）、`/api/v1/game/player/binding`、`/api/v1/game/player/info`、`/api/v1/user`（只取昵称）、`/api/v1/user/teenager`（只取用户 ID，保存在内存中）与 `/web/v1/game/endfield/card/detail`；新增路径要同步隐私说明。
 
 ## 4. 部件放置
 

@@ -1,11 +1,6 @@
 package cafe.miafetta.tsuki.widget
 
 import android.content.Context
-import android.text.SpannableString
-import android.text.Spanned
-import android.text.style.ForegroundColorSpan
-import android.text.style.RelativeSizeSpan
-import android.text.style.StyleSpan
 import android.util.TypedValue
 import android.view.View
 import android.widget.RemoteViews
@@ -13,38 +8,36 @@ import cafe.miafetta.tsuki.R
 import cafe.miafetta.tsuki.core.WidgetMetric
 import cafe.miafetta.tsuki.core.WidgetRecord
 import cafe.miafetta.tsuki.core.WidgetSnapshot
-import cafe.miafetta.tsuki.core.durationWords
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-// The Endfield card (endfield_widget*), after the official 明日方舟：终末地数据工具 and always dark like it. Header marks, sanity
-// panel, rows, band and stripe follow the official card; the surface texture and its extra header buttons are not copied.
-// It shares the Arknights card's refresh hit area, actions, status texts and per-size rendering.
+// The Endfield card (endfield_widget_v3), aligned to the official Android Skland Endfield widget and always dark.
+// Shares the Arknights card's refresh hit area, actions, status texts and per-size rendering.
 internal object EndfieldCard {
     fun render(context: Context, id: Int, record: WidgetRecord?, storageError: Boolean, width: Float, height: Float,
         snapshotOverride: WidgetSnapshot? = null): RemoteViews {
-        val views = RemoteViews(context.packageName, R.layout.endfield_widget)
+        val views = RemoteViews(context.packageName, R.layout.endfield_widget_v3)
         val snapshot = snapshotOverride ?: record?.snapshot
         val now = System.currentTimeMillis()
-        bindPalette(views)
         val sanity = snapshot?.let { cardMetric(it, "理智") }
-        views.setTextViewText(R.id.status_sanity, amount(context, sanity, yellow = true))
-        val pill = when {
-            record == null && snapshotOverride == null && !storageError -> context.getString(R.string.endfield_tap_configure)
-            else -> sanityTimer(context, sanity, now)
-        }
+        val sanityFull = isSanityFull(sanity, now)
+        bindPalette(views, sanityFull)
+        bindSanity(views, sanity)
+        val unconfigured = record == null && snapshotOverride == null && !storageError
+        val pill = if (unconfigured) context.getString(R.string.endfield_tap_configure) else sanityTimer(context, sanity, now)
         views.setTextViewText(R.id.status_sanity_time, pill)
+        val recovering = !unconfigured && !sanityFull && sanity?.recoveryAt?.let { it > now } == true
+        views.setImageViewResource(R.id.status_sanity_clock,
+            if (recovering) R.drawable.widget_endfield_dot_green else R.drawable.widget_endfield_dot)
         for (row in endfieldRows) bindRow(context, views, row, snapshot)
         val status = cardStatus(record, storageError)
         val failure = record?.failure?.let { context.getString(cafe.miafetta.tsuki.failureMessage(it.name)) }.orEmpty()
         val known = snapshot?.takeIf { it.dataTimeKnown }
         val time = known?.let { SimpleDateFormat("MM-dd HH:mm", Locale.getDefault()).format(Date(it.dataAt)) } ?: "数据时间未知"
-        // The official header has no data time; it stays in the descriptions.
         val rows = endfieldRows.joinToString("，") { row ->
             "${context.getString(row.text)} ${cardAmount(snapshot?.let { cardMetric(it, row.metricLabel) })}"
         }
-        // The header shows the platform and game marks like the official card, so the role is named here.
         val marks = context.getString(R.string.endfield_brand_platform) + " " + context.getString(R.string.endfield_brand_game)
         views.setContentDescription(android.R.id.background, listOfNotNull(marks,
             snapshot?.title ?: context.getString(R.string.endfield_unconfigured),
@@ -66,69 +59,100 @@ internal object EndfieldCard {
         return views
     }
 
-    // Colors are resource references resolved when the host applies cached actions, as on the Arknights card.
-    private fun bindPalette(views: RemoteViews) {
+    // Official widget shows sanity yellow when full and white while recovering, using separate views so HyperOS keeps every tone.
+    private fun bindPalette(views: RemoteViews, sanityFull: Boolean) {
         val text = R.color.widget_endfield_text
+        val rowText = R.color.widget_endfield_row_text
         val secondary = R.color.widget_endfield_secondary
-        val primary = listOf(R.id.endfield_sanity_label, R.id.status_sanity_time) + endfieldRows.flatMap { listOf(it.label, it.value) }
-        for (viewId in primary) views.setColor(viewId, "setTextColor", text)
-        // The sanity amount is yellow by its text colour too: the HyperOS desktop showed it white with only the span.
-        views.setColor(R.id.status_sanity, "setTextColor", R.color.widget_endfield_yellow)
-        for (viewId in listOf(R.id.status_refresh, R.id.endfield_recovery_label)) views.setColor(viewId, "setTextColor", secondary)
-        views.setColor(R.id.status_refresh_arrow, "setColorFilter", secondary)
+        val slash = R.color.widget_endfield_slash
+        views.setColor(R.id.status_sanity, "setTextColor", if (sanityFull) R.color.widget_endfield_yellow else text)
+        views.setColor(R.id.endfield_sanity_slash, "setTextColor", slash)
+        views.setColor(R.id.endfield_sanity_max, "setTextColor", secondary)
+        views.setColor(R.id.endfield_sanity_label, "setTextColor", text)
+        views.setColor(R.id.endfield_recovery_label, "setTextColor", secondary)
+        views.setColor(R.id.status_sanity_time, "setTextColor", rowText)
+        views.setColor(R.id.status_refresh, "setTextColor", R.color.widget_endfield_refresh_text)
+        for (row in endfieldRows) {
+            views.setColor(row.label, "setTextColor", rowText)
+            views.setColor(row.value, "setTextColor", text)
+            views.setColor(row.slash, "setTextColor", slash)
+            views.setColor(row.maximum, "setTextColor", secondary)
+        }
+    }
+
+    private fun bindSanity(views: RemoteViews, sanity: WidgetMetric?) {
+        if (sanity == null) {
+            views.setTextViewText(R.id.status_sanity, "未知")
+            views.setViewVisibility(R.id.endfield_sanity_slash, View.GONE)
+            views.setViewVisibility(R.id.endfield_sanity_max, View.GONE)
+            return
+        }
+        views.setTextViewText(R.id.status_sanity, sanity.text ?: sanity.value.toString())
+        val max = sanity.maximum?.takeIf { sanity.text == null }
+        views.setViewVisibility(R.id.endfield_sanity_slash, if (max != null) View.VISIBLE else View.GONE)
+        views.setViewVisibility(R.id.endfield_sanity_max, if (max != null) View.VISIBLE else View.GONE)
+        if (max != null) views.setTextViewText(R.id.endfield_sanity_max, max.toString())
     }
 
     private fun bindRow(context: Context, views: RemoteViews, row: EndfieldRow, snapshot: WidgetSnapshot?) {
         val metric = snapshot?.let { cardMetric(it, row.metricLabel) }
         views.setTextViewText(row.label, context.getString(row.text))
-        views.setTextViewText(row.value, amount(context, metric, yellow = false))
-        // Progress geometry stays in basic layouts, independent of the host's ProgressBar styling.
-        val level = progressLevel(metric)
-        views.setInt(row.progress, "setLayoutDirection", View.LAYOUT_DIRECTION_LTR)
-        views.setFloat(row.progress, "setWeightSum", 10000f / (level ?: 0).coerceAtLeast(1))
-        views.setColor(row.progress, "setBackgroundColor", R.color.widget_endfield_track)
-        views.setColor(row.fill, "setBackgroundColor", R.color.widget_endfield_fill)
-        views.setViewVisibility(row.fill, if ((level ?: 0) > 0) View.VISIBLE else View.GONE)
-        views.setViewVisibility(row.progress, if (level == null) View.INVISIBLE else View.VISIBLE)
-    }
-
-    // "125 /125" on the sanity panel (current in yellow, the maximum smaller and grey) and "0 /100" in the rows (current bold).
-    private fun amount(context: Context, metric: WidgetMetric?, yellow: Boolean): CharSequence {
-        if (metric == null) return "未知"
-        val current = metric.text ?: metric.value.toString()
-        // The rows keep the maximum in a fixed-width column like the official card ("0  /100", "0  / 10"); figure spaces
-        // (U+2007) have a digit's width.
-        val maximum = metric.maximum?.takeIf { metric.text == null }?.let {
-            if (yellow) " /$it" else "  /" + it.toString().padStart(3, ' ')
-        }.orEmpty()
-        val styled = SpannableString(current + maximum)
-        val resources = context.resources
-        if (yellow) styled.setSpan(ForegroundColorSpan(resources.getColor(R.color.widget_endfield_yellow, null)), 0, current.length,
-            Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
-        else styled.setSpan(StyleSpan(android.graphics.Typeface.BOLD), 0, current.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
-        if (maximum.isNotEmpty()) {
-            styled.setSpan(ForegroundColorSpan(resources.getColor(R.color.widget_endfield_secondary, null)), current.length,
-                styled.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
-            if (yellow) styled.setSpan(RelativeSizeSpan(resources.getDimension(R.dimen.widget_endfield_amount_max) /
-                resources.getDimension(R.dimen.widget_endfield_amount)), current.length, styled.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+        if (metric == null) {
+            views.setTextViewText(row.value, "未知")
+            views.setViewVisibility(row.slash, View.GONE)
+            views.setViewVisibility(row.maximum, View.GONE)
+            return
         }
-        return styled
+        views.setTextViewText(row.value, metric.text ?: compactEndfieldCount(metric.value))
+        val max = metric.maximum?.takeIf { metric.text == null }
+        views.setViewVisibility(row.slash, if (max != null) View.VISIBLE else View.GONE)
+        views.setViewVisibility(row.maximum, if (max != null) View.VISIBLE else View.GONE)
+        if (max != null) views.setTextViewText(row.maximum, compactEndfieldCount(max))
     }
 
-    // The official card says "理智已达上限" once full, and the time to full before that.
+    private fun isSanityFull(metric: WidgetMetric?, now: Long): Boolean {
+        if (metric == null) return false
+        if (metric.maximum != null && metric.value >= metric.maximum) return true
+        return metric.recoveryAt?.let { it <= now } == true
+    }
+
+    // Official widget shows "理智已达上限" once full, and "Xh Ymin" / "Ymin" before that.
     private fun sanityTimer(context: Context, metric: WidgetMetric?, now: Long): String {
-        val at = metric?.recoveryAt ?: return "时间未知"
-        return if (at <= now) context.getString(R.string.endfield_sanity_full) else durationWords(at - now)
+        val at = metric?.recoveryAt ?: return if (metric?.maximum != null && metric.value >= metric.maximum) {
+            context.getString(R.string.endfield_sanity_full)
+        } else "时间未知"
+        return if (at <= now) context.getString(R.string.endfield_sanity_full) else endfieldRecoveryText(at - now)
     }
 
     private fun bindTextSizes(context: Context, views: RemoteViews, scale: Float) {
         val units = TypedValue.COMPLEX_UNIT_DIP
         fun size(resource: Int) = context.resources.getDimension(resource) / context.resources.displayMetrics.density * scale
-        // The sizes the layouts declare (widget_endfield_dimens.xml), scaled to this widget size.
         val sizes = listOf(R.id.status_refresh to R.dimen.widget_endfield_brand,
-            R.id.status_sanity to R.dimen.widget_endfield_amount, R.id.endfield_sanity_label to R.dimen.widget_endfield_sanity_label,
-            R.id.endfield_recovery_label to R.dimen.widget_endfield_caption, R.id.status_sanity_time to R.dimen.widget_endfield_pill) +
-            endfieldRows.flatMap { listOf(it.label to R.dimen.widget_endfield_row, it.value to R.dimen.widget_endfield_value) }
+            R.id.status_sanity to R.dimen.widget_endfield_amount,
+            R.id.endfield_sanity_slash to R.dimen.widget_endfield_amount_max,
+            R.id.endfield_sanity_max to R.dimen.widget_endfield_amount_max,
+            R.id.endfield_sanity_label to R.dimen.widget_endfield_sanity_label,
+            R.id.endfield_recovery_label to R.dimen.widget_endfield_caption,
+            R.id.status_sanity_time to R.dimen.widget_endfield_pill) +
+            endfieldRows.flatMap {
+                listOf(it.label to R.dimen.widget_endfield_row, it.value to R.dimen.widget_endfield_value,
+                    it.slash to R.dimen.widget_endfield_value, it.maximum to R.dimen.widget_endfield_value)
+            }
         for ((viewId, resource) in sizes) views.setTextViewTextSize(viewId, units, size(resource))
     }
+}
+
+// Official Endfield recovery format: "Xh Ymin" when an hour or more remains, otherwise "Ymin" (minimum 1min before full).
+internal fun endfieldRecoveryText(millis: Long): String {
+    val minutes = ((millis.coerceAtLeast(0) + 59_999) / 60_000).coerceAtLeast(1)
+    val hours = minutes / 60
+    val rem = minutes % 60
+    return if (hours > 0) "${hours}h ${rem}min" else "${rem}min"
+}
+
+// Official Endfield widget compacts 10,000+ counts to "w" (e.g. 200000 -> "20w", 125000 -> "12.5w"), floored to 0.1w.
+internal fun compactEndfieldCount(value: Int): String {
+    if (value < 10_000) return value.toString()
+    val tenths = value / 1000
+    return if (tenths % 10 == 0) "${tenths / 10}w" else "${tenths / 10}.${tenths % 10}w"
 }

@@ -2,6 +2,7 @@ package cafe.miafetta.tsuki.widget
 
 import android.text.SpannableString
 import android.text.Spanned
+import android.text.style.ForegroundColorSpan
 import android.text.style.RelativeSizeSpan
 import android.util.TypedValue
 import android.view.View
@@ -21,9 +22,8 @@ internal fun CardViews.bindSurface() {
     views.setViewVisibility(R.id.status_native_content, View.VISIBLE)
     views.setInt(R.id.status_native_content, "setBackgroundResource", 0)
     if (light) {
-        views.setImageViewResource(R.id.status_native_surface, 0)
-        views.setImageViewResource(R.id.status_native_surface, R.drawable.widget_instance_light_surface)
-        views.setViewVisibility(R.id.status_native_surface, View.GONE)
+        views.setImageViewResource(R.id.status_native_surface, R.drawable.widget_arknights_bg_light)
+        views.setViewVisibility(R.id.status_native_surface, View.VISIBLE)
     }
 }
 
@@ -45,19 +45,25 @@ internal fun CardViews.bindPalette() {
         views.setColor(viewId, "setTextColor", if (light) R.color.widget_label_light else R.color.widget_label_dark)
     }
     for (viewId in clockIds) views.setImageViewResource(viewId, if (light) R.drawable.widget_clock_light else R.drawable.widget_clock_dark)
-    views.setImageViewResource(R.id.status_sanity_icon, if (light) R.drawable.widget_sanity_light else R.drawable.widget_sanity_dark)
-    views.setImageViewResource(R.id.status_drone_icon, if (light) R.drawable.widget_drone_light else R.drawable.widget_drone_dark)
+    views.setImageViewResource(R.id.status_sanity_icon,
+        if (light) R.drawable.widget_sanity_v2_light else R.drawable.widget_sanity_v2_dark)
+    views.setImageViewResource(R.id.status_drone_icon,
+        if (light) R.drawable.widget_drone_v2_light else R.drawable.widget_drone_v2_dark)
 }
 
 internal fun CardViews.bindPrimaryMetrics(snapshot: WidgetSnapshot?, now: Long) {
     val ratio = context.resources.getDimension(R.dimen.miuix_widget_title3) / context.resources.getDimension(R.dimen.miuix_widget_title2)
+    val maxColor = context.getColor(if (light) R.color.widget_secondary_light else R.color.widget_label_dark)
     for ((label, valueId, timeId) in listOf(Triple("理智", R.id.status_sanity, R.id.status_sanity_time),
         Triple("无人机", R.id.status_drone, R.id.status_drone_time))) {
         val metric = snapshot?.let { cardMetric(it, label) }
         val amount = cardAmount(metric)
         val styled = SpannableString(amount)
         val slash = amount.indexOf('/')
-        if (slash >= 0) styled.setSpan(RelativeSizeSpan(ratio), slash, amount.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+        if (slash >= 0) {
+            styled.setSpan(RelativeSizeSpan(ratio), slash, amount.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+            styled.setSpan(ForegroundColorSpan(maxColor), slash, amount.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+        }
         views.setTextViewText(valueId, styled)
         views.setTextViewText(timeId, recoveryTimer(metric, now))
     }
@@ -74,9 +80,23 @@ internal fun CardViews.bindTraining(training: WidgetTraining, now: Long) {
 }
 
 internal fun CardViews.bindSummary(snapshot: WidgetSnapshot?) {
+    val accentColor = if (light) R.color.widget_accent_light else R.color.widget_accent_dark
+    val suffixColor = context.getColor(if (light) R.color.widget_text_light else R.color.widget_text_dark)
     cardSecondary(snapshot).forEachIndexed { index, (label, amount) ->
         views.setTextViewText(summaryLabelIds[index], context.getString(label))
-        views.setTextViewText(summaryValueIds[index], amount)
+        val valueId = summaryValueIds[index]
+        if (amount != "未知") {
+            // Accent base colour keeps the current count accented on HyperOS; span restores primary text from "/".
+            views.setColor(valueId, "setTextColor", accentColor)
+            val slash = amount.indexOf('/')
+            if (slash >= 0) {
+                val styled = SpannableString(amount)
+                styled.setSpan(ForegroundColorSpan(suffixColor), slash, amount.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+                views.setTextViewText(valueId, styled)
+            } else views.setTextViewText(valueId, amount)
+        } else {
+            views.setTextViewText(valueId, amount)
+        }
     }
     for (viewId in summaryCellIds) {
         views.setInt(viewId, "setBackgroundResource", if (light) R.drawable.widget_cell_light else R.drawable.widget_cell_dark)

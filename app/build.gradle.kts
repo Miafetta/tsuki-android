@@ -12,8 +12,8 @@ android {
         applicationId = "cafe.miafetta.tsuki"
         minSdk = 33
         targetSdk = 37
-        versionCode = 88
-        versionName = "2.3.1"
+        versionCode = 89
+        versionName = "2.3.2"
         manifestPlaceholders["debugToolsEnabled"] = "false"
         testInstrumentationRunner = "cafe.miafetta.tsuki.widget.WidgetRenderInstrumentation"
     }

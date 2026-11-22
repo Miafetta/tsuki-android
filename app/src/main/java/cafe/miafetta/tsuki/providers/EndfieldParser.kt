@@ -17,7 +17,8 @@ internal object EndfieldParser {
             "maxDailyActivation"),
         Module("REALTIME_MODULE_WEEKLY_MISSION", "每周事务", "endfield.weekly_mission", "weeklyMission", "score", "total"),
         Module("REALTIME_MODULE_BP_SYSTEM", "通行证", "endfield.pass_level", "bpSystem", "curLevel", "maxLevel"),
-        Module("REALTIME_MODULE_SEEK_SUSPICION", "蚀像寻遗", "endfield.seek_suspicion", "seekSuspicion", "count", "total"),
+        Module("REALTIME_MODULE_SEEK_SUSPICION", "蚀像寻遗", "endfield.seek_suspicion", "seekSuspicion", "count", "total",
+            clamp = true),
     )
 
     // Sanity is required; a missing or malformed realtime module only adds a note.
@@ -65,12 +66,12 @@ internal object EndfieldParser {
     }
 
     private data class Module(val id: String, val label: String, val metricId: String, val key: String,
-        val currentKey: String, val maximumKey: String) {
+        val currentKey: String, val maximumKey: String, val clamp: Boolean = false) {
         fun read(detail: JSONObject): WidgetMetric {
             val value = detail.getJSONObject(key)
             val maximum = value.getInt(maximumKey).also { require(it in 1..10_000_000) }
             val current = value.getInt(currentKey).also { require(it in 0..10_000_000) }
-            return WidgetMetric(label, current, maximum, metricId = metricId)
+            return WidgetMetric(label, if (clamp) current.coerceAtMost(maximum) else current, maximum, metricId = metricId)
         }
     }
 }

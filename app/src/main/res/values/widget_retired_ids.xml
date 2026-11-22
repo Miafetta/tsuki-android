@@ -6,4 +6,11 @@
     <item name="endfield_brand_platform" type="id" />
     <item name="endfield_brand_game" type="id" />
     <item name="endfield_brand_divider" type="id" />
+    <!-- Endfield row progress bars were retired when aligning to the official 4-row Android widget. -->
+    <item name="endfield_daily_progress" type="id" />
+    <item name="endfield_daily_fill" type="id" />
+    <item name="endfield_weekly_progress" type="id" />
+    <item name="endfield_weekly_fill" type="id" />
+    <item name="endfield_pass_progress" type="id" />
+    <item name="endfield_pass_fill" type="id" />
 </resources>

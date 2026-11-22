@@ -48,9 +48,20 @@ class ProbeManifestTest : WidgetResourceFixture() {
             "status_widget_native_v24_dark", "status_widget_native_v24_light", "status_widget_native_v25_dark",
             "status_widget_native_v26_dark", "status_widget_native_v22_content",
             "status_widget_native_v25_light", "status_widget_native_v27_dark", "status_widget_native_v28_content",
-            "status_widget_native_v28_dark", "status_widget_native_v28_light") +
+            "status_widget_native_v28_dark", "status_widget_native_v28_light",
+            "status_widget_native_v30_dark", "status_widget_native_v30_light", "endfield_widget", "endfield_widget_v2") +
             // HyperOS keeps a placed widget's bitmap for an unchanged drawable ID, so a redrawn bitmap takes a new name.
-            setOf("drawable/widget_endfield_band", "drawable/widget_endfield_band_text")
+            setOf("drawable/widget_endfield_band", "drawable/widget_endfield_band_text",
+                "drawable/widget_endfield_texture", "drawable/widget_endfield_band_marks",
+                "drawable/widget_endfield_band_word", "drawable/widget_endfield_brand",
+                "drawable/widget_endfield_refresh", "drawable/widget_endfield_sanity",
+                "drawable/widget_endfield_daily", "drawable/widget_endfield_weekly",
+                "drawable/widget_endfield_pass", "drawable/widget_endfield_dots",
+                "drawable/widget_endfield_bg_v2", "drawable/widget_endfield_refresh_v2",
+                "drawable/widget_endfield_panel_mark", "drawable/widget_instance_light_surface",
+                "drawable/widget_sanity_dark", "drawable/widget_drone_dark", "drawable/widget_training_dark",
+                "drawable/widget_sanity_light", "drawable/widget_drone_light", "drawable/widget_training_light",
+                "color/widget_endfield_track", "color/widget_endfield_fill")
         val numbers = mutableSetOf<Int>()
         for (line in pins) {
             val entry = Regex("cafe.miafetta.tsuki:(\\w+)/([\\w.]+) = (0x[0-9a-f]+)").matchEntire(line)!!
@@ -63,8 +74,9 @@ class ProbeManifestTest : WidgetResourceFixture() {
             assertEquals("$type/$name changed its released ID", expected, resourceClass.getField(name.replace('.', '_')).getInt(null))
         }
         assertEquals(0x7f050077, cafe.miafetta.tsuki.R.id.status_recruit_cell)
-        assertEquals(0x7f070024, cafe.miafetta.tsuki.R.layout.status_widget_native_v30_dark)
-        assertEquals(0x7f070025, cafe.miafetta.tsuki.R.layout.status_widget_native_v30_light)
+        assertEquals(0x7f07002e, cafe.miafetta.tsuki.R.layout.status_widget_native_v31_dark)
+        assertEquals(0x7f070030, cafe.miafetta.tsuki.R.layout.status_widget_native_v31_light)
+        assertEquals(0x7f070005, cafe.miafetta.tsuki.R.layout.endfield_widget_v3)
         val gradle = File(System.getProperty("tsuki.projectDir"), "build.gradle.kts").readText()
         assertTrue(gradle.contains("--stable-ids"))
     }

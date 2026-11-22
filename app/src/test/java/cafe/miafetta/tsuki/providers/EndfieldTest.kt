@@ -38,6 +38,9 @@ class EndfieldTest : SklandFixtureTest() {
         val snapshot = EndfieldParser.snapshot(data, roleId, receivedAt)
         assertEquals(listOf("理智", "蚀像寻遗", "活跃度", "通行证"), snapshot.metrics.map { it.label })
         assertEquals(listOf("每周事务数据缺失"), snapshot.notes)
+        detail.getJSONObject("seekSuspicion").put("count", 250_000)
+        val clamped = EndfieldParser.snapshot(data, roleId, receivedAt)
+        assertEquals("200000/200000", clamped.metrics.first { it.label == "蚀像寻遗" }.amount())
     }
 
     @Test fun sanityRecoveryUsesTheFullTimeAndOtherRolesAreRejected() {

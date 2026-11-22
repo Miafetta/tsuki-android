@@ -20,5 +20,6 @@ internal fun TrainingPortrait(training: WidgetTraining, fetchedAt: Long,
     }
     val description = "训练室干员 ${training.name ?: "名称未知"}，${training.status(System.currentTimeMillis())}"
     if (portrait != null) Image(portrait!!, description, modifier)
-    else Image(painterResource(if (light) R.drawable.widget_training_light else R.drawable.widget_training_dark), description, modifier)
+    else Image(painterResource(if (light) R.drawable.widget_training_v2_light else R.drawable.widget_training_v2_dark),
+        description, modifier)
 }
