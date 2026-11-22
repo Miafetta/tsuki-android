@@ -236,7 +236,8 @@ class WidgetLayoutTest : WidgetResourceFixture() {
         val version = manifest.children("application").single().children("meta-data")
             .single { it.attr("name") == "miuiWidgetVersion" }.attr("value").toInt()
         // 53: Endfield (2.2.0). 54: Endfield marks/texture. 55: Official Endfield & Arknights dark. 56: Endfield v3 & Arknights light.
-        assertEquals(56, version)
+        // 57: Endfield full seek counts.
+        assertEquals(57, version)
         assertTrue(version > 1)
     }
 

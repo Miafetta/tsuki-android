@@ -22,11 +22,21 @@ internal fun AppConfigSheet(controller: AppController, activity: Activity, confi
         val sheet = configSheet.content
         val widgetId = (sheet as? ConfigSheet.Edit)?.widgetId
         val current = state.widgets.firstOrNull { it.id == widgetId }
-        // A widget shows one game: a new one the sheet's, a placed one its provider's.
+        val pagerMode = sheet is ConfigSheet.New && !sheet.diagnostic
+        // A widget shows one game on edit or debug simulation; the new-widget sheet swipes across every catalog game.
         val game = (sheet as? ConfigSheet.New)?.game
             ?: if (widgetStorageFeature(activity, widgetId) == WidgetRuntime.ENDFIELD_FEATURE) Branding.ENDFIELD_ID else Branding.GAME_ID
-        val choices = if (sheet?.diagnostic == true && BuildConfig.DEBUG) state.choices
-            else state.roles.filter { it.game == game }
+        val choices = when {
+            sheet?.diagnostic == true && BuildConfig.DEBUG -> state.choices
+            pagerMode -> state.roles
+            else -> state.roles.filter { it.game == game }
+        }
+        val initialRoleKeys = if (pagerMode) Branding.games.mapNotNull { (id, _) -> gameRole(id)?.let { id to it.key } }.toMap()
+            else emptyMap()
+        val initialSnapshots = if (pagerMode) Branding.games.mapNotNull { (id, _) ->
+            val roleKey = initialRoleKeys[id] ?: return@mapNotNull null
+            id to (roleKey to (homeSnapshot.takeIf { id == selectedGame } ?: catalogSnapshots[id]))
+        }.toMap() else emptyMap()
         ConfigEditor(activity, choices, current, state.busy, state.error,
             onDismiss = {
                 if (!state.busy) {
@@ -60,7 +70,8 @@ internal fun AppConfigSheet(controller: AppController, activity: Activity, confi
                 if (configuringId != null && configSheet is ConfigSheet.Closed) onConfigurationClosed()
             }, showTools = sheet?.diagnostic == true,
             widgetId = widgetId ?: AppWidgetManager.INVALID_APPWIDGET_ID, initialTheme = sheet?.theme ?: "LIGHT",
-            overviewPreview = selected?.key?.let { it to homeSnapshot }, game = game)
+            overviewPreview = selected?.key?.let { it to homeSnapshot }, game = game,
+            initialRoleKeys = initialRoleKeys, initialSnapshots = initialSnapshots)
     }
 }
 

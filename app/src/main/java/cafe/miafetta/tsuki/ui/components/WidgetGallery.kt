@@ -13,11 +13,10 @@ import androidx.compose.ui.unit.dp
 // box ends 2.5dp below its ink on the reference phone (LineBelowInkEm), so the entries keep 22dp between them.
 internal val WidgetEntryGap = 22.dp
 
-// The gallery holds the first preview's shadow above it and the last one's below it, whatever the name's height. Above,
-// that is also the room between the Widgets page's tab row and the first preview: with the list's 10dp, 24dp, about the
-// 24.5dp HyperOS leaves between its entries.
-internal val WidgetGalleryTop = PreviewShadowAbove
-internal val WidgetGalleryBottom = PreviewShadowBelow - WidgetNameGap
+// Keep at least 14dp above the first preview so the tab row plus list spacing (10dp) keeps HyperOS's 24dp rhythm
+// even with the tighter shadow, and keep enough room below for the last preview's shadow.
+internal val WidgetGalleryTop = maxOf(PreviewShadowAbove, 14.dp)
+internal val WidgetGalleryBottom = (PreviewShadowBelow - WidgetNameGap).coerceAtLeast(0.dp)
 
 // The entries of one Widgets page tab (WidgetGalleryItem), as one list item so that the tab switch fades them as a
 // whole (C14). LazyColumn fades an item through an offscreen layer cut to the item's bounds; with one item per entry,

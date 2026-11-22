@@ -103,11 +103,11 @@ internal object EndfieldCard {
             views.setViewVisibility(row.maximum, View.GONE)
             return
         }
-        views.setTextViewText(row.value, metric.text ?: compactEndfieldCount(metric.value))
+        views.setTextViewText(row.value, metric.text ?: metric.value.toString())
         val max = metric.maximum?.takeIf { metric.text == null }
         views.setViewVisibility(row.slash, if (max != null) View.VISIBLE else View.GONE)
         views.setViewVisibility(row.maximum, if (max != null) View.VISIBLE else View.GONE)
-        if (max != null) views.setTextViewText(row.maximum, compactEndfieldCount(max))
+        if (max != null) views.setTextViewText(row.maximum, max.toString())
     }
 
     private fun isSanityFull(metric: WidgetMetric?, now: Long): Boolean {
@@ -148,11 +148,4 @@ internal fun endfieldRecoveryText(millis: Long): String {
     val hours = minutes / 60
     val rem = minutes % 60
     return if (hours > 0) "${hours}h ${rem}min" else "${rem}min"
-}
-
-// Official Endfield widget compacts 10,000+ counts to "w" (e.g. 200000 -> "20w", 125000 -> "12.5w"), floored to 0.1w.
-internal fun compactEndfieldCount(value: Int): String {
-    if (value < 10_000) return value.toString()
-    val tenths = value / 1000
-    return if (tenths % 10 == 0) "${tenths / 10}w" else "${tenths / 10}.${tenths % 10}w"
 }

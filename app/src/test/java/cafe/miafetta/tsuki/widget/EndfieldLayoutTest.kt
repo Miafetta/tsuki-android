@@ -73,20 +73,17 @@ class EndfieldLayoutTest : WidgetResourceFixture() {
         }
     }
 
-    @Test fun officialRecoveryFormatAndCompactCountsMatchAndroidSklandWidget() {
+    @Test fun officialRecoveryAndFullSeekCountsMatchWidgetSpec() {
         assertEquals("1min", endfieldRecoveryText(1L))
         assertEquals("1min", endfieldRecoveryText(60_000L))
         assertEquals("45min", endfieldRecoveryText(45 * 60_000L))
         assertEquals("1h 0min", endfieldRecoveryText(60 * 60_000L))
         assertEquals("5h 40min", endfieldRecoveryText((5 * 60 + 40) * 60_000L))
         assertEquals("12h 23min", endfieldRecoveryText((12 * 60 + 23) * 60_000L))
-        assertEquals("0", compactEndfieldCount(0))
-        assertEquals("100", compactEndfieldCount(100))
-        assertEquals("9999", compactEndfieldCount(9999))
-        assertEquals("1w", compactEndfieldCount(10_000))
-        assertEquals("1.5w", compactEndfieldCount(15_000))
-        assertEquals("12.5w", compactEndfieldCount(125_000))
-        assertEquals("19.9w", compactEndfieldCount(199_999))
-        assertEquals("20w", compactEndfieldCount(200_000))
+        assertEquals("200000", xml("res/values/strings.xml").children("string")
+            .single { it.getAttribute("name") == "endfield_preview_seek_max" }.textContent)
+        val seekMax = (listOf(xml("res/layout/endfield_widget_v3.xml")) +
+            xml("res/layout/endfield_widget_v3.xml").children("*")).single { it.attr("id") == "@+id/endfield_seek_max" }
+        assertEquals("wrap_content", seekMax.attr("layout_width"))
     }
 }

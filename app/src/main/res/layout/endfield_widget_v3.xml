@@ -144,7 +144,7 @@
                 <TextView android:id="@+id/endfield_seek_label" android:layout_width="0dp" android:layout_height="wrap_content" android:text="@string/endfield_label_seek" android:textColor="@color/widget_endfield_row_text" android:layout_weight="1" android:layout_marginEnd="4dp" style="@style/WidgetEndfield.Row" />
                 <TextView android:id="@+id/endfield_seek" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textColor="@color/widget_endfield_text" android:paddingStart="0dp" android:paddingEnd="3dp" android:gravity="end|center_vertical" style="@style/WidgetEndfield.Value" />
                 <TextView android:id="@+id/endfield_seek_slash" android:layout_width="6dp" android:layout_height="wrap_content" android:text="@string/endfield_slash" android:textColor="@color/widget_endfield_slash" android:gravity="center" style="@style/WidgetEndfield.Value" />
-                <TextView android:id="@+id/endfield_seek_max" android:layout_width="27dp" android:layout_height="wrap_content" android:textColor="@color/widget_endfield_secondary" android:gravity="center" style="@style/WidgetEndfield.Value" />
+                <TextView android:id="@+id/endfield_seek_max" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textColor="@color/widget_endfield_secondary" android:paddingStart="3dp" android:paddingEnd="0dp" android:gravity="end|center_vertical" style="@style/WidgetEndfield.Value" />
               </LinearLayout>
             </FrameLayout>
           </LinearLayout>

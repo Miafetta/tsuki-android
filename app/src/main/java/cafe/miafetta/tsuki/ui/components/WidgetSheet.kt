@@ -10,6 +10,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
@@ -53,20 +54,29 @@ private val BottomGap = 16.dp
 internal fun WidgetSheet(show: Boolean, header: WidgetSheetHeader, previews: WidgetPreviews, preview: PreviewTarget?,
     busy: Boolean, canConfirm: Boolean, error: String, onDismiss: () -> Unit, onConfirm: () -> Unit,
     modifier: Modifier = Modifier, onDismissFinished: (() -> Unit)? = null, previewModifier: Modifier = Modifier,
+    headerAlpha: Float = 1f, settingsAlpha: Float = 1f, previewContent: (@Composable () -> Unit)? = null,
     settings: @Composable ColumnScope.() -> Unit) {
     OverlayBottomSheet(show = show, modifier = modifier, title = header.title, backgroundColor = MiuixTheme.colorScheme.surface,
         sheetMaxWidth = 600.dp, insideMargin = DpSize(0.dp, 0.dp),
-        startAction = { SheetStart(header, busy, onDismiss) },
+        startAction = { SheetStart(header, busy, onDismiss, headerAlpha) },
         onDismissRequest = { if (!busy) onDismiss() }, onDismissFinished = onDismissFinished, allowDismiss = !busy) {
         Column(Modifier.fillMaxWidth().fillHeightLess(TopGap).navigationBarsPadding().padding(bottom = BottomGap)) {
             Column(Modifier.fillMaxWidth().weight(1f).verticalScroll(rememberScrollState())) {
-                if (header is WidgetSheetHeader.New) Intro(header)
-                Spacer(Modifier.height(if (header is WidgetSheetHeader.New) PreviewGapAfterIntro else PreviewGapAfterTitle))
-                if (preview != null) {
-                    ScaledWidgetPreview(previews, preview, 0.dp, imageModifier = previewModifier)
-                    Spacer(Modifier.height(PreviewGapBelow))
+                if (header is WidgetSheetHeader.New) Intro(header, headerAlpha)
+                if (previewContent != null) {
+                    val baseGap = if (header is WidgetSheetHeader.New) PreviewGapAfterIntro else PreviewGapAfterTitle
+                    Spacer(Modifier.height((baseGap - WidgetPagerMotion.VerticalBuffer).coerceAtLeast(0.dp)))
+                    previewContent()
+                } else {
+                    Spacer(Modifier.height(if (header is WidgetSheetHeader.New) PreviewGapAfterIntro else PreviewGapAfterTitle))
+                    if (preview != null) {
+                        ScaledWidgetPreview(previews, preview, 0.dp, imageModifier = previewModifier)
+                        Spacer(Modifier.height(PreviewGapBelow))
+                    }
                 }
-                CompositionLocalProvider(LocalRowMargin provides sheetRowMargin()) { settings() }
+                Column(Modifier.fillMaxWidth().graphicsLayer { alpha = settingsAlpha }) {
+                    CompositionLocalProvider(LocalRowMargin provides sheetRowMargin()) { settings() }
+                }
             }
             if (error.isNotEmpty()) Text(error, Modifier.fillMaxWidth().padding(horizontal = WidgetSheetInset, vertical = ErrorGap),
                 color = MiuixTheme.colorScheme.error, textAlign = TextAlign.Center, style = MiuixTheme.textStyles.footnote1)
@@ -92,10 +102,11 @@ private fun Modifier.fillHeightLess(gap: Dp) = layout { measurable, constraints 
 
 // The title row's start slot. The new head spans the row to centre the game in it, where the edit head has its title.
 @Composable
-private fun SheetStart(header: WidgetSheetHeader, busy: Boolean, onDismiss: () -> Unit) {
+private fun SheetStart(header: WidgetSheetHeader, busy: Boolean, onDismiss: () -> Unit, headerAlpha: Float) {
     if (header is WidgetSheetHeader.New) Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
         Box(Modifier.align(Alignment.CenterStart)) { DismissButton(header, busy, onDismiss) }
-        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(LogoGap)) {
+        Row(Modifier.graphicsLayer { alpha = headerAlpha }, verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(LogoGap)) {
             AppLogo(size = LogoSize, game = header.game)
             // The same type as the sheet title of the edit head (OverlayBottomSheet's title row).
             Text(Branding.gameName(header.game), color = MiuixTheme.colorScheme.onSurface,
@@ -113,8 +124,9 @@ private fun DismissButton(header: WidgetSheetHeader, busy: Boolean, onDismiss: (
 
 // The widget's name in large bold type with its one-line description below, both centred.
 @Composable
-private fun Intro(header: WidgetSheetHeader.New) {
-    Column(Modifier.fillMaxWidth().padding(horizontal = WidgetSheetInset), horizontalAlignment = Alignment.CenterHorizontally) {
+private fun Intro(header: WidgetSheetHeader.New, alpha: Float) {
+    Column(Modifier.fillMaxWidth().padding(horizontal = WidgetSheetInset).graphicsLayer { this.alpha = alpha },
+        horizontalAlignment = Alignment.CenterHorizontally) {
         Text(header.name, color = MiuixTheme.colorScheme.onSurface, style = MiuixTheme.textStyles.title2,
             fontWeight = FontWeight.Bold, textAlign = TextAlign.Center)
         Text(header.description, color = MiuixTheme.colorScheme.onSurfaceVariantSummary,

@@ -105,11 +105,15 @@ internal fun sizeEndfieldContent(views: RemoteViews, context: Context, scale: Fl
     sizer.padding(R.id.status_sanity_timer_row, 7.5f, 9.5f)
     sizer.size(R.id.status_sanity_clock, 4f)
     sizer.margin(R.id.status_sanity_clock, RemoteViews.MARGIN_END, 4f)
+    val wrapContent = ViewGroup.LayoutParams.WRAP_CONTENT.toFloat()
     for (row in endfieldRows) {
         sizer.margin(row.label, RemoteViews.MARGIN_END, 4f)
         sizer.padding(row.value, 0f, 3f)
         sizer.width(row.slash, 6f)
-        sizer.width(row.maximum, 27f)
+        if (row.maximum == R.id.endfield_seek_max) {
+            views.setViewLayoutWidth(row.maximum, wrapContent, TypedValue.COMPLEX_UNIT_PX)
+            sizer.padding(row.maximum, 3f, 0f)
+        } else sizer.width(row.maximum, 27f)
     }
 }
 

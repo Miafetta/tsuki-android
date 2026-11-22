@@ -46,7 +46,8 @@ internal fun AppRoot(controller: AppController, activity: Activity, initialPage:
             if (page == AppPage.ME) addAccount()
             else {
                 state.error = ""
-                configSheet = ConfigSheet.New(game = selectedGame)
+                val initialTheme = if (selectedGame == Branding.ENDFIELD_ID) "DARK" else "LIGHT"
+                configSheet = ConfigSheet.New(initialTheme, game = selectedGame)
             }
         },
         addButtonVisible = !addingAccount && !state.busy,

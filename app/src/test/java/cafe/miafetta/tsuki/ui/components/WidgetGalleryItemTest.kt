@@ -36,8 +36,8 @@ class WidgetGalleryItemTest {
 
     // A tab's gallery fades through an offscreen layer cut to its bounds; every preview's shadow must stay inside it.
     @Test fun galleryHoldsThePreviewShadows() {
-        assertEquals(14f, PreviewShadowAbove.value, 0f)
-        assertEquals(WidgetGalleryTop, PreviewShadowAbove)
+        assertTrue(WidgetGalleryTop >= PreviewShadowAbove)
+        assertEquals(14f, WidgetGalleryTop.value, 0f)
         // The last entry ends at least the name gap below its preview; the gallery's bottom covers the rest of the shadow.
         assertTrue(WidgetNameGap + WidgetGalleryBottom >= PreviewShadowBelow)
         // At the sides, the page's list leaves the reference phone's preview its shadow's reach.

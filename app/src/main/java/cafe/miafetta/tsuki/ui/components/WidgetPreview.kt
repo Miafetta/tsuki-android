@@ -61,11 +61,11 @@ private fun isNightConfiguration() = LocalConfiguration.current.uiMode and
 private fun previewKey(previewId: String, dark: Boolean, night: Boolean) = "$previewId:$dark:$night"
 
 private val PreviewShape = RoundedCornerShape(percent = 15)
-// Measured against HyperOS's own widget previews: a faint black falloff, slightly heavier below, that leaves the edge crisp.
-private val PreviewShadowRadius = 20.dp
-private val PreviewShadowOffset = 6.dp
-private const val PreviewShadowLight = .10f
-private const val PreviewShadowDark = .30f
+// Fitted to HyperOS's light widget preview screenshot (2026-11-22, 3.25 px/dp): tight, soft drop shadow.
+private val PreviewShadowRadius = 9.25.dp
+private val PreviewShadowOffset = 3.75.dp
+private const val PreviewShadowLight = .066f
+private const val PreviewShadowDark = .20f
 internal const val PreviewFadeMillis = 180
 
 // How far the shadow reaches past the preview: dropShadow ends one radius outside the offset shape. Whatever fades a

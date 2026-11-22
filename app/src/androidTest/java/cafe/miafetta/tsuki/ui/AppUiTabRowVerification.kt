@@ -83,11 +83,13 @@ internal fun AppUiVerification.verifyWidgetTabs(host: MainActivity): String {
         tabRowNoPaging(touch, host)
         tabRowVertical(touch, host)
         tabRowOutsideChanges(touch, host)
+        widgetSheetPagerVerification(touch, host, folder)
     } finally { File(folder, "events.txt").writeText(touch.trace.toString()) }
     val result = "PASS: rest geometry and Tab semantics; first preview 24dp below the row, a press sinks the preview alone; " +
         "real taps; press preview without switching cards; system cancel; " +
         "drag between tabs, outside the row and back, committed on release; sideways drags past the row keep the page; " +
-        "vertical drag drops the preview and scrolls the page; accessibility clicks; empty-state switch animates."
+        "vertical drag drops the preview and scrolls the page; accessibility clicks; empty-state switch animates; " +
+        "new-widget sheet pager, touch bounce, 3D tilt and palette sync."
     File(folder, "result.txt").writeText(result)
     return result
 }

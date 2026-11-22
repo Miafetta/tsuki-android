@@ -68,6 +68,7 @@ internal class WidgetRenderCases(private val context: Context) {
                 Configuration(context.resources.configuration).apply { fontScale = scale })
             for (height in listOf(150, 162, 180)) hostHeightCases(scaled, scale, height)
         }
+        endfieldHostCases()
         val executor = java.util.concurrent.Executors.newSingleThreadExecutor()
         try {
             val remote = executor.submit<android.widget.RemoteViews> {
@@ -190,6 +191,48 @@ internal class WidgetRenderCases(private val context: Context) {
             host.updateAppWidget(renderer.renderAtSize(context, 1, record, false, 360f, height.toFloat()))
             check(host.findViewById<TextView>(R.id.status_training).text == "未知")
             cases++
+        }
+    }
+
+    private fun endfieldHostCases() {
+        val endfieldProvider = AppWidgetManager.getInstance(context).installedProviders
+            .single { it.provider.className == EndfieldWidgetProvider::class.java.name }
+        val seekIds = listOf(R.id.endfield_seek_label, R.id.endfield_seek, R.id.endfield_seek_slash, R.id.endfield_seek_max)
+        for (scale in listOf(1f, 1.3f, 1.5f)) {
+            val scaled = context.createConfigurationContext(
+                Configuration(context.resources.configuration).apply { fontScale = scale })
+            val density = scaled.resources.displayMetrics.density
+            val host = AppWidgetHostView(scaled).apply {
+                setAppWidget(1, endfieldProvider)
+                setPadding(0, 0, 0, 0)
+            }
+            for (height in listOf(150, 162, 180)) for (seekValue in listOf(0, 200_000)) {
+                val sample = WidgetSnapshot("终末地博士", listOf(
+                    WidgetMetric("理智", 125, 125), WidgetMetric("活跃度", 60, 100),
+                    WidgetMetric("每周事务", 4, 10), WidgetMetric("通行证", 12, 60),
+                    WidgetMetric("蚀像寻遗", seekValue, 200_000)), System.currentTimeMillis())
+                val remote = EndfieldCard.render(scaled, 1, WidgetRecord(config, sample, RefreshState.READY), false,
+                    360f, height.toFloat())
+                remote.apply(scaled, host)
+                host.updateAppWidget(remote)
+                measureHost(host, density, height)
+                val info = requireNotNull(host.findViewById<android.view.ViewGroup>(R.id.endfield_seek_info))
+                check(host.findViewById<TextView>(R.id.endfield_seek).text.toString() == seekValue.toString())
+                check(host.findViewById<TextView>(R.id.endfield_seek_max).text.toString() == "200000")
+                for (id in seekIds) {
+                    val tv = host.findViewById<TextView>(id)
+                    check(!tv.text.contains("w")) { "Unexpected w suffix in $id: ${tv.text}" }
+                    check(tv.width > 0 && tv.height > 0 && tv.layout.lineCount == 1) { "Bad seek layout: $id" }
+                    check(tv.layout.getEllipsisCount(0) == 0 && tv.layout.getLineEnd(0) == tv.text.length) { "Clipped seek $id" }
+                    check(tv.layout.getLineWidth(0) <= tv.width - tv.totalPaddingLeft - tv.totalPaddingRight + 1) {
+                        "Overflow seek $id"
+                    }
+                    val box = android.graphics.Rect(0, 0, tv.width, tv.height)
+                    info.offsetDescendantRectToMyCoords(tv, box)
+                    check(box.left >= 0 && box.right <= info.width) { "Seek view $id outside row: $box vs ${info.width}" }
+                }
+                cases++
+            }
         }
     }
 }
