@@ -19,15 +19,15 @@ import top.yukonga.miuix.kmp.nav.gesture.PredictiveBackHandler
 import cafe.miafetta.tsuki.ui.state.AppController
 
 import cafe.miafetta.tsuki.ui.sheets.AppConfigSheet
-import cafe.miafetta.tsuki.ui.glass.TransitionGlass
+import cafe.miafetta.tsuki.ui.glass.rememberNavActive
+import cafe.miafetta.tsuki.ui.glass.rememberNavGlassActive
 import cafe.miafetta.tsuki.ui.theme.Branding
 
 @Composable
 internal fun AppRoot(controller: AppController, activity: Activity, initialPage: Int,
     configuringId: Int?, onConfigurationClosed: () -> Unit) = with(controller) {
-    val transition = LocalNavTransitionScope.current
-    val active = transition.relativeDepth == 0f && !transition.isRunning
-    val glassActive = TransitionGlass.active(transition.isRunning, transition.relativeDepth)
+    val active = rememberNavActive()
+    val glassActive = rememberNavGlassActive()
     PredictiveBackHandler(enabled = page != AppPage.OVERVIEW && nav.backStack.last() == AppRoute.Root &&
         configSheet is ConfigSheet.Closed &&
         confirmation == null && !permissionDialog, onProgress = { events -> events.collect {} },

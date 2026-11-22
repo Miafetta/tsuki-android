@@ -1,5 +1,6 @@
 package cafe.miafetta.tsuki.ui
 
+import cafe.miafetta.tsuki.ui.glass.rememberNavActive
 import cafe.miafetta.tsuki.ui.pages.AccountEditor
 import cafe.miafetta.tsuki.ui.pages.PlatformSelector
 import cafe.miafetta.tsuki.ui.pages.WebLoginPage
@@ -22,28 +23,28 @@ internal fun AccountNavigationFixture(activity: Activity, show: Boolean, onDismi
             nav.popUntil { it == AppRoute.Root }
         }
     }
-    NavDisplay(navController = nav, onBack = {
+    TsukiNavHost(navController = nav, onBack = {
         if (nav.backStack.last() == AppRoute.AddAccount) {
             draft.clear()
             onDismiss()
         } else nav.pop()
-    }, effects = tsukiNavEffects()) {
-        entry<AppRoute.Root> {
-            val active = show || LocalNavTransitionScope.current.isRunning
-            background(active)
-        }
-        entry<AppRoute.AddAccount> {
+    }) {
+        entry<AppRoute.Root> { TsukiNavEntry {
+            val transition = LocalNavTransitionScope.current
+            val running by remember(transition) { derivedStateOf { transition.isRunning } }
+            background(show || running)
+        } }
+        entry<AppRoute.AddAccount> { TsukiNavEntry {
             AccountEditor(activity, false, "", onDismiss, { _, _ -> error("Fixture must not save credentials") },
-                draft = draft, show = show, pageProgress = if (LocalNavTransitionScope.current.isRunning ||
-                    LocalNavTransitionScope.current.relativeDepth != 0f) 0f else 1f,
+                draft = draft, show = show, pageProgress = if (rememberNavActive()) 1f else 0f,
                 onPlatform = { if (AppRoute.SelectPlatform !in nav.backStack) nav.push(AppRoute.SelectPlatform) },
                 onWebLogin = { if (AppRoute.WebLogin !in nav.backStack) nav.push(AppRoute.WebLogin) }, onMessage = onMessage)
-        }
-        entry<AppRoute.SelectPlatform> { PlatformSelector(false) { nav.pop() } }
+        } }
+        entry<AppRoute.SelectPlatform> { TsukiNavEntry { PlatformSelector(false) { nav.pop() } } }
         // about:blank keeps device tests off the network; the official page is never loaded here.
-        entry<AppRoute.WebLogin> {
+        entry<AppRoute.WebLogin> { TsukiNavEntry {
             WebLoginPage(activity, onCred = { error("Fixture must not receive credentials") }, onBack = { nav.pop() },
                 startUrl = "about:blank")
-        }
+        } }
     }
 }

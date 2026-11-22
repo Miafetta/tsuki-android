@@ -2,6 +2,7 @@ package cafe.miafetta.tsuki.ui.pages
 
 import cafe.miafetta.tsuki.ui.components.AccountRow
 import cafe.miafetta.tsuki.ui.components.TsukiSmallTitle
+import cafe.miafetta.tsuki.ui.glass.rememberNavActive
 import cafe.miafetta.tsuki.ui.state.ReminderAccounts
 import cafe.miafetta.tsuki.ui.state.ReminderProblem
 import cafe.miafetta.tsuki.ui.state.ReminderSettings
@@ -25,7 +26,6 @@ import androidx.lifecycle.compose.LifecycleEventEffect
 import top.yukonga.miuix.kmp.basic.BasicComponent
 import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.Text
-import top.yukonga.miuix.kmp.nav.core.LocalNavTransitionScope
 import top.yukonga.miuix.kmp.preference.ArrowPreference
 import top.yukonga.miuix.kmp.preference.SwitchPreference
 import top.yukonga.miuix.kmp.theme.MiuixTheme
@@ -43,8 +43,7 @@ private const val BackgroundNote = "提醒在后台定时检查，系统可能�
 internal fun RemindersPage(settings: ReminderSettings, accounts: List<UiAccount>, blurEnabled: Boolean,
     onAccount: (UiAccount) -> Unit, onBack: () -> Unit) {
     val context = LocalContext.current
-    val transition = LocalNavTransitionScope.current
-    val active by remember(transition) { derivedStateOf { !transition.isRunning && transition.relativeDepth == 0f } }
+    val active = rememberNavActive()
     val permission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) {
         settings.permissionAnswered()
     }

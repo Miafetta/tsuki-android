@@ -143,9 +143,9 @@ private fun Modifier.chipGlass(progress: Float, selected: Boolean, native: Boole
     val idle = if (selected) chipSelectionColors(colors, dark).first else chipIdleColor(colors, dark)
     if (glass == null || (!glass.available && !native)) return background(idle, shape)
     val glassTint = chipGlassTint(colors, dark, selected, native)
-    // The selected chip's shadow is drawn by the chip row (chipRowShadow); unselected chips cast none. The edge light,
-    // which grows with the glass like the theme store's, keeps an unselected chip apart from the page; the selected chip has
-    // none.
+    // Selected and scrolled glass unselected chip shadows are drawn outside the scroll layer by chipRowShadow; the edge light,
+    // which grows with the glass like the theme store's, keeps an unselected chip crisp inside its outline; the selected chip
+    // has none.
     val overlay: DrawScope.() -> Unit = {
         glassOverlay(currentProgress, native, radius, lerp(idle, glassTint, currentProgress), null)
     }

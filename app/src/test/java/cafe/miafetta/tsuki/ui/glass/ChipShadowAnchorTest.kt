@@ -43,4 +43,27 @@ class ChipShadowAnchorTest {
         assertTrue(ChipShadowRadius > 10.dp)
         assertEquals(15.dp, ChipShadowRadius)
     }
+
+    @Test fun attachedListsEveryAttachedChipAndSkipsDetachedOnes() {
+        val anchor = ChipShadowAnchor()
+        var secondAttached = true
+        anchor.place("arknights", coordinates { true })
+        anchor.place("endfield", coordinates { secondAttached })
+        assertEquals(listOf("arknights", "endfield"), anchor.attached().map { it.first })
+        secondAttached = false
+        assertEquals(listOf("arknights"), anchor.attached().map { it.first })
+    }
+
+    @Test fun unselectedShadowOnlyFollowsScrollProgressWhenGlassIsEnabled() {
+        assertEquals(1f, chipShadowStrength(selected = true, unselectedProgress = 0f, unselectedGlassEnabled = false), 0f)
+        assertEquals(1f, chipShadowStrength(selected = true, unselectedProgress = .4f, unselectedGlassEnabled = true), 0f)
+        assertEquals(0f, chipShadowStrength(selected = false, unselectedProgress = 1f, unselectedGlassEnabled = false), 0f)
+        assertEquals(0f, chipShadowStrength(selected = false, unselectedProgress = 0f, unselectedGlassEnabled = true), 0f)
+        assertEquals(0f, chipShadowStrength(selected = false, unselectedProgress = -1f, unselectedGlassEnabled = true), 0f)
+        assertEquals(0f, chipShadowStrength(selected = false, unselectedProgress = Float.NaN, unselectedGlassEnabled = true), 0f)
+        assertEquals(0f, chipShadowStrength(selected = false, unselectedProgress = Float.POSITIVE_INFINITY,
+            unselectedGlassEnabled = true), 0f)
+        assertEquals(.65f, chipShadowStrength(selected = false, unselectedProgress = .65f, unselectedGlassEnabled = true), 1e-6f)
+        assertEquals(1f, chipShadowStrength(selected = false, unselectedProgress = 1.5f, unselectedGlassEnabled = true), 0f)
+    }
 }

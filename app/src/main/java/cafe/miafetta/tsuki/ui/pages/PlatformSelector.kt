@@ -1,6 +1,7 @@
 package cafe.miafetta.tsuki.ui.pages
 
 import cafe.miafetta.tsuki.ui.components.TsukiSmallTitle
+import cafe.miafetta.tsuki.ui.glass.rememberNavActive
 import cafe.miafetta.tsuki.ui.theme.Branding
 
 import androidx.compose.foundation.layout.PaddingValues
@@ -12,12 +13,10 @@ import androidx.compose.ui.unit.dp
 import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.preference.RadioButtonPreference
 import top.yukonga.miuix.kmp.nav.gesture.PredictiveBackHandler
-import top.yukonga.miuix.kmp.nav.core.LocalNavTransitionScope
 
 @Composable
 internal fun PlatformSelector(busy: Boolean, blurEnabled: Boolean = true, onBack: () -> Unit) {
-    val transition = LocalNavTransitionScope.current
-    val active by remember(transition) { derivedStateOf { !transition.isRunning && transition.relativeDepth == 0f } }
+    val active = rememberNavActive()
     PredictiveBackHandler(enabled = busy, onProgress = { events -> events.collect {} }, onCommit = {}, onCancel = {})
     // Controls keep their normal look during the slide-in; input is blocked then and clicks wait for an active page.
     SecondaryScaffold("选择平台", blurEnabled, active, onBack, backEnabled = !busy,

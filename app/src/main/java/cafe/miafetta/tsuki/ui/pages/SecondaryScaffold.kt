@@ -9,12 +9,12 @@ import cafe.miafetta.tsuki.ui.components.topBarContentTop
 import cafe.miafetta.tsuki.ui.components.topBarInset
 import cafe.miafetta.tsuki.ui.glass.GlassIconButton
 import cafe.miafetta.tsuki.ui.glass.TopGlassFade
-import cafe.miafetta.tsuki.ui.glass.TransitionGlass
 import cafe.miafetta.tsuki.ui.glass.TsukiGlass
 import cafe.miafetta.tsuki.ui.glass.TsukiGlassHost
 import cafe.miafetta.tsuki.ui.glass.animateGlassVisibility
 import cafe.miafetta.tsuki.ui.glass.glassScrollProgress
 import cafe.miafetta.tsuki.ui.glass.glassVisible
+import cafe.miafetta.tsuki.ui.glass.rememberNavGlassActive
 import cafe.miafetta.tsuki.ui.glass.tsukiBackdrop
 
 import androidx.compose.foundation.background
@@ -35,7 +35,6 @@ import androidx.compose.ui.unit.dp
 import top.yukonga.miuix.kmp.basic.*
 import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.extended.ChevronBackward
-import top.yukonga.miuix.kmp.nav.core.LocalNavTransitionScope
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 
@@ -52,8 +51,7 @@ internal fun SecondaryScaffold(title: String, blurEnabled: Boolean, active: Bool
     spacing: Dp = 0.dp, scrollable: Boolean = true, actions: @Composable RowScope.(Float) -> Unit = {},
     content: @Composable ColumnScope.() -> Unit) {
     // The glass follows the page's transition (TransitionGlass), not [active], which only gates input.
-    val transition = LocalNavTransitionScope.current
-    TsukiGlassHost(blurEnabled, TransitionGlass.active(transition.isRunning, transition.relativeDepth)) {
+    TsukiGlassHost(blurEnabled, rememberNavGlassActive()) {
         Box(Modifier.fillMaxSize().background(MiuixTheme.colorScheme.surface), contentAlignment = Alignment.TopCenter) {
             Scaffold(Modifier.windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal))
                 .widthIn(max = 600.dp).fillMaxSize().then(modifier).semantics {

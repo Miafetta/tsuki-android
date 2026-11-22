@@ -55,11 +55,15 @@ internal fun Modifier.tsukiBackdrop(): Modifier {
 internal fun nativeGlassEnabled(glass: GlassContext?): Boolean =
     glass?.enabled == true && glass.active && LocalView.current.isHardwareAccelerated && MiGlassCapability.supported
 
+internal fun glassConsumerNeedsBackdrop(backend: String, pendingNative: Boolean): Boolean =
+    backend == "miuix-blur" && !pendingNative
+
 @Composable
-internal fun ReportGlassBackend(glass: GlassContext?, backend: String) {
+internal fun ReportGlassBackend(glass: GlassContext?, backend: String, pendingNative: Boolean = false) {
     val token = remember { Any() }
-    DisposableEffect(glass?.consumers, backend) {
-        glass?.consumers?.set(token, backend == "miuix-blur")
+    val needsBackdrop = glassConsumerNeedsBackdrop(backend, pendingNative)
+    DisposableEffect(glass?.consumers, needsBackdrop) {
+        glass?.consumers?.set(token, needsBackdrop)
         onDispose { glass?.consumers?.remove(token) }
     }
 }

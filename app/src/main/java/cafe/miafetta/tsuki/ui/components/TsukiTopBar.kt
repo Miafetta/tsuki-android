@@ -124,10 +124,10 @@ private fun TitleOverlay(title: String, behavior: ScrollBehavior, slots: TitleSl
     val collapsedDp = remember(behavior, density) { { -behavior.state.heightOffset / density.density } }
     // A bar restored in its collapsed state shows the small title at once. The offset is only read in layout, drawing
     // and the effect below, so scrolling never recomposes the titles.
-    val progress = remember {
+    val progress = remember(behavior) {
         Animatable(if (Snapshot.withoutReadObservation { smallTitleVisible(collapsedDp()) }) 1f else 0f)
     }
-    LaunchedEffect(collapsedDp) {
+    LaunchedEffect(behavior, collapsedDp) {
         snapshotFlow { smallTitleVisible(collapsedDp()) }.collectLatest { visible ->
             val response = if (visible) TitleMotion.SmallTitleShowResponse else TitleMotion.SmallTitleHideResponse
             progress.animateTo(if (visible) 1f else 0f, folmeSpring(damping = 1f, response = response))

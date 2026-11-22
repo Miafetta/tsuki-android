@@ -24,6 +24,13 @@ class GlassAndMenuTest {
         assertEquals("MiGlass", glassBackend(true, true, true, true))
         assertEquals("opaque", glassBackend(false, true, false, true))
         assertEquals("inactive", glassBackend(true, false, false, true))
+        assertTrue(glassPendingNative(enabled = true, reported = null))
+        assertFalse(glassPendingNative(enabled = true, reported = true))
+        assertFalse(glassPendingNative(enabled = true, reported = false))
+        assertFalse(glassPendingNative(enabled = false, reported = null))
+        assertFalse(glassConsumerNeedsBackdrop("miuix-blur", pendingNative = true))
+        assertTrue(glassConsumerNeedsBackdrop("miuix-blur", pendingNative = false))
+        assertFalse(glassConsumerNeedsBackdrop("MiGlass", pendingNative = false))
     }
 
     @Test fun menuMorphStaysBoundedAndContinuous() {

@@ -1,6 +1,7 @@
 package cafe.miafetta.tsuki.ui.pages
 
 import cafe.miafetta.tsuki.ui.components.accountTitle
+import cafe.miafetta.tsuki.ui.glass.rememberNavActive
 import cafe.miafetta.tsuki.ui.state.ReminderAccounts
 import cafe.miafetta.tsuki.ui.state.ReminderSettings
 import cafe.miafetta.tsuki.ui.state.UiAccount
@@ -14,7 +15,6 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import top.yukonga.miuix.kmp.basic.BasicComponent
 import top.yukonga.miuix.kmp.basic.Card
-import top.yukonga.miuix.kmp.nav.core.LocalNavTransitionScope
 
 // "通知提醒" → an account: titled with the account's name as "我的" shows it, then a group per role of the account
 // (ReminderAccounts.options) with the rows of its game's metrics (ReminderMetricRows). The roles' limits come from their
@@ -23,8 +23,7 @@ import top.yukonga.miuix.kmp.nav.core.LocalNavTransitionScope
 @Composable
 internal fun ReminderAccountPage(settings: ReminderSettings, account: UiAccount?, loaded: Boolean, blurEnabled: Boolean,
     onGone: () -> Unit, onBack: () -> Unit) {
-    val transition = LocalNavTransitionScope.current
-    val active by remember(transition) { derivedStateOf { !transition.isRunning && transition.relativeDepth == 0f } }
+    val active = rememberNavActive()
     // The page below is not resumed while this one is on top, so this one reads the state on every return as well; after
     // a recreation on this page it is the first read of the rules.
     LifecycleEventEffect(Lifecycle.Event.ON_RESUME) { settings.resume() }

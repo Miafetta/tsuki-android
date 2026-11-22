@@ -23,6 +23,8 @@ import top.yukonga.miuix.kmp.theme.MiuixTheme
 private val OpaqueFadeInset = 32.dp
 private val OpaqueGameRowInset = 8.dp
 
+internal fun glassPendingNative(enabled: Boolean, reported: Boolean?): Boolean = enabled && reported == null
+
 // The top bar background (docs/UI_DESIGN_CONVENTIONS.md, 玻璃范围与回退), in the order of every glass surface
 // (DEVELOPMENT_CONSTRAINTS.md 6): MiGlass without tint, faded out with DstIn; miuix-blur's progressive blur without tint;
 // the opaque surface. The caller's modifier sets the height, and its bottom edge is the clear line (TopGlassFade,
@@ -31,20 +33,22 @@ private val OpaqueGameRowInset = 8.dp
 internal fun TsukiGlass(progress: () -> Float, statusBar: Dp, modifier: Modifier = Modifier, gameHeader: Boolean = false) {
     val glass = LocalGlass.current
     val configuration = LocalConfiguration.current
-    var native by remember(configuration) { mutableStateOf(false) }
     val enabled = nativeGlassEnabled(glass)
-    val useNative = enabled && native
+    var native by remember(configuration, enabled) { mutableStateOf<Boolean?>(null) }
+    val useNative = enabled && native == true
+    val pendingNative = glassPendingNative(enabled, native)
     val backend = glassBackend(glass?.enabled == true, glass?.active == true, useNative, glass?.available == true)
-    ReportGlassBackend(glass, backend)
-    LaunchedEffect(backend) {
-        if (BuildConfig.DEBUG) android.util.Log.d("TsukiGlass", "TopBar backend=$backend; MiGlass rectangle radius " +
-            "$NativeTopGlassRadius, edge=1, enhancement=0, no tint; fallback progressiveBlur $TopGlassBlurRadius")
+    ReportGlassBackend(glass, backend, pendingNative)
+    LaunchedEffect(backend, pendingNative) {
+        if (BuildConfig.DEBUG && !pendingNative) android.util.Log.d("TsukiGlass",
+            "TopBar backend=$backend; MiGlass rectangle radius $NativeTopGlassRadius, edge=1, enhancement=0, no tint; " +
+                "fallback progressiveBlur $TopGlassBlurRadius")
     }
     val currentProgress by rememberUpdatedState(progress)
     val nativeVisible by remember { derivedStateOf { currentProgress() > 0f } }
     var heightPx by remember { mutableIntStateOf(0) }
     val effect = when {
-        useNative -> Modifier
+        useNative || pendingNative -> Modifier
         glass != null && glass.available -> Modifier.progressiveTop(glass, heightPx, statusBar) { currentProgress() }
         else -> Modifier.opaqueTop(heightPx, statusBar, gameHeader) { currentProgress() }
     }
@@ -120,14 +124,15 @@ internal fun BottomWash(modifier: Modifier = Modifier) {
 internal fun GlassBackground(surface: GlassSurface, modifier: Modifier, progress: Float = 1f, selected: Boolean = false) {
     val glass = LocalGlass.current
     val configuration = LocalConfiguration.current
-    var native by remember(configuration) { mutableStateOf(false) }
     val enabled = nativeGlassEnabled(glass)
+    var native by remember(configuration, enabled) { mutableStateOf<Boolean?>(null) }
     val radius = surfaceBlurRadius(surface, selected)
-    val useNative = enabled && native
+    val useNative = enabled && native == true
+    val pendingNative = glassPendingNative(enabled, native)
     val backend = glassBackend(glass?.enabled == true, glass?.active == true, useNative, glass?.available == true)
-    ReportGlassBackend(glass, backend)
-    LaunchedEffect(backend) {
-        if (BuildConfig.DEBUG) android.util.Log.d("TsukiGlass",
+    ReportGlassBackend(glass, backend, pendingNative)
+    LaunchedEffect(backend, pendingNative) {
+        if (BuildConfig.DEBUG && !pendingNative) android.util.Log.d("TsukiGlass",
             "$surface backend=$backend (native calls accepted; visual acceptance separate)")
     }
     Box(modifier) {
@@ -139,7 +144,7 @@ internal fun GlassBackground(surface: GlassSurface, modifier: Modifier, progress
                 },
                 onRelease = { it.release() })
         }
-        Box(Modifier.matchParentSize().tsukiGlass(surface, progress, selected, useNative))
+        Box(Modifier.matchParentSize().tsukiGlass(surface, progress, selected, useNative || pendingNative))
     }
 }
 

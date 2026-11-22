@@ -18,10 +18,8 @@ import androidx.compose.runtime.*
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.repeatOnLifecycle
-import androidx.compose.ui.semantics.*
 import cafe.miafetta.tsuki.*
-import top.yukonga.miuix.kmp.basic.*
-import top.yukonga.miuix.kmp.nav.core.*
+import cafe.miafetta.tsuki.ui.glass.rememberNavActive
 
 // overviewWidgetId is the desktop widget whose tap started this launch, overviewRoleKey the role of the reminder
 // notification that did; the overview switches to that role once.
@@ -40,28 +38,28 @@ internal fun TsukiApp(activity: Activity, initialPage: Int, resumeTick: Int,
             }
         }
         TsukiAppTheme(theme) {
-            NavDisplay(navController = nav, onBack = {
+            TsukiNavHost(navController = nav, onBack = {
                 if (!state.busy) {
                     state.error = ""
                     nav.pop()
                 }
-            }, effects = tsukiNavEffects()) {
-                entry<AppRoute.Root> {
+            }) {
+                entry<AppRoute.Root> { TsukiNavEntry {
                     AppRoot(controller, activity, initialPage, configuringId, onConfigurationClosed)
-                }
-                entry<AppRoute.Privacy> { PrivacyPage(blur) { nav.pop() } }
-                entry<AppRoute.Licenses> { LicensesPage(blur) { nav.pop() } }
-                entry<AppRoute.Reminders> {
+                } }
+                entry<AppRoute.Privacy> { TsukiNavEntry { PrivacyPage(blur) { nav.pop() } } }
+                entry<AppRoute.Licenses> { TsukiNavEntry { LicensesPage(blur) { nav.pop() } } }
+                entry<AppRoute.Reminders> { TsukiNavEntry {
                     RemindersPage(state.reminders, state.accounts, blur, onAccount = { account ->
                         if (nav.backStack.lastOrNull() == AppRoute.Reminders) nav.push(AppRoute.ReminderAccount(account.id))
                     }) { nav.pop() }
-                }
-                entry<AppRoute.ReminderAccount> { route ->
+                } }
+                entry<AppRoute.ReminderAccount> { route -> TsukiNavEntry {
                     ReminderAccountPage(state.reminders, state.accounts.firstOrNull { it.id == route.accountId }, state.loaded,
                         blur, onGone = { if (nav.backStack.lastOrNull() == route) nav.pop() }) { nav.pop() }
-                }
-                entry<AppRoute.AddAccount> {
-                    val transition = LocalNavTransitionScope.current
+                } }
+                entry<AppRoute.AddAccount> { TsukiNavEntry {
+                    val pageActive = rememberNavActive()
                     AccountEditor(activity, state.busy, state.error,
                         onDismiss = {
                             if (!state.busy) {
@@ -71,27 +69,23 @@ internal fun TsukiApp(activity: Activity, initialPage: Int, resumeTick: Int,
                             }
                         },
                         onSave = controller::saveAccount, draft = draft, show = addingAccount, blurEnabled = blur,
-                        pageProgress = if (transition.isRunning || transition.relativeDepth != 0f) 0f else 1f,
+                        pageProgress = if (pageActive) 1f else 0f,
                         onPlatform = { if (AppRoute.SelectPlatform !in nav.backStack) nav.push(AppRoute.SelectPlatform) },
                         onWebLogin = { if (AppRoute.WebLogin !in nav.backStack) nav.push(AppRoute.WebLogin) },
                         onMessage = { state.messages.send(it) }, lookupName = state::platformName)
-                }
-                entry<AppRoute.SelectPlatform> { PlatformSelector(state.busy, blur) { if (!state.busy) nav.pop() } }
-                entry<AppRoute.WebLogin> {
+                } }
+                entry<AppRoute.SelectPlatform> { TsukiNavEntry {
+                    PlatformSelector(state.busy, blur) { if (!state.busy) nav.pop() }
+                } }
+                entry<AppRoute.WebLogin> { TsukiNavEntry {
                     // The Cred is filled into the editor for the user to review; nothing is submitted automatically.
                     WebLoginPage(activity, onCred = { cred ->
                         draft.cred = cred
                         state.messages.send("已填入网页登录取得的 Cred，确认后点击“验证并添加”。")
                         if (nav.backStack.lastOrNull() == AppRoute.WebLogin) nav.pop()
                     }, onBack = { if (nav.backStack.lastOrNull() == AppRoute.WebLogin) nav.pop() })
-                }
+                } }
             }
         }
     }
 }
-
-// Secondary pages slide in inside one window, so the system window transition cannot round them; clip the entering
-// page's leading corners to the screen corner radius as HyperOS does for activity transitions. Miuix defaults to 0dp.
-@Composable
-internal fun tsukiNavEffects() = NavDisplayEffects(cornerClipRadius = rememberNavSystemCornerRadius(),
-    blockInputDuringTransition = true)

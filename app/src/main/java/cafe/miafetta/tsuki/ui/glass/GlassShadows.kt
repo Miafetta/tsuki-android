@@ -6,7 +6,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.draw.dropShadow
+import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.geometry.RoundRect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.ClipOp
 import androidx.compose.ui.graphics.Color
@@ -44,6 +46,12 @@ private const val DockShadowAlpha = .081f
 internal val ChipShadowRadius = 15.dp
 private const val ChipShadowAlpha = .087f
 
+internal fun chipShadowStrength(selected: Boolean, unselectedProgress: Float, unselectedGlassEnabled: Boolean): Float = when {
+    selected -> 1f
+    !unselectedGlassEnabled || !unselectedProgress.isFinite() -> 0f
+    else -> unselectedProgress.coerceIn(0f, 1f)
+}
+
 // Apply to a background-only sibling; the same shadow on every backend, outside the capsule only.
 @Composable
 internal fun Modifier.dockShadow(): Modifier {
@@ -65,11 +73,11 @@ private fun Modifier.outerShadow(shape: Shape, shadowRadius: Dp, shadowAlpha: Fl
     }
 
 /**
- * Where the chips of a GameChips row are, for the row to draw the selected chip's shadow ([chipRowShadow]). The chips
- * write their coordinates after every layout pass in which they may have moved; the row reads them while drawing.
+ * Where the chips of a GameChips row are, for the row to draw chip shadows ([chipRowShadow]). The chips write their
+ * coordinates after every layout pass in which they may have moved; the row reads them while drawing.
  */
 internal class ChipShadowAnchor {
-    private val chips = HashMap<String, LayoutCoordinates>()
+    private val chips = LinkedHashMap<String, LayoutCoordinates>()
     internal var moved: () -> Unit = {}
 
     fun place(id: String, coordinates: LayoutCoordinates) {
@@ -78,6 +86,9 @@ internal class ChipShadowAnchor {
     }
 
     fun coordinates(id: String): LayoutCoordinates? = chips[id]?.takeIf { it.isAttached }
+
+    fun attached(): List<Pair<String, LayoutCoordinates>> =
+        chips.entries.mapNotNull { (id, coordinates) -> if (coordinates.isAttached) id to coordinates else null }
 }
 
 // On every chip: reports its place whenever it may have changed, scrolling and overscroll included.
@@ -85,9 +96,10 @@ internal fun Modifier.chipShadowAnchor(anchor: ChipShadowAnchor, id: String): Mo
     onGloballyPositioned { anchor.place(id, it) }
 
 /**
- * The selected chip's shadow, drawn by the row under its content. Only the selected chip casts one, at rest, as glass and
- * with blur off, like the theme store's; with two or more chips a shadow under the unselected ones smeared into the content
- * below the row, and their edge light keeps them apart from the page.
+ * Chip shadows, drawn by the row under its content. The selected chip casts its shadow at rest, as glass and with blur off;
+ * unselected chips cast no shadow at rest or with blur off, and fade in the same symmetric outer shadow over [progress] once
+ * scrolled into glass mode so they remain distinct over `#FFFFFF` cards alongside their additive rim light. All attached
+ * chip interiors are clipped out so no chip's shadow darkens any translucent surface.
  *
  * A shadow drawn by the chip itself is cut at the row's bounds, 4dp above and 10dp below the chip: MiuixTheme provides
  * MiuixOverscrollFactory as LocalOverscrollFactory, and its node places the scrolled content in a layer with clip = true
@@ -95,29 +107,33 @@ internal fun Modifier.chipShadowAnchor(anchor: ChipShadowAnchor, id: String): Mo
  * outside that layer; it adds no layout or pointer input. The shadow is clipped to the row's width, where the chips show.
  */
 @Composable
-internal fun Modifier.chipRowShadow(anchor: ChipShadowAnchor, selectedId: String): Modifier =
-    this then ChipRowShadowElement(anchor, selectedId, glassShadowColor())
+internal fun Modifier.chipRowShadow(anchor: ChipShadowAnchor, selectedId: String,
+    unselectedGlass: Boolean = false, progress: () -> Float = { 0f }): Modifier =
+    this then ChipRowShadowElement(anchor, selectedId, glassShadowColor(), unselectedGlass, progress)
 
-private data class ChipRowShadowElement(val anchor: ChipShadowAnchor, val selectedId: String, val color: Color) :
-    ModifierNodeElement<ChipRowShadowNode>() {
-    override fun create() = ChipRowShadowNode(anchor, selectedId, color)
+private data class ChipRowShadowElement(val anchor: ChipShadowAnchor, val selectedId: String, val color: Color,
+    val unselectedGlass: Boolean, val progress: () -> Float) : ModifierNodeElement<ChipRowShadowNode>() {
+    override fun create() = ChipRowShadowNode(anchor, selectedId, color, unselectedGlass, progress)
 
-    override fun update(node: ChipRowShadowNode) = node.update(anchor, selectedId, color)
+    override fun update(node: ChipRowShadowNode) = node.update(anchor, selectedId, color, unselectedGlass, progress)
 
     override fun InspectorInfo.inspectableProperties() {
         name = "chipRowShadow"
         properties["selectedId"] = selectedId
+        properties["unselectedGlass"] = unselectedGlass
     }
 }
 
 private val ChipShadowShape = RoundedCornerShape(ChipCornerRadius)
 
-private class ChipRowShadowNode(private var anchor: ChipShadowAnchor, private var selectedId: String, private var color: Color) :
+private class ChipRowShadowNode(private var anchor: ChipShadowAnchor, private var selectedId: String, private var color: Color,
+    private var unselectedGlass: Boolean, private var progress: () -> Float) :
     Modifier.Node(), DrawModifierNode, CompositionLocalConsumerModifierNode {
     private var painter: Painter? = null
-    private var drawn: Rect? = null
-    private val outline = Path()
-    private var outlineSize = Size.Unspecified
+    private var drawn: List<Pair<String, Rect>> = emptyList()
+    private val allOutlines = Path()
+    private var cachedRects: List<Rect> = emptyList()
+    private var cachedDensity = 0f
 
     override fun onAttach() {
         anchor.moved = ::chipMoved
@@ -128,7 +144,7 @@ private class ChipRowShadowNode(private var anchor: ChipShadowAnchor, private va
         painter = null
     }
 
-    fun update(anchor: ChipShadowAnchor, selectedId: String, color: Color) {
+    fun update(anchor: ChipShadowAnchor, selectedId: String, color: Color, unselectedGlass: Boolean, progress: () -> Float) {
         if (anchor !== this.anchor) {
             this.anchor.moved = {}
             this.anchor = anchor
@@ -137,42 +153,61 @@ private class ChipRowShadowNode(private var anchor: ChipShadowAnchor, private va
         if (color != this.color) painter = null
         this.color = color
         this.selectedId = selectedId
+        this.unselectedGlass = unselectedGlass
+        this.progress = progress
         invalidateDraw()
     }
 
-    // The chips report after every layout pass; redraw only when the selected one moved against the row. Layout callbacks
-    // run before this frame draws, so the shadow keeps up with the chip.
+    // The chips report after every layout pass; redraw only when any attached chip moved against the row. Layout callbacks
+    // run before this frame draws, so the shadows keep up with the chips.
     private fun chipMoved() {
-        if (isAttached && chipRect() != drawn) invalidateDraw()
+        if (isAttached && chipRects() != drawn) invalidateDraw()
     }
 
-    private fun chipRect(): Rect? {
-        val chip = anchor.coordinates(selectedId) ?: return null
+    private fun chipRects(): List<Pair<String, Rect>> {
         val row = requireLayoutCoordinates()
-        return if (row.isAttached) row.localBoundingBoxOf(chip, clipBounds = false) else null
+        if (!row.isAttached) return emptyList()
+        return anchor.attached().map { (id, chip) -> id to row.localBoundingBoxOf(chip, clipBounds = false) }
     }
 
     override fun ContentDrawScope.draw() {
-        val rect = chipRect()
-        drawn = rect
-        if (rect != null) drawShadow(rect)
+        val entries = chipRects()
+        drawn = entries
+        if (entries.isNotEmpty()) drawShadows(entries)
         drawContent()
     }
 
-    private fun DrawScope.drawShadow(rect: Rect) {
-        // The shared shadow context caches the blurred bitmap per size, as Modifier.dropShadow does.
+    private fun DrawScope.drawShadows(entries: List<Pair<String, Rect>>) {
+        val unselectedProgress = if (unselectedGlass) progress() else 0f
+        if (!entries.any { (id, rect) ->
+            !rect.isEmpty && chipShadowStrength(id == selectedId, unselectedProgress, unselectedGlass) > 0f
+        }) return
         val shadow = painter ?: currentValueOf(LocalGraphicsContext).shadowContext.createDropShadowPainter(ChipShadowShape,
             Shadow(radius = ChipShadowRadius, color = color, alpha = ChipShadowAlpha)).also { painter = it }
-        if (outlineSize != rect.size) {
-            outline.rewind()
-            outline.addOutline(ChipShadowShape.createOutline(rect.size, layoutDirection, this))
-            outlineSize = rect.size
-        }
+        updateCutout(entries)
+        val minTop = entries.minOf { it.second.top }
+        val maxBottom = entries.maxOf { it.second.bottom }
         val reach = ChipShadowRadius.toPx() + 1f
-        clipRect(0f, rect.top - reach, size.width, rect.bottom + reach) {
-            translate(rect.left, rect.top) {
-                clipPath(outline, ClipOp.Difference) { with(shadow) { draw(rect.size) } }
+        clipRect(0f, minTop - reach, size.width, maxBottom + reach) {
+            clipPath(allOutlines, ClipOp.Difference) {
+                for ((id, rect) in entries) {
+                    if (rect.isEmpty) continue
+                    val strength = chipShadowStrength(id == selectedId, unselectedProgress, unselectedGlass)
+                    if (strength > 0f) translate(rect.left, rect.top) { with(shadow) { draw(rect.size, alpha = strength) } }
+                }
             }
         }
+    }
+
+    private fun DrawScope.updateCutout(entries: List<Pair<String, Rect>>) {
+        val rects = entries.map { it.second }
+        if (rects == cachedRects && density == cachedDensity) return
+        allOutlines.rewind()
+        for (rect in rects) {
+            val corner = CornerRadius(minOf(ChipCornerRadius.toPx(), rect.minDimension / 2f))
+            allOutlines.addRoundRect(RoundRect(rect, corner))
+        }
+        cachedRects = rects
+        cachedDensity = density
     }
 }

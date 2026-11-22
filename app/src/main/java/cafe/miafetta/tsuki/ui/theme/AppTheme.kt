@@ -3,6 +3,8 @@ package cafe.miafetta.tsuki.ui.theme
 import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.*
+import androidx.compose.ui.graphics.toArgb
+import androidx.core.graphics.drawable.toDrawable
 import androidx.core.view.WindowCompat
 import androidx.compose.ui.unit.sp
 import top.yukonga.miuix.kmp.theme.*
@@ -46,6 +48,10 @@ internal fun TsukiAppTheme(mode: String, content: @Composable () -> Unit) {
         else -> ColorSchemeMode.System
     }) }
     val activity = LocalActivity.current
+    val surfaceArgb = (if (dark) darkColorScheme() else lightColorScheme()).surface.toArgb()
+    LaunchedEffect(activity, surfaceArgb) {
+        activity?.window?.setBackgroundDrawable(surfaceArgb.toDrawable())
+    }
     SideEffect { activity?.let {
         val bars = WindowCompat.getInsetsController(it.window, it.window.decorView)
         bars.isAppearanceLightStatusBars = !dark

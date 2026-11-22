@@ -2,6 +2,18 @@
 
 本文件记录面向用户的变更，格式参考 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)，版本号遵循 [语义化版本](https://semver.org/lang/zh-CN/)。
 
+## [2.3.3]
+
+### 修复
+
+- 修复二级页面返回及滑入转场时顶栏背景与圆形返回键模糊采错下层页面的问题：`TsukiNavHost` 仅在 `NavDisplay` 转场外框裁切层停用超椭圆离屏遮罩（改用硬件圆角裁切，页面内部通过 `TsukiNavEntry` 立即恢复超椭圆），且 `tsukiNavTransition()` 保持下层页面 `alpha = 1`，避免 HyperOS 原生玻璃在离屏层边界跨页采样。
+- 修复返回被覆盖页面首帧短暂触发 `miuix-blur`／1dp 描边闪烁的问题，以及切回主标签时大标题与小标题短暂重叠或误播淡入动画的问题。
+- 修复概览游戏选择条未选中胶囊滚动到纯白卡片（`#FFFFFF`）上方时缺乏外侧阴影光晕、轮廓难以辨认的问题：静止及关闭模糊时未选中胶囊保持无阴影，滚动进入玻璃态后随 `progress` 渐显四周对称外部投影（由 `chipRowShadow` 在滚动图层外统一绘制并挖空整行所有胶囊轮廓），不压暗胶囊内部且与内侧白边形成清晰光晕。
+
+### 改进
+
+- 转场活跃与玻璃开关改为 `derivedStateOf` 订阅（`rememberNavActive`／`rememberNavGlassActive`），避免转场期间逐帧重组整页；窗口背景色对齐 Miuix `surface`（浅色 `#F7F7F7`、深色 `#000000`）并随应用内主题切换实时同步。桌面小部件未改动（`miuiWidgetVersion` 仍为 56）。
+
 ## [2.3.2]
 
 ### 改进

@@ -1,6 +1,7 @@
 package cafe.miafetta.tsuki.ui.pages
 
 import cafe.miafetta.tsuki.providers.SklandWebLogin
+import cafe.miafetta.tsuki.ui.glass.rememberNavActive
 import cafe.miafetta.tsuki.ui.state.WebLoginData
 
 import android.annotation.SuppressLint
@@ -22,7 +23,6 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import top.yukonga.miuix.kmp.basic.*
-import top.yukonga.miuix.kmp.nav.core.LocalNavTransitionScope
 import top.yukonga.miuix.kmp.nav.gesture.PredictiveBackHandler
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import kotlinx.coroutines.delay
@@ -33,8 +33,7 @@ import kotlinx.coroutines.delay
 @Composable
 internal fun WebLoginPage(activity: Activity, onCred: (String) -> Unit, onBack: () -> Unit,
     startUrl: String = SklandWebLogin.START_URL) {
-    val transition = LocalNavTransitionScope.current
-    val active by remember(transition) { derivedStateOf { !transition.isRunning && transition.relativeDepth == 0f } }
+    val active = rememberNavActive()
     val state = remember { WebLoginState() }
     val currentOnCred by rememberUpdatedState(onCred)
     // System back steps back inside the page first; the top bar button always leaves.

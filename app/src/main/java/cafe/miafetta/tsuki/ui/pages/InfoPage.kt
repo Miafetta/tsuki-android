@@ -1,6 +1,7 @@
 package cafe.miafetta.tsuki.ui.pages
 
 import cafe.miafetta.tsuki.ui.components.TsukiSmallTitle
+import cafe.miafetta.tsuki.ui.glass.rememberNavActive
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.*
@@ -10,7 +11,6 @@ import androidx.compose.ui.unit.dp
 import top.yukonga.miuix.kmp.basic.BasicComponent
 import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.Text
-import top.yukonga.miuix.kmp.nav.core.LocalNavTransitionScope
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 
 // A numbered section of a formal information page; each row is a short heading with its explanation.
@@ -20,8 +20,7 @@ internal data class InfoSection(val title: String, val rows: List<Pair<String, S
 @Composable
 internal fun InfoPage(title: String, onBack: () -> Unit, blurEnabled: Boolean, heading: String, meta: String, intro: String,
     sections: List<InfoSection>, notes: List<String> = emptyList(), extra: @Composable ColumnScope.() -> Unit = {}) {
-    val transition = LocalNavTransitionScope.current
-    val active = !transition.isRunning && transition.relativeDepth == 0f
+    val active = rememberNavActive()
     SecondaryScaffold(title, blurEnabled, active, onBack, contentPadding = PaddingValues(horizontal = 12.dp)) {
         InfoHeader(heading, meta, intro)
         sections.forEachIndexed { index, section -> InfoSectionCard(index + 1, section) }
