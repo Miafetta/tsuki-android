@@ -13,6 +13,7 @@ import cafe.miafetta.tsuki.*
 import cafe.miafetta.tsuki.core.*
 import cafe.miafetta.tsuki.widget.*
 import cafe.miafetta.tsuki.ui.theme.Branding
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
 import top.yukonga.miuix.kmp.nav.core.*
 
@@ -84,9 +85,18 @@ internal fun ControllerDataEffects(controller: AppController, activity: Activity
             }
         }
     }
+    // :widgetProvider reports a change for every widget it renders, so a single refresh reports several. They are merged
+    // into at most one pending reload, and reloads run one after another instead of each starting its own reads.
+    val changes = remember { Channel<Unit>(Channel.CONFLATED) }
+    LaunchedEffect(changes) {
+        while (true) {
+            changes.receive()
+            reload()
+        }
+    }
     DisposableEffect(activity) {
         val observer = object : ContentObserver(Handler(Looper.getMainLooper())) {
-            override fun onChange(selfChange: Boolean) { scope.launch { reload() } }
+            override fun onChange(selfChange: Boolean) { changes.trySend(Unit) }
         }
         activity.contentResolver.registerContentObserver(WidgetStorageProvider.URI, false, observer)
         onDispose { activity.contentResolver.unregisterContentObserver(observer) }

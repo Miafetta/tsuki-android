@@ -2,6 +2,8 @@ package cafe.miafetta.tsuki.providers
 
 import cafe.miafetta.tsuki.core.*
 import cafe.miafetta.tsuki.core.TrainingState
+import java.io.ByteArrayInputStream
+import java.net.SocketTimeoutException
 import org.json.JSONObject
 import org.junit.Assert.*
 import org.junit.Test
@@ -15,6 +17,47 @@ class SklandProtocolTest : SklandFixtureTest() {
         assertEquals(cred, headers["cred"])
         assertNotEquals(headers["sign"], SklandSigner.headers(cred, "test-sign-key",
             "/api/v1/game/player/info?uid=000000002", 1_700_000_000)["sign"])
+    }
+
+    // A request stalled for one account must not hold back another account's (a login waited behind any refresh),
+    // while forgetting the stalled Cred still waits for its request, so nothing it learns outlives the Cred.
+    @Test fun requestsOfDifferentCredsDoNotWaitForEachOther() {
+        fun lock(value: String) = Math.floorMod(value.hashCode(), SklandClient.LOCKS)
+        val slow = (0..99).map { "test-credential-slow-$it" }.first { lock(it) != lock(cred) }
+        val stalled = java.util.concurrent.CountDownLatch(1)
+        val release = java.util.concurrent.CountDownLatch(1)
+        val client = SklandClient(SklandTransport { path, headers ->
+            if (path.endsWith("refresh")) return@SklandTransport response(JSONObject().put("token", "test-sign-key"))
+            if (headers["cred"] == slow) {
+                stalled.countDown()
+                assertTrue(release.await(10, java.util.concurrent.TimeUnit.SECONDS))
+            }
+            response(fixture("binding"))
+        }) { now }
+        val pool = java.util.concurrent.Executors.newFixedThreadPool(2)
+        try {
+            val slowRoles = pool.submit<List<SklandRole>> { client.roles(slow) }
+            assertTrue(stalled.await(10, java.util.concurrent.TimeUnit.SECONDS))
+            assertEquals(2, pool.submit<List<SklandRole>> { client.roles(cred) }.get(5, java.util.concurrent.TimeUnit.SECONDS).size)
+            val forgotten = pool.submit { client.forget(slow) }
+            Thread.sleep(200)
+            assertFalse(forgotten.isDone)
+            release.countDown()
+            assertEquals(2, slowRoles.get(5, java.util.concurrent.TimeUnit.SECONDS).size)
+            forgotten.get(5, java.util.concurrent.TimeUnit.SECONDS)
+        } finally {
+            release.countDown()
+            pool.shutdownNow()
+        }
+    }
+
+    @Test fun rejectsAResponseIfItsFinalReadRunsPastTheBudget() {
+        val input = object : ByteArrayInputStream("{}".toByteArray()) {
+            var nanos = 0L
+            override fun read(bytes: ByteArray, offset: Int, length: Int): Int =
+                super.read(bytes, offset, length).also { if (it < 0) nanos = 30_000_000_000L }
+        }
+        assertThrows(SocketTimeoutException::class.java) { readSklandBody(input, 0L) { input.nanos } }
     }
 
     @Test fun refreshSessionThenReadRolesAndReuseSession() {

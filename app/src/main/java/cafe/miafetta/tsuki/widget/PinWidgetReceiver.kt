@@ -14,6 +14,9 @@ import android.util.Log
 import cafe.miafetta.tsuki.storageCall
 import java.util.UUID
 import java.util.concurrent.Executors
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.withContext
 
 class PinWidgetReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
@@ -34,12 +37,22 @@ class PinWidgetReceiver : BroadcastReceiver() {
     companion object {
         private val worker = Executors.newSingleThreadExecutor()
 
-        internal fun request(context: Context, config: Bundle): Boolean {
+        internal suspend fun request(context: Context, config: Bundle): Boolean {
             val manager = AppWidgetManager.getInstance(context)
-            if (!manager.isRequestPinAppWidgetSupported) return false
+            if (!withContext(Dispatchers.IO) { manager.isRequestPinAppWidgetSupported }) return false
             val token = UUID.randomUUID().toString()
             val selection = Bundle(config).apply { putString(Storage.PIN_TOKEN, token) }
-            if (context.storageCall(Storage.PREPARE_PIN, selection).getBoolean(Storage.ERROR)) return false
+            val storage = context.applicationContext
+            return withStagedPin(
+                prepare = { !storage.storageCall(Storage.PREPARE_PIN, selection).getBoolean(Storage.ERROR) },
+                request = { requestLauncher(context, manager, selection, token) },
+                cancel = { storage.storageCall(Storage.CLEAR_PIN, selection) },
+            )
+        }
+
+        private fun requestLauncher(context: Context, manager: AppWidgetManager, selection: Bundle, token: String): Boolean {
+            val theme = cafe.miafetta.tsuki.core.WidgetTheme.valueOf(requireNotNull(selection.getString(Storage.THEME)))
+            val provider = StatusWidgetProvider.providerClass(requireNotNull(selection.getString(Storage.FEATURE_ID)), theme)
             val intent = Intent(context, PinWidgetReceiver::class.java)
                 .setAction("cafe.miafetta.tsuki.action.PIN_WIDGET")
                 .addFlags(Intent.FLAG_RECEIVER_FOREGROUND)
@@ -48,20 +61,25 @@ class PinWidgetReceiver : BroadcastReceiver() {
             // The launcher fills EXTRA_APPWIDGET_ID into this explicit, one-shot callback.
             val callback = PendingIntent.getBroadcast(context, 0, intent,
                 PendingIntent.FLAG_MUTABLE or PendingIntent.FLAG_ONE_SHOT)
-            val theme = cafe.miafetta.tsuki.core.WidgetTheme.valueOf(requireNotNull(config.getString(Storage.THEME)))
-            val provider = StatusWidgetProvider.providerClass(requireNotNull(config.getString(Storage.FEATURE_ID)), theme)
             val accepted = try {
                 manager.requestPinAppWidget(ComponentName(context, provider), null, callback)
             } catch (failure: RuntimeException) {
-                context.storageCall(Storage.CLEAR_PIN, selection)
                 callback.cancel()
                 throw failure
             }
-            if (!accepted) {
-                context.storageCall(Storage.CLEAR_PIN, selection)
-                callback.cancel()
-            }
+            if (!accepted) callback.cancel()
             return accepted
         }
+    }
+}
+
+internal suspend fun withStagedPin(prepare: () -> Boolean, request: () -> Boolean, cancel: () -> Unit): Boolean {
+    var accepted = false
+    try {
+        if (withContext(Dispatchers.IO) { prepare() }) accepted = request()
+        return accepted
+    } finally {
+        // The prepare IPC can succeed even if cancellation drops its result before returning to the caller.
+        if (!accepted) withContext(NonCancellable) { withContext(Dispatchers.IO) { cancel() } }
     }
 }

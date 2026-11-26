@@ -1,5 +1,7 @@
 package cafe.miafetta.tsuki.widget
 
+import cafe.miafetta.tsuki.core.AccountProblem
+import cafe.miafetta.tsuki.core.AccountProblemException
 import cafe.miafetta.tsuki.providers.AndroidCredentialKey
 import cafe.miafetta.tsuki.providers.SklandAccount
 import cafe.miafetta.tsuki.providers.SklandClient
@@ -17,15 +19,18 @@ internal fun WidgetRuntime.platformName(cred: String): String {
     return client.nickname(cred).orEmpty()
 }
 
-internal fun WidgetRuntime.login(name: String, cred: String) {
+// [updatingId] is set by "更新 Cred": the Cred must then belong to that account (matchingAccountForLogin).
+internal fun WidgetRuntime.login(name: String, cred: String, updatingId: String?) =
+    login(name, cred, updatingId, synchronized(this) { accountGeneration })
+
+private fun WidgetRuntime.login(name: String, cred: String, updatingId: String?, generation: Long) {
     require(name.length <= SklandClient.NAME_LIMIT)
     SklandClient.validateCred(cred)
-    val generation = synchronized(this) { accountGeneration }
     val roles = client.roles(cred)
     var previousCred: String? = null
     synchronized(this) {
+        val existing = matchingAccountForLogin(accounts.list(), cred, roles, updatingId)
         require(generation == accountGeneration) { "Account operation was cancelled" }
-        val existing = matchingAccountForLogin(accounts.list(), cred, roles)
         // The name is an optional alias: blank stays blank (updates prefill it, so blank means it was cleared).
         accounts.save(SklandAccount(existing?.id ?: UUID.randomUUID().toString(), name.trim(), cred, roles))
         accountGeneration++
@@ -52,10 +57,14 @@ internal fun WidgetRuntime.login(name: String, cred: String) {
 }
 
 // "更新 Cred" with the Cred left blank: verify again with the stored Cred, e.g. to change only the name. The Cred stays
-// in this process; an account removed in the meantime is reported as an invalid request.
+// in this process. Capture the generation with the Cred so a later update cannot be undone by this verification.
 internal fun WidgetRuntime.reverify(accountId: String, name: String) {
-    val cred = synchronized(this) { accounts.list().singleOrNull { it.id == accountId }?.cred }
-    login(name, requireNotNull(cred) { "Account no longer exists" })
+    val (cred, generation) = synchronized(this) {
+        val account = accounts.list().singleOrNull { it.id == accountId }
+            ?: throw AccountProblemException(AccountProblem.ACCOUNT_GONE, "Account no longer exists")
+        account.cred to accountGeneration
+    }
+    login(name, cred, accountId, generation)
 }
 
 internal fun WidgetRuntime.logout(accountId: String) {

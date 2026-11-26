@@ -2,10 +2,14 @@ package cafe.miafetta.tsuki.providers
 
 import cafe.miafetta.tsuki.core.DataSourceFailure
 import cafe.miafetta.tsuki.core.RefreshFailure
+import java.io.InputStream
+import java.io.InterruptedIOException
 import java.net.HttpURLConnection
+import java.net.SocketTimeoutException
 import java.net.URI
 import java.net.URLEncoder
 import java.security.MessageDigest
+import java.util.concurrent.ConcurrentHashMap
 import javax.crypto.Mac
 import javax.crypto.spec.SecretKeySpec
 import org.json.JSONObject
@@ -19,6 +23,7 @@ internal class SklandHttpsTransport : SklandTransport {
     override fun request(pathAndQuery: String, headers: Map<String, String>): SklandResponse {
         require(pathAndQuery.substringBefore('?') in SklandClient.PATHS)
         val connection = URI("https://zonai.skland.com$pathAndQuery").toURL().openConnection() as HttpURLConnection
+        val startedAt = System.nanoTime()
         try {
             connection.instanceFollowRedirects = false
             connection.connectTimeout = 8000
@@ -27,29 +32,36 @@ internal class SklandHttpsTransport : SklandTransport {
             headers.forEach { (key, value) -> connection.setRequestProperty(key, value) }
             val status = connection.responseCode
             if (status !in 200..299) return SklandResponse(status, "", connection.getHeaderField("Retry-After"))
-            val body = connection.inputStream.use { input ->
-                val bytes = java.io.ByteArrayOutputStream()
-                val buffer = ByteArray(8192)
-                while (true) {
-                    if (Thread.currentThread().isInterrupted) throw java.io.InterruptedIOException()
-                    val count = input.read(buffer)
-                    if (count < 0) break
-                    if (bytes.size() + count > 4 * 1024 * 1024) throw DataSourceFailure(RefreshFailure.INVALID_DATA)
-                    bytes.write(buffer, 0, count)
-                }
-                bytes.toString(Charsets.UTF_8.name())
-            }
+            val body = connection.inputStream.use { readSklandBody(it, startedAt) }
             return SklandResponse(status, body)
         } catch (failure: DataSourceFailure) {
             throw failure
         } catch (failure: java.io.IOException) {
             // The platform stack may clear the interrupt flag when a stopped job cuts the request short; SklandRoleAdapter
             // reads the flag to tell that from a real failure. A timeout is also an InterruptedIOException but is real.
-            if (failure is java.io.InterruptedIOException && failure !is java.net.SocketTimeoutException) {
+            if (failure is InterruptedIOException && failure !is SocketTimeoutException) {
                 Thread.currentThread().interrupt()
             }
             throw DataSourceFailure(RefreshFailure.NETWORK)
         } finally { connection.disconnect() }
+    }
+}
+
+internal fun readSklandBody(input: InputStream, startedAt: Long, nanoTime: () -> Long = System::nanoTime): String {
+    fun checkBudget() {
+        if (Thread.currentThread().isInterrupted) throw InterruptedIOException()
+        // shortcut: HttpURLConnection still controls each blocking read; use a cancellable transport for a hard deadline.
+        if (nanoTime() - startedAt >= 30_000_000_000L) throw SocketTimeoutException("Response too slow")
+    }
+    val bytes = java.io.ByteArrayOutputStream()
+    val buffer = ByteArray(8192)
+    checkBudget()
+    while (true) {
+        val count = input.read(buffer)
+        checkBudget()
+        if (count < 0) return bytes.toString(Charsets.UTF_8.name())
+        if (bytes.size() + count > 4 * 1024 * 1024) throw DataSourceFailure(RefreshFailure.INVALID_DATA)
+        bytes.write(buffer, 0, count)
     }
 }
 
@@ -74,24 +86,43 @@ internal object SklandSigner {
 internal class SklandClient(private val transport: SklandTransport,
     private val clock: () -> Long = System::currentTimeMillis) {
     private data class Session(val token: String, val expires: Long)
-    private val sessions = mutableMapOf<String, Session>()
-    private val blockedUntil = mutableMapOf<String, Long>()
-    private val userIds = mutableMapOf<String, String>()
+    // Each Cred's entries are read and written only under that Cred's lock; the maps are concurrent because Creds of
+    // different locks share them.
+    private val sessions = ConcurrentHashMap<String, Session>()
+    private val blockedUntil = ConcurrentHashMap<String, Long>()
+    private val userIds = ConcurrentHashMap<String, String>()
+    // Requests of one Cred stay one at a time, as the server session and rate limit are per Cred, but one account's slow
+    // request no longer holds back the others (a login waited behind any widget refresh). Locks are picked by the Cred's
+    // hash from a fixed set, so no Cred is kept as a key just to be locked on.
+    private val locks = Array(LOCKS) { Any() }
 
-    @Synchronized fun forget(cred: String) {
-        sessions.remove(cred)
-        blockedUntil.remove(cred)
-        userIds.remove(cred)
+    private fun <T> locked(cred: String, block: () -> T): T = synchronized(locks[Math.floorMod(cred.hashCode(), LOCKS)], block)
+
+    // Takes every lock in index order; a request holds only one, so this cannot deadlock with them.
+    private fun <T> allLocked(index: Int = 0, block: () -> T): T =
+        if (index == LOCKS) block() else synchronized(locks[index]) { allLocked(index + 1, block) }
+
+    // Waits for the Cred's request in flight, so that nothing it learns is stored after the Cred was forgotten.
+    fun forget(cred: String) {
+        locked(cred) {
+            sessions.remove(cred)
+            blockedUntil.remove(cred)
+            userIds.remove(cred)
+        }
     }
-    @Synchronized fun clear() {
-        sessions.clear()
-        blockedUntil.clear()
-        userIds.clear()
+    fun clear() {
+        allLocked {
+            sessions.clear()
+            blockedUntil.clear()
+            userIds.clear()
+        }
     }
 
     // Reads the account's game bindings, then best-effort fills Endfield's "#<digits>" tag from the compact game
     // cards (/api/v1/game/cards), which only include Endfield when signed with Android app platform/version headers.
-    @Synchronized fun roles(cred: String): List<SklandRole> {
+    fun roles(cred: String): List<SklandRole> = locked(cred) { readRoles(cred) }
+
+    private fun readRoles(cred: String): List<SklandRole> {
         val binding = signed(cred, "/api/v1/game/player/binding")
         val roles = parseRoles(binding)
         if (roles.none { it.game == SklandGame.ENDFIELD && '#' !in it.label }) return roles
@@ -102,24 +133,24 @@ internal class SklandClient(private val transport: SklandTransport,
         } catch (_: DataSourceFailure) { roles }
     }
 
-    @Synchronized fun player(cred: String, uid: String): JSONObject {
+    fun player(cred: String, uid: String): JSONObject {
         require(uid.matches(Regex("[0-9]{1,20}")))
-        return signed(cred, "/api/v1/game/player/info?uid=${URLEncoder.encode(uid, Charsets.UTF_8.name())}")
+        return locked(cred) { signed(cred, "/api/v1/game/player/info?uid=${URLEncoder.encode(uid, Charsets.UTF_8.name())}") }
     }
 
     // Endfield cards are requested with the Skland user ID, which only /user/teenager returns without the whole
     // profile. It never changes for a Cred, so it is kept for the session.
-    @Synchronized fun endfieldCard(cred: String, serverId: String, roleId: String): JSONObject {
+    fun endfieldCard(cred: String, serverId: String, roleId: String): JSONObject = locked(cred) {
         SklandRole.endfieldId(serverId, roleId)
         val userId = userIds[cred] ?: userId(cred).also { userIds[cred] = it }
         val query = listOf("roleId" to roleId, "serverId" to serverId, "userId" to userId)
             .joinToString("&") { (key, value) -> "$key=${URLEncoder.encode(value, Charsets.UTF_8.name())}" }
-        return signed(cred, "/web/v1/game/endfield/card/detail?$query")
+        signed(cred, "/web/v1/game/endfield/card/detail?$query")
     }
 
     // The Skland account's own nickname, offered as the optional account name; never a game role's nickname. The
     // response is the whole profile, so only data.user.nickname is read and nothing else of it is kept.
-    @Synchronized fun nickname(cred: String): String? = parseNickname(signed(cred, "/api/v1/user"))
+    fun nickname(cred: String): String? = locked(cred) { parseNickname(signed(cred, "/api/v1/user")) }
 
     private fun userId(cred: String): String = try {
         signed(cred, "/api/v1/user/teenager").getJSONObject("teenager").getString("userId")
@@ -189,6 +220,8 @@ internal class SklandClient(private val transport: SklandTransport,
         private const val CARDS_VERSION = "2.5.0"
         // Account names are limited to this many characters where they are saved (WidgetRuntime.login).
         const val NAME_LIMIT = 40
+        // Locks of SklandClient's requests; two Creds wait for each other only when their hashes pick the same one.
+        internal const val LOCKS = 16
 
         fun validateCred(cred: String) { require(cred.matches(Regex("[!-~]{10,4096}"))) { "Invalid credential" } }
 

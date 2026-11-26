@@ -66,4 +66,30 @@ class AvatarCacheTest {
         assertTrue(cache.prepare(url))
         assertFalse(cache.prepare(url))
     }
+
+    // An overview read waits only for an avatar it has never cached; renewing a stale one is handed to the background.
+    @Test fun readsDownloadMissingAvatarsAtOnceAndRenewStaleOnesInTheBackground() {
+        var calls = 0
+        val queued = mutableListOf<Runnable>()
+        val cache = AvatarCache(directory.root, background = { queued += it }) {
+            calls++
+            png()
+        }
+        cache.prepareForRead(url)
+        assertEquals(1, calls)
+        assertTrue(queued.isEmpty())
+        cache.prepareForRead(url)
+        assertEquals(1, calls)
+        assertTrue(queued.isEmpty())
+        assertTrue(directory.root.listFiles()!!.single().setLastModified(System.currentTimeMillis() - 8 * 86400000L))
+        cache.prepareForRead(url)
+        cache.prepareForRead(url)
+        assertEquals(1, calls)
+        assertEquals(1, queued.size)
+        queued.single().run()
+        assertEquals(2, calls)
+        assertArrayEquals(png(), cache.read(url))
+        cache.prepareForRead("https://third-party.test/avatar.png")
+        assertEquals(2, calls)
+    }
 }

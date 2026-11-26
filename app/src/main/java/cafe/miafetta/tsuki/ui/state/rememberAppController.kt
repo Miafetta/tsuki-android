@@ -14,8 +14,9 @@ internal fun rememberAppController(activity: Activity, initialPage: Int, resumeT
     overviewWidgetId: Int?, overviewRoleKey: String?, onConfigured: () -> Unit): AppController {
     // The first overview read starts here, before the rest of the screen composes; it is idempotent per ViewModel and
     // the first reload joins it (AppState.load).
-    val state = remember(activity) {
-        ViewModelProvider(activity as ComponentActivity, viewModelFactory {
+    val host = activity as ComponentActivity
+    val state = remember(host) {
+        ViewModelProvider(host, viewModelFactory {
             initializer { AppState(activity.applicationContext) }
         })[AppState::class.java].also { it.startInitialLoad() }
     }
@@ -28,7 +29,7 @@ internal fun rememberAppController(activity: Activity, initialPage: Int, resumeT
         UiSession(initialPage.coerceIn(AppPage.OVERVIEW, AppPage.ME), prefs.getString(UiPreferences.ROLE, "") ?: "",
             configuringId?.let { ConfigSheet.Edit(it) } ?: ConfigSheet.Closed())
     }
-    val controller = remember(state, nav, draft, session) { AppController(state, prefs, nav, draft, session, activity) }
+    val controller = remember(state, nav, draft, session) { AppController(state, prefs, nav, draft, session, host) }
     ControllerNavigationEffects(controller, activity, configuringId, onConfigured)
     ControllerDataEffects(controller, activity, resumeTick, overviewWidgetId, overviewRoleKey)
     return controller

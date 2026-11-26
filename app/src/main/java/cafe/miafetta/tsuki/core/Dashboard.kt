@@ -14,8 +14,10 @@ internal fun dashboardMetric(snapshot: WidgetSnapshot?, label: String): WidgetMe
 }
 
 internal fun validateAccountUpdate(oldRoles: List<String>, newRoles: List<String>, otherRoles: List<String>) {
-    require(newRoles.isNotEmpty() && oldRoles.any { it in newRoles }) { "Credential belongs to a different account" }
-    require(newRoles.none { it in otherRoles }) { "Account already added" }
+    if (newRoles.isEmpty() || oldRoles.none { it in newRoles }) {
+        throw AccountProblemException(AccountProblem.ACCOUNT_MISMATCH, "Credential belongs to a different account")
+    }
+    if (newRoles.any { it in otherRoles }) throw AccountProblemException(AccountProblem.ACCOUNT_CONFLICT, "Account already added")
 }
 
 internal fun dashboardDetail(snapshot: WidgetSnapshot?, label: String, now: Long): String? {

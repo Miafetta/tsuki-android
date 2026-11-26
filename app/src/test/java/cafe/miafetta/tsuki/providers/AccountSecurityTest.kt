@@ -33,6 +33,63 @@ class AccountSecurityTest {
         assertThrows(IllegalArgumentException::class.java) { SklandAccount("account-b", "长".repeat(81), cred, unnamed.roles) }
     }
 
+    @Test fun updatingAnAccountAcceptsOnlyACredOfThatAccount() {
+        val first = SklandAccount("account-a", "first", "first-credential", listOf(SklandRole("1", "test")))
+        val second = SklandAccount("account-b", "second", "second-credential", listOf(SklandRole("2", "test")))
+        val accounts = listOf(first, second)
+        assertSame(first, matchingAccountForLogin(accounts, "renewed-credential", first.roles, first.id))
+        assertSame(first, matchingAccountForLogin(accounts, first.cred, first.roles, first.id))
+        fun problem(cred: String, roles: List<SklandRole>, updatingId: String) =
+            assertThrows(AccountProblemException::class.java) { matchingAccountForLogin(accounts, cred, roles, updatingId) }.problem
+        // A Skland account that is not stored is not added under the updated account's name...
+        assertEquals(AccountProblem.ACCOUNT_MISMATCH, problem("other-credential", listOf(SklandRole("3", "test")), first.id))
+        // ...and another stored account is not renamed to it.
+        assertEquals(AccountProblem.ACCOUNT_MISMATCH, problem("renewed-credential", second.roles, first.id))
+        assertEquals(AccountProblem.ACCOUNT_GONE, problem("renewed-credential", first.roles, "account-removed"))
+        // Adding (no account to update) still adds a Skland account that is not stored.
+        assertNull(matchingAccountForLogin(accounts, "other-credential", listOf(SklandRole("3", "test"))))
+    }
+
+    @Test fun accountRulesNameTheirProblem() {
+        val first = SklandAccount("account-a", "test", "first-credential", listOf(SklandRole("1", "test")))
+        val second = SklandAccount("account-b", "test", "second-credential", listOf(SklandRole("2", "test")))
+        assertEquals(AccountProblem.ACCOUNT_CONFLICT, assertThrows(AccountProblemException::class.java) {
+            matchingAccountForLogin(listOf(first, second), "new-credential", first.roles + second.roles)
+        }.problem)
+        assertEquals(AccountProblem.ACCOUNT_MISMATCH, assertThrows(AccountProblemException::class.java) {
+            matchingAccountForLogin(listOf(first), first.cred, listOf(SklandRole("3", "test")))
+        }.problem)
+        val store = repository()
+        repeat(FileAccountRepository.MAX_ACCOUNTS) { store.save(account("account-$it").withRole("$it")) }
+        assertEquals(AccountProblem.ACCOUNT_LIMIT, assertThrows(AccountProblemException::class.java) {
+            store.save(account("account-extra").withRole("99"))
+        }.problem)
+        assertEquals(FileAccountRepository.MAX_ACCOUNTS, store.list().size)
+    }
+
+    // Reads after a write are served without the Keystore; a file replaced behind the repository is read again.
+    @Test fun repeatedReadsDoNotDecryptAgainUntilTheFileChanges() {
+        var keyUses = 0
+        val counting = CredentialCipher {
+            keyUses++
+            key
+        }
+        val store = FileAccountRepository(file, counting)
+        store.save(account())
+        val afterSave = keyUses
+        repeat(3) { assertEquals(listOf("account-1"), store.list().map { it.id }) }
+        assertEquals(afterSave, keyUses)
+        repository().save(account("account-2-with-a-longer-id"))
+        assertEquals(listOf("account-1", "account-2-with-a-longer-id"), store.list().map { it.id })
+        assertEquals(afterSave + 1, keyUses)
+        store.clear()
+        assertTrue(store.list().isEmpty())
+        repository().save(account("account-3"))
+        assertEquals(listOf("account-3"), store.list().map { it.id })
+    }
+
+    private fun SklandAccount.withRole(uid: String) = SklandAccount(id, name, cred, listOf(SklandRole(uid, "测试博士")), retryAt)
+
     @Test fun loginRejectsMixedOwnershipAndChangedIdentityWithoutChangingStoredAccounts() {
         val first = SklandAccount("account-a", "test", "first-credential", listOf(SklandRole("1", "test")))
         val second = SklandAccount("account-b", "test", "second-credential", listOf(SklandRole("2", "test")))

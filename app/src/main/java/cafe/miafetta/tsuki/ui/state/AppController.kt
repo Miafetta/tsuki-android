@@ -3,16 +3,18 @@ package cafe.miafetta.tsuki.ui.state
 import cafe.miafetta.tsuki.StorageContract as Storage
 
 import androidx.core.content.edit
-import android.app.Activity
+import androidx.activity.ComponentActivity
 import android.appwidget.AppWidgetManager
 import android.content.ComponentName
 import android.content.SharedPreferences
 import android.os.Bundle
+import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewModelScope
 import androidx.compose.runtime.*
 import cafe.miafetta.tsuki.*
 import cafe.miafetta.tsuki.core.*
 import cafe.miafetta.tsuki.widget.*
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 import top.yukonga.miuix.kmp.nav.core.*
 
@@ -25,7 +27,7 @@ internal class AppController(
     val nav: NavController,
     val draft: AccountDraft,
     session: UiSession,
-    private val activity: Activity,
+    private val activity: ComponentActivity,
 ) {
     var blur by mutableStateOf(preferences.getBoolean(UiPreferences.BLUR, true))
     var theme by mutableStateOf(preferences.getString(Storage.THEME, "SYSTEM") ?: "SYSTEM")
@@ -109,24 +111,38 @@ internal class AppController(
     fun saveAccount(name: String, cred: String) {
         val accountId = draft.accountId
         val keep = cred.isEmpty() && accountId != null
+        // An update always names its account, so a new Cred of another Skland account is refused instead of added.
         val extras = Bundle().apply {
             putString(Storage.NAME, name)
-            if (keep) putString(Storage.ACCOUNT_ID, accountId) else putString(Storage.CRED, cred)
+            if (accountId != null) putString(Storage.ACCOUNT_ID, accountId)
+            if (!keep) putString(Storage.CRED, cred)
         }
         scope.launch { state.action(if (keep) Storage.REVERIFY else Storage.LOGIN, extras, inlineError = true) }
     }
+    // Staging the placement is IPC to :widgetProvider, which may be starting or busy rendering, so it runs off the main
+    // thread; a second tap while one placement is under way is ignored.
     fun place(config: Bundle) {
-        val accepted = try {
-            if (config.getBoolean("probe")) {
-                val manager = AppWidgetManager.getInstance(activity)
-                manager.isRequestPinAppWidgetSupported && manager.requestPinAppWidget(
-                    ComponentName(activity, XiaomiProbeProvider::class.java), null, null)
-            } else PinWidgetReceiver.request(activity, config)
-        } catch (_: RuntimeException) { false }
-        if (!accepted) state.messages.send("当前桌面不支持从应用内添加，请在桌面的小部件列表中添加")
         pendingPin = null
         permissionDialog = false
         waitingSettings = false
+        activity.lifecycleScope.launch {
+            if (state.placing) return@launch
+            state.placing = true
+            val accepted = try {
+                if (config.getBoolean("probe")) {
+                    val manager = AppWidgetManager.getInstance(activity)
+                    manager.isRequestPinAppWidgetSupported && manager.requestPinAppWidget(
+                        ComponentName(activity, XiaomiProbeProvider::class.java), null, null)
+                } else PinWidgetReceiver.request(activity, config)
+            } catch (cancelled: CancellationException) {
+                throw cancelled
+            } catch (_: RuntimeException) {
+                false
+            } finally {
+                state.placing = false
+            }
+            if (!accepted) state.messages.send("当前桌面不支持从应用内添加，请在桌面的小部件列表中添加")
+        }
     }
     fun pin(config: Bundle) {
         if (DesktopShortcutPermission.check(activity) == DesktopShortcutPermission.State.GRANTED) place(config)
@@ -135,9 +151,9 @@ internal class AppController(
             permissionDialog = true
         }
     }
-    // The resume path skips the overview read because the selected-role effect, also keyed by resumeTick, reads it.
+    // The resume path skips the dashboard read because the selected-role effect, also keyed by resumeTick, reads it.
     suspend fun reload(readDashboard: Boolean = true) {
-        state.load()
+        state.load(joinInitial = !readDashboard)
         if (page == AppPage.WIDGETS) previewVersion++
         val role = selected
         if (readDashboard && role != null && page == AppPage.OVERVIEW) state.dashboard(role)

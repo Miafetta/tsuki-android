@@ -34,6 +34,7 @@ import cafe.miafetta.tsuki.providers.SklandEndfieldAdapter
 import cafe.miafetta.tsuki.providers.SklandGame
 import cafe.miafetta.tsuki.providers.SklandHttpsTransport
 import java.io.File
+import java.util.concurrent.Executors
 
 // Process-wide state of the :widgetProvider process. Account sign-in and sign-out live in WidgetRuntimeAccounts.kt.
 internal class WidgetRuntime private constructor(internal val application: Application) {
@@ -64,7 +65,8 @@ internal class WidgetRuntime private constructor(internal val application: Appli
         FEATURE to WidgetDefinition(FEATURE, skland.id, ARKNIGHTS_SOURCE_IDS - skland.id),
         ENDFIELD_FEATURE to WidgetDefinition(ENDFIELD_FEATURE, endfield.id),
     ), adapters.associateBy { it.id })
-    private val avatars = AvatarCache(File(application.cacheDir, "official-avatars"))
+    private val avatars = AvatarCache(File(application.cacheDir, "official-avatars"),
+        background = Executors.newSingleThreadExecutor { Thread(it, "tsuki-avatars") })
     private val renderer = StatusWidgetRenderer(avatars)
     internal val scheduler: JobScheduler = application.getSystemService(JobScheduler::class.java)
     // Bumped by every account change so that requests started earlier cannot write stale results.
@@ -260,6 +262,7 @@ internal class WidgetRuntime private constructor(internal val application: Appli
     fun prepareAvatar(url: String?) {
         avatars.prepare(url)
     }
+    fun prepareAvatarForRead(url: String?) = avatars.prepareForRead(url)
 
     // The preview is shared with the app process; a shared copy avoids keeping two large bitmaps alive.
     fun preview(snapshot: WidgetSnapshot?, theme: WidgetTheme, feature: String = FEATURE): Bitmap {

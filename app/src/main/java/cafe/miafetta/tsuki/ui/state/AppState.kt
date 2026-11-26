@@ -9,6 +9,7 @@ import androidx.lifecycle.AndroidViewModel
 import android.app.Application
 import cafe.miafetta.tsuki.core.*
 import cafe.miafetta.tsuki.storageCall
+import cafe.miafetta.tsuki.accountProblemText
 import cafe.miafetta.tsuki.failureMessage
 import cafe.miafetta.tsuki.providers.SklandArknightsAdapter
 import cafe.miafetta.tsuki.providers.SklandGame
@@ -18,6 +19,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.isActive
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
 
@@ -29,6 +32,7 @@ internal class AppState(context: Context, val notifier: UiNotifier = ToastUiNoti
     var widgets by mutableStateOf(emptyList<UiWidget>())
     var choices by mutableStateOf(emptyList<UiRole>())
     var busy by mutableStateOf(false)
+    var placing = false
     var refreshing by mutableStateOf(false)
     var completedAction by mutableStateOf<String?>(null)
     val previewCache = android.util.LruCache<String, androidx.compose.ui.graphics.ImageBitmap>(8)
@@ -50,6 +54,7 @@ internal class AppState(context: Context, val notifier: UiNotifier = ToastUiNoti
     private var request = 0
     private var refreshingRole = ""
     private var initialLoad: Deferred<Unit>? = null
+    private val overviewRead = Mutex()
     val roles get() = accounts.flatMap { it.roles }
 
     // Starts the first overview read as soon as the screen asks for its state, so the IPC and a cold :widgetProvider
@@ -58,50 +63,53 @@ internal class AppState(context: Context, val notifier: UiNotifier = ToastUiNoti
         if (initialLoad == null && !loaded) initialLoad = viewModelScope.async { read() }
     }
 
-    // While the initial read is still running, a load joins it instead of issuing a second read.
-    suspend fun load() {
-        initialLoad?.takeIf { it.isActive }?.let {
+    // Startup can join the first read; a storage notification needs data read after that notification.
+    suspend fun load(joinInitial: Boolean = false) {
+        initialLoad?.takeIf { joinInitial && it.isActive }?.let {
             it.await()
             return
         }
         read()
     }
 
-    private suspend fun read() {
+    private suspend fun read() = overviewRead.withLock {
         try {
             val result = withContext(Dispatchers.IO) { call(Storage.OVERVIEW, Bundle()) }
             if (result.getBoolean(Storage.ERROR)) {
                 messages.send(context.getString(failureMessage(result.getString(Storage.FAILURE))))
-                return
+                return@withLock
             }
             // Parsing, including widget snapshots, stays off the main thread; only the state assignment runs there.
             val (loadedAccounts, loadedWidgets) = withContext(Dispatchers.Default) {
                 val json = JSONObject(result.getString(Storage.JSON, "{}"))
                 parseAccounts(json) to parseWidgets(json)
             }
+            val loadedChoices = if (cafe.miafetta.tsuki.BuildConfig.DEBUG) readChoices() else loadedAccounts.flatMap { it.roles }
             if (accounts.map { it.id } != loadedAccounts.map { it.id }) {
                 previewCache.evictAll()
                 shownData.clear()
             }
             accounts = loadedAccounts
             widgets = loadedWidgets
-            if (!cafe.miafetta.tsuki.BuildConfig.DEBUG) {
-                choices = roles
-                return
-            }
-            val characters = withContext(Dispatchers.IO) { call(Storage.CHARACTERS, Bundle()) }
-            val ids = characters.getStringArrayList(Storage.ACCOUNT_IDS) ?: arrayListOf()
-            val roles = characters.getStringArrayList(Storage.CHARACTER_IDS) ?: arrayListOf()
-            val labels = characters.getStringArrayList(Storage.LABELS) ?: arrayListOf()
-            val providers = characters.getStringArrayList(Storage.PROVIDER_IDS) ?: arrayListOf()
-            require(listOf(roles, labels, providers).all { it.size == ids.size })
-            choices = ids.indices.map { i -> UiRole(ids[i], labels[i].substringBefore(" · "), roles[i], labels[i], providers[i]) }
+            choices = loadedChoices
         } catch (_: org.json.JSONException) { messages.send("数据读取失败，请重试") }
         catch (_: IllegalArgumentException) { messages.send("数据读取失败，请重试") }
         finally {
-            loaded = true
-            if (currentCoroutineContext().isActive) finishedLoads++
+            if (currentCoroutineContext().isActive) {
+                loaded = true
+                finishedLoads++
+            }
         }
+    }
+
+    private suspend fun readChoices(): List<UiRole> {
+        val characters = withContext(Dispatchers.IO) { call(Storage.CHARACTERS, Bundle()) }
+        val ids = characters.getStringArrayList(Storage.ACCOUNT_IDS) ?: arrayListOf()
+        val roles = characters.getStringArrayList(Storage.CHARACTER_IDS) ?: arrayListOf()
+        val labels = characters.getStringArrayList(Storage.LABELS) ?: arrayListOf()
+        val providers = characters.getStringArrayList(Storage.PROVIDER_IDS) ?: arrayListOf()
+        require(listOf(roles, labels, providers).all { it.size == ids.size })
+        return ids.indices.map { i -> UiRole(ids[i], labels[i].substringBefore(" · "), roles[i], labels[i], providers[i]) }
     }
 
     suspend fun dashboard(role: UiRole, refresh: Boolean = false) {
@@ -166,7 +174,8 @@ internal class AppState(context: Context, val notifier: UiNotifier = ToastUiNoti
         return try {
             val result = withContext(Dispatchers.IO) { call(method, extras) }
             if (result.getBoolean(Storage.ERROR)) {
-                val message = context.getString(failureMessage(result.getString(Storage.FAILURE)))
+                val failure = result.getString(Storage.FAILURE)
+                val message = accountProblemText(failure) ?: context.getString(failureMessage(failure))
                 if (inlineError) error = message else messages.send(message)
                 false
             } else {

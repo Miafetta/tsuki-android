@@ -11,6 +11,7 @@ import android.net.Uri
 import android.os.Binder
 import android.os.Bundle
 import android.os.Process
+import cafe.miafetta.tsuki.core.AccountProblemException
 import cafe.miafetta.tsuki.core.DataSourceFailure
 import cafe.miafetta.tsuki.core.SnapshotJson
 import cafe.miafetta.tsuki.core.WidgetInstanceConfig
@@ -37,8 +38,10 @@ class WidgetStorageProvider : ContentProvider() {
                 Storage.AVATAR -> Bundle().apply { putByteArray(Storage.BYTES, runtime.avatar(extras?.getString(Storage.URL))) }
                 Storage.PREVIEW -> preview(runtime, extras)
                 Storage.CHARACTERS -> characters(runtime)
+                // ACCOUNT_ID is sent only by "更新 Cred" with a new Cred: the account it updates.
                 Storage.LOGIN -> Bundle().also {
-                    runtime.login(requireNotNull(extras?.getString(Storage.NAME)), requireNotNull(extras.getString(Storage.CRED)))
+                    runtime.login(requireNotNull(extras?.getString(Storage.NAME)), requireNotNull(extras.getString(Storage.CRED)),
+                        extras.getString(Storage.ACCOUNT_ID))
                 }
                 Storage.REVERIFY -> Bundle().also {
                     runtime.reverify(requireNotNull(extras?.getString(Storage.ACCOUNT_ID)), requireNotNull(extras.getString(Storage.NAME)))
@@ -65,6 +68,9 @@ class WidgetStorageProvider : ContentProvider() {
             errorBundle(failure.reason.name)
         } catch (_: java.io.IOException) {
             errorBundle()
+        } catch (failure: AccountProblemException) {
+            // Before IllegalArgumentException, which it extends: the editor names the rule that refused the account.
+            errorBundle(failure.problem.name)
         } catch (_: IllegalArgumentException) {
             errorBundle()
         } catch (_: org.json.JSONException) {
@@ -105,7 +111,9 @@ class WidgetStorageProvider : ContentProvider() {
         val data = runtime.dashboard(provider, account, character)
         if (method == Storage.REFRESH_ROLE) runtime.prepareAvatar(data.snapshot?.avatarUrl)
         val training = data.snapshot?.training
-        runtime.prepareAvatar(training?.avatarUrl ?: training?.traineeId?.let(OfficialAvatars::character))
+        val trainee = training?.avatarUrl ?: training?.traineeId?.let(OfficialAvatars::character)
+        // A plain read waits only for a portrait never cached; renewing a cached one happens in the background.
+        if (method == Storage.REFRESH_ROLE) runtime.prepareAvatar(trainee) else runtime.prepareAvatarForRead(trainee)
         return Bundle().apply {
             data.snapshot?.let { putString(Storage.SNAPSHOT, SnapshotJson.write(it).toString()) }
             putString(Storage.FAILURE, data.failure?.name)

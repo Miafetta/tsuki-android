@@ -1,5 +1,7 @@
 package cafe.miafetta.tsuki.providers
 
+import cafe.miafetta.tsuki.core.AccountProblem
+import cafe.miafetta.tsuki.core.AccountProblemException
 import cafe.miafetta.tsuki.core.DataSourceFailure
 import cafe.miafetta.tsuki.core.RefreshFailure
 import cafe.miafetta.tsuki.core.writeAtomic
@@ -30,12 +32,25 @@ internal interface AccountRepository {
     fun clear()
 }
 
-internal fun matchingAccountForLogin(accounts: List<SklandAccount>, cred: String, roles: List<SklandRole>): SklandAccount? {
+// [updatingId] is the account "更新 Cred" was opened for. The Cred must then match that very account: one of another
+// Skland account would otherwise be added as a new account under the updated account's name, or rename the stored
+// account it does match.
+internal fun matchingAccountForLogin(accounts: List<SklandAccount>, cred: String, roles: List<SklandRole>,
+    updatingId: String? = null): SklandAccount? {
     val keys = roles.map { it.key }.toSet()
     require(keys.isNotEmpty())
+    if (updatingId != null && accounts.none { it.id == updatingId }) {
+        throw AccountProblemException(AccountProblem.ACCOUNT_GONE, "Account no longer exists")
+    }
     val matches = accounts.filter { it.cred == cred || it.roles.any { role -> role.key in keys } }
-    require(matches.size <= 1) { "Roles belong to multiple stored accounts" }
-    return matches.singleOrNull()?.also { existing ->
+    if (matches.size > 1) {
+        throw AccountProblemException(AccountProblem.ACCOUNT_CONFLICT, "Roles belong to multiple stored accounts")
+    }
+    val match = matches.singleOrNull()
+    if (updatingId != null && match?.id != updatingId) {
+        throw AccountProblemException(AccountProblem.ACCOUNT_MISMATCH, "Credential belongs to a different account")
+    }
+    return match?.also { existing ->
         cafe.miafetta.tsuki.core.validateAccountUpdate(existing.roles.map { it.key }, keys.toList(),
             accounts.filter { it.id != existing.id }.flatMap { it.roles }.map { it.key })
     }
@@ -61,8 +76,25 @@ internal class CredentialCipher(private val key: () -> SecretKey) {
 }
 
 internal class FileAccountRepository(private val file: File, private val cipher: CredentialCipher) : AccountRepository {
+    // The accounts as last read or written, with the file's stamp at that time. Each read used to load the Keystore key
+    // and decrypt the whole file, and a single widget update read the accounts several times, partly on the main thread.
+    // This process is the only writer. The stamp invalidates the cache if the file size or modification time changes.
+    private var cached: Pair<FileStamp, List<SklandAccount>>? = null
+
+    private data class FileStamp(val modified: Long, val length: Long)
+    private fun stamp() = FileStamp(file.lastModified(), file.length())
+
     @Synchronized override fun list(): List<SklandAccount> {
-        if (!file.exists()) return emptyList()
+        if (!file.exists()) {
+            cached = null
+            return emptyList()
+        }
+        val stamp = stamp()
+        cached?.takeIf { it.first == stamp }?.let { return it.second }
+        return decrypt().also { cached = stamp to it }
+    }
+
+    private fun decrypt(): List<SklandAccount> {
         try {
             require(file.length() <= 512 * 1024)
             val plaintext = cipher.decrypt(file.readBytes())
@@ -70,7 +102,7 @@ internal class FileAccountRepository(private val file: File, private val cipher:
                 val root = JSONObject(String(plaintext, Charsets.UTF_8))
                 require(root.getInt("version") == 1)
                 val values = root.getJSONArray("accounts")
-                require(values.length() <= 10)
+                require(values.length() <= MAX_ACCOUNTS)
                 return (0 until values.length()).map { index ->
                     val value = values.getJSONObject(index)
                     val roles = value.getJSONArray("roles")
@@ -87,13 +119,16 @@ internal class FileAccountRepository(private val file: File, private val cipher:
 
     @Synchronized override fun save(account: SklandAccount) {
         val accounts = list().filter { it.id != account.id } + account
-        require(accounts.size <= 10) { "Account limit reached" }
+        if (accounts.size > MAX_ACCOUNTS) throw AccountProblemException(AccountProblem.ACCOUNT_LIMIT, "Account limit reached")
         write(accounts)
     }
 
     @Synchronized override fun delete(id: String) { write(list().filter { it.id != id }) }
 
-    @Synchronized override fun clear() { java.nio.file.Files.deleteIfExists(file.toPath()) }
+    @Synchronized override fun clear() {
+        cached = null
+        java.nio.file.Files.deleteIfExists(file.toPath())
+    }
 
     private fun write(accounts: List<SklandAccount>) {
         val values = JSONArray()
@@ -107,8 +142,11 @@ internal class FileAccountRepository(private val file: File, private val cipher:
                 .put("roles", roles).put("retryAt", account.retryAt))
         }
         val plaintext = JSONObject().put("version", 1).put("accounts", values).toString().toByteArray(Charsets.UTF_8)
-        try { writeAtomic(file, cipher.encrypt(plaintext)) }
-        catch (_: GeneralSecurityException) { throw DataSourceFailure(RefreshFailure.STORAGE) }
+        cached = null
+        try {
+            writeAtomic(file, cipher.encrypt(plaintext))
+            cached = stamp() to accounts
+        } catch (_: GeneralSecurityException) { throw DataSourceFailure(RefreshFailure.STORAGE) }
         catch (_: java.security.ProviderException) { throw DataSourceFailure(RefreshFailure.STORAGE) }
         finally { plaintext.fill(0) }
     }
@@ -117,4 +155,9 @@ internal class FileAccountRepository(private val file: File, private val cipher:
     private fun readRole(role: JSONObject) = SklandRole(role.getString("uid"), role.getString("label"),
         requireNotNull(SklandGame.fromAppCode(role.optString("game", SklandGame.ARKNIGHTS.appCode))),
         role.optString("server").takeIf { it.isNotEmpty() })
+
+    companion object {
+        // Saving one more account is refused; reading a file with more is a damaged file.
+        const val MAX_ACCOUNTS = 10
+    }
 }
